@@ -8,96 +8,68 @@ from aniworld.models import Anime
 from aniworld.parser import arguments
 
 
-def watch(anime: Anime or None):
-    download_mpv()
-    if anime is None:
-        watch_local_file()
-    else:
-        for episode in anime:
-            if arguments.only_direct_link:
-                msg = f"{anime.title} - S{episode.season}E{episode.episode} - ({anime.language}):"
-                print(msg)
-                print(f"{episode.get_direct_link()}\n")
-                continue
-
-            if (episode.has_movies and episode.season
-                    not in list(episode.season_episode_count.keys())):
-                mpv_title = (
-                    f"{anime.title} - Movie {episode.episode} - "
-                    f"{episode.title_german}"
-                )
-            else:
-                mpv_title = (
-                    f"{anime.title} - S{episode.season}E{episode.episode} - "
-                    f"{episode.title_german}"
-                )
-
-            command = [
-                MPV_PATH,
-                episode.get_direct_link(),
-                "--fs",
-                "--quiet",
-                f'--force-media-title="{mpv_title}"'
-            ]
-            logging.debug("Executing command:\n%s", command)
-
-            # print(anime.provider)
-            # print(bool(anime.provider in PROVIDER_HEADERS))
-
-            if anime.provider in PROVIDER_HEADERS:
-                command.append(
-                    f"--http-header-fields={PROVIDER_HEADERS[anime.provider]}")
-
-            if anime.aniskip:
-                build_flags = aniskip(
-                    anime.title, episode.episode, episode.season)
-                sanitized_build_flags = build_flags.split()
-                command.append(sanitized_build_flags[0])
-                command.append(sanitized_build_flags[1])
-
-            if arguments.only_command:
-                print(
-                    f"\n{anime.title} - S{episode.season}E{episode.episode} - ({anime.language}):"
-                )
-                print(
-                    f"{' '.join(str(item) if item is not None else '' for item in command)}"
-                )
-                continue
-
-            try:
-                subprocess.run(command, check=True, shell=False)
-            except subprocess.CalledProcessError as e:
-                logging.error(
-                    "Error running command: %s\nCommand: %s",
-                    e, ' '.join(
-                        str(item) if item is not None else '' for item in command)
-                )
+def _build_watch_command(source, title=None, headers=None, aniskip_data=None):
+    command = [MPV_PATH, source, "--fs", "--quiet"]
+    if title:
+        command.append(f'--force-media-title="{title}"')
+    if headers:
+        command.append(f"--http-header-fields={headers}")
+    if aniskip_data:
+        command.extend(aniskip_data.split()[:2])
+    return command
 
 
-def watch_local_file():
+def _print_or_run(title, command):
+    logging.debug("Executing command:\n%s", command)
+    if arguments.only_command:
+        print(f"\n{title}:")
+        print(" ".join(str(item) for item in command if item is not None))
+        return
+    try:
+        subprocess.run(command, check=True)
+    except subprocess.CalledProcessError as e:
+        logging.error(
+            "Error running command: %s\nCommand: %s",
+            e, ' '.join(
+                str(item) if item is not None else '' for item in command)
+        )
+
+
+def _process_local_files():
     for file in arguments.local_episodes:
-        command = [
-            MPV_PATH,
-            f'{file}',
-            "--fs",
-            "--quiet"
-        ]
-        logging.debug("Executing command:\n%s", command)
+        command = _build_watch_command(file)
+        _print_or_run(file, command)
 
-        if arguments.only_command:
+
+def _process_anime_episodes(anime):
+    for episode in anime:
+        if arguments.only_direct_link:
             print(
-                f"\n{file}:"
-            )
-            print(
-                f"{' '.join(str(item) if item is not None else '' for item in command)}"
-            )
+                f"{anime.title} - S{episode.season}E{episode.episode} - ({anime.language}):")
+            print(f"{episode.get_direct_link()}\n")
             continue
 
-        try:
-            subprocess.run(command, check=True, shell=False)
-        except subprocess.CalledProcessError as e:
-            logging.error(
-                "Error running command: %s\nCommand: %s",
-                e, ' '.join(
-                    str(item) if item is not None else '' for item in command)
-            )
+        title = _generate_episode_title(anime, episode)
+        command = _build_watch_command(
+            episode.get_direct_link(),
+            title,
+            PROVIDER_HEADERS.get(anime.provider),
+            aniskip(anime.title, episode.episode,
+                    episode.season) if anime.aniskip else None
+        )
+        _print_or_run(title, command)
+
+
+def _generate_episode_title(anime, episode):
+    if episode.has_movies and episode.season not in episode.season_episode_count:
+        return f"{anime.title} - Movie {episode.episode} - {episode.title_german}"
+    return f"{anime.title} - S{episode.season}E{episode.episode} - {episode.title_german}"
+
+
+def watch(anime: Anime = None):
+    download_mpv()
+
+    if anime is None:
+        _process_local_files()
+    else:
+        _process_anime_episodes(anime)

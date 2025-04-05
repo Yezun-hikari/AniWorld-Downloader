@@ -64,6 +64,8 @@ PROVIDER_HEADERS = {
     "Doodstream": 'Referer: "https://dood.li/"'
 }
 
+USES_DEFAULT_PROVIDER = False
+
 # E.g. Watch, Download, Syncplay
 DEFAULT_ACTION = "Download"
 DEFAULT_ANISKIP = False

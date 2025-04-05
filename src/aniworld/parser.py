@@ -12,10 +12,10 @@ from aniworld.config import (
     DEFAULT_LANGUAGE,
     VERSION,
     SUPPORTED_PROVIDERS,
-    DEFAULT_DOWNLOAD_PATH
+    DEFAULT_DOWNLOAD_PATH,
+    USES_DEFAULT_PROVIDER
 )
 
-USES_DEFAULT_PROVIDER = False
 
 def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -228,7 +228,6 @@ _____________________________
             logging.error("Invalid update option provided.")
 
     if args.provider is None:
-        global USES_DEFAULT_PROVIDER
         USES_DEFAULT_PROVIDER = True
 
         args.provider = (
@@ -246,8 +245,9 @@ _____________________________
 
             for terminal, cmd in terminal_emulators:
                 try:
-                    subprocess.Popen(
-                        cmd)  # pylint: disable=consider-using-with
+                    subprocess.Popen(  # pylint: disable=consider-using-with
+                        cmd
+                    )
                     return
                 except FileNotFoundError:
                     logging.debug(

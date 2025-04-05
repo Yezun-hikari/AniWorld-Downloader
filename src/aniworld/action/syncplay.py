@@ -8,15 +8,19 @@ from aniworld.common import download_mpv, download_syncplay
 from aniworld.aniskip import aniskip
 from aniworld.parser import arguments
 
+
 def _get_syncplay_username():
     return arguments.username or getpass.getuser()
+
 
 def _get_syncplay_hostname():
     return arguments.hostname or "syncplay.pl:8997"
 
+
 def _append_password(command):
     if arguments.password:
         command.extend(["--password", arguments.password])
+
 
 def _execute_command(command):
     logging.debug("Executing command:\n%s", command)
@@ -25,8 +29,13 @@ def _execute_command(command):
         return
     try:
         subprocess.run(command, check=True)
-    except subprocess.CalledProcessError:
-        logging.error("Error running command:\n%s", " ".join(str(item) for item in command))
+    except subprocess.CalledProcessError as e:
+        logging.error(
+            "Error running command: %s\nCommand: %s",
+            e, ' '.join(
+                str(item) if item is not None else '' for item in command)
+        )
+
 
 def _build_syncplay_command(source, title=None, headers=None, aniskip_data=None):
     command = [
@@ -51,15 +60,12 @@ def _build_syncplay_command(source, title=None, headers=None, aniskip_data=None)
         command.extend(aniskip_data.split()[:2])
     return command
 
-def _process_local_files():
-    for file in arguments.local_episodes:
-        command = _build_syncplay_command(file)
-        _execute_command(command)
 
 def _process_anime_episodes(anime):
     for episode in anime:
         if arguments.only_direct_link:
-            print(f"{anime.title} - S{episode.season}E{episode.episode} - ({anime.language}):")
+            print(
+                f"{anime.title} - S{episode.season}E{episode.episode} - ({anime.language}):")
             print(f"{episode.get_direct_link()}\n")
             continue
 
@@ -67,9 +73,11 @@ def _process_anime_episodes(anime):
             episode.get_direct_link(),
             episode.title_german,
             PROVIDER_HEADERS.get(anime.provider),
-            aniskip(anime.title, episode.episode, episode.season) if anime.aniskip else None
+            aniskip(anime.title, episode.episode,
+                    episode.season) if anime.aniskip else None
         )
         _execute_command(command)
+
 
 def syncplay(anime: Anime = None):
     download_mpv()
@@ -79,6 +87,7 @@ def syncplay(anime: Anime = None):
         _process_local_files()
     else:
         _process_anime_episodes(anime)
+
 
 if __name__ == '__main__':
     download_syncplay()

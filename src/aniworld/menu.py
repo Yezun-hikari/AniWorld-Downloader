@@ -8,8 +8,8 @@ from aniworld.config import (
     SUPPORTED_PROVIDERS,
     DEFAULT_PROVIDER_DOWNLOAD,
     DEFAULT_PROVIDER_WATCH,
+    USES_DEFAULT_PROVIDER
 )
-from aniworld.parser import USES_DEFAULT_PROVIDER
 
 
 class CustomTheme(npyscreen.ThemeManager):
