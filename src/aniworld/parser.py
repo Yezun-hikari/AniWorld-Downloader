@@ -1,4 +1,3 @@
-import os
 import sys
 import argparse
 import platform
@@ -16,6 +15,7 @@ from aniworld.config import (
     DEFAULT_DOWNLOAD_PATH
 )
 
+USES_DEFAULT_PROVIDER = False
 
 def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -227,9 +227,13 @@ _____________________________
         else:
             logging.error("Invalid update option provided.")
 
-    args.provider = args.provider or (
-        DEFAULT_PROVIDER_DOWNLOAD if args.action == "Download" else DEFAULT_PROVIDER_WATCH
-    )
+    if args.provider is None:
+        global USES_DEFAULT_PROVIDER
+        USES_DEFAULT_PROVIDER = True
+
+        args.provider = (
+            DEFAULT_PROVIDER_DOWNLOAD if args.action == "Download" else DEFAULT_PROVIDER_WATCH
+        )
 
     if args.debug is True:
         def open_terminal_with_command(command):
