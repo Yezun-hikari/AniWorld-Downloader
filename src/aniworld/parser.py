@@ -16,8 +16,6 @@ from aniworld.config import (
     DEFAULT_DOWNLOAD_PATH
 )
 
-USES_DEFAULT_PROVIDER = False
-
 
 def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -200,34 +198,38 @@ _____________________________
         print(cowsay.strip())
         sys.exit()
 
-    # That is written extremly bad
-    if args.update == "mpv":  # TODO Not checking for the version just reinstalls
-        print("Updating MPV...")
-        download_mpv(update=True)
-    elif args.update == "yt-dlp":
-        print("Updating YT-dlp...")
-        os.system("pip install -U yt-dlp")
-    elif args.update == "syncplay":
-        print("Updating Syncplay...")
-        download_syncplay(update=True)
-    elif args.update == "all":
-        print("Updating MPV...")
-        download_mpv(update=True)
-        print("Updating YT-dlp...")
-        os.system("pip install -U yt-dlp")
-        print("Updating Syncplay...")
-        download_syncplay(update=True)
-    elif args.update == "anime4k":
-        pass  # First implement Anime4k
+    if args.update:
+        def update_yt_dlp():
+            logging.info("Upgrading yt-dlp...")
+            subprocess.run(
+                ["pip", "install", "-U", "yt-dlp"],
+                check=False,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
+            )
 
-    if args.provider is None:
-        # TODO Think about something better
-        global USES_DEFAULT_PROVIDER
-        USES_DEFAULT_PROVIDER = True
-        if args.action == "Download":
-            args.provider = DEFAULT_PROVIDER_DOWNLOAD
+        def update_all():
+            logging.info("Updating all tools...")
+            download_mpv(update=True)
+            update_yt_dlp()
+            download_syncplay(update=True)
+
+        update_actions = {
+            "mpv": lambda: download_mpv(update=True),
+            "yt-dlp": update_yt_dlp,
+            "syncplay": lambda: download_syncplay(update=True),
+            "all": update_all
+        }
+
+        action = update_actions.get(args.update)
+        if action:
+            action()
         else:
-            args.provider = DEFAULT_PROVIDER_WATCH
+            logging.error("Invalid update option provided.")
+
+    args.provider = args.provider or (
+        DEFAULT_PROVIDER_DOWNLOAD if args.action == "Download" else DEFAULT_PROVIDER_WATCH
+    )
 
     if args.debug is True:
         def open_terminal_with_command(command):

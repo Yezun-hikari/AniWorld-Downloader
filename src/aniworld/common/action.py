@@ -75,6 +75,8 @@ def download_7z(zip_tool: str) -> None:
 
 
 def download_mpv(dep_path: str = None, appdata_path: str = None, update: bool = False):
+    print("Updating MPV...")
+
     if sys.platform != 'win32':
         return
 
@@ -150,6 +152,8 @@ def download_mpv(dep_path: str = None, appdata_path: str = None, update: bool = 
 
 
 def download_syncplay(dep_path: str = None, appdata_path: str = None, update: bool = False):
+    print("Updating Syncplay...")
+
     if sys.platform != 'win32':
         return
 
