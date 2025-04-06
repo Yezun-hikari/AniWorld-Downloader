@@ -7,6 +7,7 @@ from aniworld.config import MPV_PATH, PROVIDER_HEADERS, SYNCPLAY_PATH
 from aniworld.common import download_mpv, download_syncplay
 from aniworld.aniskip import aniskip
 from aniworld.parser import arguments
+import hashlib
 
 
 def _get_syncplay_username():
@@ -17,9 +18,32 @@ def _get_syncplay_hostname():
     return arguments.hostname or "syncplay.pl:8997"
 
 
-def _append_password(command):
-    if arguments.password:
-        command.extend(["--password", arguments.password])
+def _get_syncplay_room(title):
+    if arguments.room:
+        return room
+
+    room = title
+    password = arguments.password
+
+    if password:
+        room += f":{password}"
+
+    room_hash = hashlib.sha256(room.encode('utf-8')).hexdigest()
+
+    return f"AniWorld_Downloader.{room_hash}"
+
+
+def _append_password(command, title):
+    password = arguments.password
+
+    if not password:
+        return command
+
+    password = f"{title}:{arguments.password}"
+    password_hash = hashlib.sha256(password.encode('utf-8')).hexdigest()
+
+    command.extend(["--password", password_hash])
+    return command
 
 
 def _execute_command(command):
@@ -43,7 +67,7 @@ def _build_syncplay_command(source, title=None, headers=None, aniskip_data=None)
         "--no-gui",
         "--no-store",
         "--host", _get_syncplay_hostname(),
-        "--room", arguments.room or (title or source),
+        "--room", _get_syncplay_room(title=title),
         "--name", _get_syncplay_username(),
         "--player-path", MPV_PATH,
         source,
@@ -53,11 +77,15 @@ def _build_syncplay_command(source, title=None, headers=None, aniskip_data=None)
 
     if title:
         command.append(f'--force-media-title="{title}"')
-    _append_password(command)
+
+    command = _append_password(command, title)
+
     if headers:
         command.append(f"--http-header-fields={headers}")
+
     if aniskip_data:
         command.extend(aniskip_data.split()[:2])
+
     return command
 
 
