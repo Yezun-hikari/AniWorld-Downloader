@@ -3,11 +3,12 @@ import os
 import pathlib
 import platform
 import random
+import requests
 import shutil
 import tempfile
 
 from importlib.metadata import PackageNotFoundError, version
-
+from urllib3.exceptions import InsecureRequestWarning
 
 #########################################################################################
 # Logging Configuration
@@ -37,10 +38,10 @@ console_handler.setFormatter(logging.Formatter(
     "%(levelname)s:%(name)s:%(funcName)s: %(message)s")
 )
 logging.getLogger().addHandler(console_handler)
-
 logging.getLogger("urllib3.connectionpool").setLevel(logging.WARNING)
 logging.getLogger().setLevel(logging.WARNING)
 
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 #########################################################################################
 # Default Configuration Constants
