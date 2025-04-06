@@ -115,13 +115,13 @@ These packages are automatically installed when you set up AniWorld Downloader u
 - [x] --debug
 - [ ] --uninstall
 - [x] --update
-- [ ] --slug
+- [x] --slug
 - [ ] --link
 - [ ] --query
 - [x] --episode
 - [ ] --episode-file
 - [x] --episode-local
-- [ ] --action
+- [x] --action
 - [ ] --output
 - [x] --output-directory
 - [x] --language

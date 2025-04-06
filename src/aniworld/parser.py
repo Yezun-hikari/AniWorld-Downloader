@@ -1,20 +1,61 @@
-import sys
 import argparse
-import platform
+import json
 import logging
+import platform
+import random
 import subprocess
+import sys
+
+import requests
 
 from aniworld.common import download_mpv, download_syncplay
 from aniworld.config import (
     DEFAULT_ACTION,
+    DEFAULT_DOWNLOAD_PATH,
+    DEFAULT_LANGUAGE,
     DEFAULT_PROVIDER_DOWNLOAD,
     DEFAULT_PROVIDER_WATCH,
-    DEFAULT_LANGUAGE,
-    VERSION,
+    RANDOM_USER_AGENT,
     SUPPORTED_PROVIDERS,
-    DEFAULT_DOWNLOAD_PATH,
-    USES_DEFAULT_PROVIDER
+    USES_DEFAULT_PROVIDER,
+    VERSION,
+    DEFAULT_REQUEST_TIMEOUT
 )
+
+
+def get_random_anime_slug(genre="all") -> str:
+    url = 'https://aniworld.to/ajax/randomGeneratorSeries'
+
+    data = {
+        'productionStart': 'all',
+        'productionEnd': 'all', 'genres[]': genre
+    }
+
+    headers = {'User-Agent': RANDOM_USER_AGENT}
+
+    try:
+        response = requests.post(
+            url, data=data, headers=headers, timeout=DEFAULT_REQUEST_TIMEOUT
+        )
+
+        response.raise_for_status()
+        anime_list = response.json()
+
+        if not anime_list:
+            logging.warning("No anime found for genre: %s", genre)
+            return None
+
+        random_anime = random.choice(anime_list)
+        logging.debug("Selected Anime: %s", random_anime)
+
+        return random_anime.get('link')
+
+    except requests.RequestException as e:
+        logging.error("Request failed: %s", e)
+    except (json.JSONDecodeError, KeyError, TypeError) as e:
+        logging.error("Error processing response: %s", e)
+
+    return None
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -165,7 +206,7 @@ def parse_arguments() -> argparse.Namespace:
         help='Automatically continue to the next episodes after the selected one.'
     )
     misc_opts.add_argument(
-        '-r', '--random',
+        '-r', '--random-anime',
         type=str,
         nargs='?',
         const="all",
@@ -226,6 +267,9 @@ _____________________________
             action()
         else:
             logging.error("Invalid update option provided.")
+
+    if args.random_anime:
+        args.slug = get_random_anime_slug()
 
     if args.provider is None:
         global USES_DEFAULT_PROVIDER  # pylint: disable=global-statement
@@ -297,3 +341,6 @@ _____________________________
 
 
 arguments = parse_arguments()
+
+if __name__ == "__main__":
+    print(get_random_anime_slug())
