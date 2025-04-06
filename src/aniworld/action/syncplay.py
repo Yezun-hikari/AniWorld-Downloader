@@ -1,13 +1,13 @@
 import getpass
 import subprocess
 import logging
+import hashlib
 
 from aniworld.models import Anime
 from aniworld.config import MPV_PATH, PROVIDER_HEADERS, SYNCPLAY_PATH
 from aniworld.common import download_mpv, download_syncplay
 from aniworld.aniskip import aniskip
 from aniworld.parser import arguments
-import hashlib
 
 
 def _get_syncplay_username():
@@ -20,7 +20,7 @@ def _get_syncplay_hostname():
 
 def _get_syncplay_room(title):
     if arguments.room:
-        return room
+        return arguments.room
 
     room = title
     password = arguments.password
@@ -104,6 +104,12 @@ def _process_anime_episodes(anime):
             aniskip(anime.title, episode.episode,
                     episode.season) if anime.aniskip else None
         )
+        _execute_command(command)
+
+
+def _process_local_files():
+    for file in arguments.local_episodes:
+        command = _build_syncplay_command(file)
         _execute_command(command)
 
 

@@ -228,6 +228,7 @@ _____________________________
             logging.error("Invalid update option provided.")
 
     if args.provider is None:
+        global USES_DEFAULT_PROVIDER  # pylint: disable=global-statement
         USES_DEFAULT_PROVIDER = True
 
         args.provider = (
