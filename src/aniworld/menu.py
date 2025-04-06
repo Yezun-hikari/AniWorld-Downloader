@@ -290,6 +290,7 @@ def menu(arguments, slug):
         anime = app.get_selected_values()
     except KeyboardInterrupt:
         curses.endwin()
+        exit()
 
     curses.endwin()
     return anime

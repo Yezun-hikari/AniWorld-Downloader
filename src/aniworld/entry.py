@@ -23,8 +23,9 @@ def aniworld() -> None:
                         link=link
                     )
                 else:
+                    slug = arguments.slug if arguments.slug else search_anime()
                     episode = Episode(
-                        slug=search_anime()
+                        slug=slug
                     )
                 anime = Anime(episode_list=[episode])
                 anime_list.append(anime)
@@ -33,7 +34,7 @@ def aniworld() -> None:
         if not arguments.episode and not arguments.local_episodes:
             while True:
                 try:
-                    slug = search_anime()
+                    slug = arguments.slug if arguments.slug else search_anime()
                     break
                 except ValueError:
                     continue
