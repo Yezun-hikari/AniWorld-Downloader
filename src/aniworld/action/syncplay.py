@@ -39,7 +39,7 @@ def _append_password(command, title):
     if not password:
         return command
 
-    password = f"{title}:{arguments.password}"
+    password = f"{arguments.password}:{title}"
     password_hash = hashlib.sha256(password.encode('utf-8')).hexdigest()
 
     command.extend(["--password", password_hash])
