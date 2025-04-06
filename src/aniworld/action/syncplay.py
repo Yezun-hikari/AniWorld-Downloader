@@ -42,7 +42,8 @@ def _append_password(command, title):
     password = f"{arguments.password}:{title}"
     password_hash = hashlib.sha256(password.encode('utf-8')).hexdigest()
 
-    command.extend(["--password", password_hash])
+    command.insert(9, "--password")
+    command.insert(10, password_hash)
     return command
 
 
