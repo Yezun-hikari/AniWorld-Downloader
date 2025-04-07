@@ -9,7 +9,7 @@ import sys
 import requests
 
 from aniworld.common import download_mpv, download_syncplay
-from aniworld.config import (
+from aniworld.config import (  # pylint: disable=unused-import
     DEFAULT_ACTION,
     DEFAULT_DOWNLOAD_PATH,
     DEFAULT_LANGUAGE,
@@ -23,7 +23,7 @@ from aniworld.config import (
 )
 
 
-def get_random_anime_slug(genre="all") -> str:
+def get_random_anime_slug(genre) -> str:
     url = 'https://aniworld.to/ajax/randomGeneratorSeries'
 
     data = {
@@ -208,9 +208,9 @@ def parse_arguments() -> argparse.Namespace:
     misc_opts.add_argument(
         '-r', '--random-anime',
         type=str,
-        nargs='?',
-        const="all",
-        help='Play a random anime (default genre is "all", e.g., Drama).'
+        nargs='*',
+        help='Play a random anime (default genre is "all", e.g., Drama).\n'
+             'All genres can be found here: "https://aniworld.to/random"'
     )
     misc_opts.add_argument(
         '-D', '--only-direct-link',
@@ -268,8 +268,9 @@ _____________________________
         else:
             logging.error("Invalid update option provided.")
 
-    if args.random_anime:
-        args.slug = get_random_anime_slug()
+    if args.random_anime is not None:
+        args.slug = get_random_anime_slug(
+            args.random_anime if len(args.random_anime) != 0 else "all")
 
     if args.provider is None:
         global USES_DEFAULT_PROVIDER  # pylint: disable=global-statement
@@ -343,4 +344,4 @@ _____________________________
 arguments = parse_arguments()
 
 if __name__ == "__main__":
-    print(get_random_anime_slug())
+    print(get_random_anime_slug("all"))

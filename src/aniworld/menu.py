@@ -1,5 +1,6 @@
 import os
 import curses
+import sys
 import npyscreen
 
 from aniworld.models import Anime, Episode
@@ -290,7 +291,7 @@ def menu(arguments, slug):
         anime = app.get_selected_values()
     except KeyboardInterrupt:
         curses.endwin()
-        exit()
+        sys.exit()
 
     curses.endwin()
     return anime

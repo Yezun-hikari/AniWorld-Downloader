@@ -3,12 +3,13 @@ import os
 import pathlib
 import platform
 import random
-import requests
 import shutil
 import tempfile
 
 from importlib.metadata import PackageNotFoundError, version
 from urllib3.exceptions import InsecureRequestWarning
+
+import requests
 
 #########################################################################################
 # Logging Configuration
