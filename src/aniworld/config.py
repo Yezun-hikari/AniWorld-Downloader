@@ -63,7 +63,8 @@ SUPPORTED_PROVIDERS = [
 
 PROVIDER_HEADERS = {
     "Vidmoly": 'Referer: "https://vidmoly.to"',
-    "Doodstream": 'Referer: "https://dood.li/"'
+    "Doodstream": 'Referer: "https://dood.li/"',
+    "VOE": 'Referer: "https://nathanfromsubject.com/"'
 }
 
 USES_DEFAULT_PROVIDER = False
