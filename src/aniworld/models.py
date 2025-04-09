@@ -8,7 +8,7 @@ import requests.models
 from bs4 import BeautifulSoup
 
 from aniworld.aniskip import get_mal_id_from_title
-from aniworld.config import DEFAULT_REQUEST_TIMEOUT
+from aniworld.config import DEFAULT_REQUEST_TIMEOUT, RANDOM_USER_AGENT
 from aniworld.parser import arguments
 
 from aniworld.extractors import (
@@ -471,7 +471,8 @@ class Episode:
             self.get_redirect_link()
 
         self.embeded_link = requests.get(
-            self.redirect_link, timeout=DEFAULT_REQUEST_TIMEOUT).url
+            self.redirect_link, timeout=DEFAULT_REQUEST_TIMEOUT,
+            headers={'User-Agent': RANDOM_USER_AGENT}).url
         return self.embeded_link
 
     def get_direct_link(self, provider=None, language=None):
