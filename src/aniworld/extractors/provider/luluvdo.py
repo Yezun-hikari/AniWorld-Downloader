@@ -2,7 +2,7 @@ import re
 
 import requests
 
-from aniworld.config import DEFAULT_REQUEST_TIMEOUT, RANDOM_USER_AGENT
+from aniworld import config
 
 
 def get_direct_link_from_luluvdo(embeded_luluvdo_link):
@@ -11,15 +11,16 @@ def get_direct_link_from_luluvdo(embeded_luluvdo_link):
         f"https://luluvdo.com/dl?op=embed&file_code={luluvdo_id}"
         "&auto=1&referer=https://aniworld.to"
     )
+
+    # The User-Agent needs to be the same as the direct-link ones to work
     headers = {
-        "User-Agent": RANDOM_USER_AGENT
+        "User-Agent": config.LULUVDO_USER_AGENT
     }
 
     response = requests.get(filelink, headers=headers,
-                            timeout=DEFAULT_REQUEST_TIMEOUT)
+                            timeout=config.DEFAULT_REQUEST_TIMEOUT)
 
     if response.status_code == 200:
-        # beautified_js = jsbeautifier.beautify(response.text)
         pattern = r'file:\s*"([^"]+)"'
         matches = re.findall(pattern, str(response.text))
 
