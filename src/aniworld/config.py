@@ -56,8 +56,7 @@ IS_NEWEST_VERSION = True  # For now :)
 PLATFORM_SYSTEM = platform.system()
 
 SUPPORTED_PROVIDERS = [
-    # "Luluvdo" not supported
-    "VOE", "Doodstream", "Vidmoly", "Vidoza", "SpeedFiles", "Streamtape"
+    "VOE", "Doodstream", "Vidmoly", "Vidoza", "SpeedFiles", "Streamtape", "Luluvdo"
 ]
 
 LULUVDO_USER_AGENT = "Mozilla/5.0 (Android 15; Mobile; rv:132.0) Gecko/132.0 Firefox/132.0"
