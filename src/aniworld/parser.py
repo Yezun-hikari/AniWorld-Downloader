@@ -10,22 +10,7 @@ import sys
 import requests
 
 from aniworld.common import download_mpv, download_syncplay
-from aniworld.config import (  # pylint: disable=unused-import
-    DEFAULT_ACTION,
-    DEFAULT_DOWNLOAD_PATH,
-    DEFAULT_LANGUAGE,
-    DEFAULT_PROVIDER_DOWNLOAD,
-    DEFAULT_PROVIDER_WATCH,
-    RANDOM_USER_AGENT,
-    SUPPORTED_PROVIDERS,
-    USES_DEFAULT_PROVIDER,
-    VERSION,
-    DEFAULT_REQUEST_TIMEOUT,
-    PROVIDER_HEADERS,
-    MPV_PATH,
-    SYNCPLAY_PATH,
-    YTDLP_PATH
-)
+from aniworld import config
 
 
 def get_random_anime_slug(genre) -> str:
@@ -36,11 +21,11 @@ def get_random_anime_slug(genre) -> str:
         'productionEnd': 'all', 'genres[]': genre
     }
 
-    headers = {'User-Agent': RANDOM_USER_AGENT}
+    headers = {'User-Agent': config.RANDOM_USER_AGENT}
 
     try:
         response = requests.post(
-            url, data=data, headers=headers, timeout=DEFAULT_REQUEST_TIMEOUT
+            url, data=data, headers=headers, timeout=config.DEFAULT_REQUEST_TIMEOUT
         )
 
         response.raise_for_status()
@@ -143,13 +128,13 @@ def parse_arguments() -> argparse.Namespace:  # pylint: disable=too-many-locals
         '-a', '--action',
         type=str,
         choices=['Watch', 'Download', 'Syncplay'],
-        default=DEFAULT_ACTION,
+        default=config.DEFAULT_ACTION,
         help='Specify the action to perform.'
     )
     action_opts.add_argument(
         '-o', '--output-dir',
         type=str,
-        default=DEFAULT_DOWNLOAD_PATH,
+        default=config.DEFAULT_DOWNLOAD_PATH,
         help='Set the download directory (e.g., /path/to/downloads).'
     )
     action_opts.add_argument(
@@ -161,13 +146,13 @@ def parse_arguments() -> argparse.Namespace:  # pylint: disable=too-many-locals
         '-L', '--language',
         type=str,
         choices=['German Dub', 'English Sub', 'German Sub'],
-        default=DEFAULT_LANGUAGE,
+        default=config.DEFAULT_LANGUAGE,
         help='Specify the language for playback or download.'
     )
     action_opts.add_argument(
         '-p', '--provider',
         type=str,
-        choices=SUPPORTED_PROVIDERS,
+        choices=config.SUPPORTED_PROVIDERS,
         help='Specify the preferred provider.'
     )
 
@@ -239,7 +224,7 @@ def parse_arguments() -> argparse.Namespace:  # pylint: disable=too-many-locals
     if args.version:
         cowsay = fR"""
 _____________________________
-< AniWorld-Downloader {VERSION} >
+< AniWorld-Downloader {config.VERSION} >
 -----------------------------
         \   ^__^
          \  (oo)\_______
@@ -254,10 +239,7 @@ _____________________________
         invalid_links = [
             link for link in args.provider_link if not link.startswith("http")]
         if invalid_links:
-            print(
-                "Invalid provider episode URLs: %s" %
-                ", ".join(invalid_links)
-            )
+            print(f"Invalid provider episode URLs: {', '.join(invalid_links)}")
             sys.exit(1)
 
         if not args.provider:
@@ -266,7 +248,7 @@ _____________________________
 
         logging.info("Using provider: %s", args.provider)
 
-        if args.provider in SUPPORTED_PROVIDERS:
+        if args.provider in config.SUPPORTED_PROVIDERS:
             module = importlib.import_module("aniworld.extractors")
             func = getattr(
                 module, f"get_direct_link_from_{args.provider.lower()}"
@@ -275,12 +257,12 @@ _____________________________
             for provider_episode in args.provider_link:
                 direct_link = f'"{func(provider_episode)}"'
 
-                if args.provider in PROVIDER_HEADERS:
-                    if PROVIDER_HEADERS.get(args.provider):
+                if args.provider in config.PROVIDER_HEADERS:
+                    if config.PROVIDER_HEADERS.get(args.provider):
                         action = (
-                            YTDLP_PATH if args.action == "Download" else
-                            MPV_PATH if args.action == "Watch" else
-                            SYNCPLAY_PATH if args.action == "Syncplay" else
+                            config.YTDLP_PATH if args.action == "Download" else
+                            config.MPV_PATH if args.action == "Watch" else
+                            config.SYNCPLAY_PATH if args.action == "Syncplay" else
                             None
                         )
 
@@ -292,7 +274,7 @@ _____________________________
                             )
                             direct_link = (
                                 f"{action} {direct_link} "
-                                f"{header}='{PROVIDER_HEADERS[args.provider]}'"
+                                f"{header}='{config.PROVIDER_HEADERS[args.provider]}'"
                             )
                         else:
                             raise ValueError("Invalid action.")
@@ -337,11 +319,11 @@ _____________________________
             args.random_anime if len(args.random_anime) != 0 else "all")
 
     if args.provider is None:
-        global USES_DEFAULT_PROVIDER  # pylint: disable=global-statement
-        USES_DEFAULT_PROVIDER = True
+        config.USES_DEFAULT_PROVIDER = True  # pylint: disable=global-statement
 
         args.provider = (
-            DEFAULT_PROVIDER_DOWNLOAD if args.action == "Download" else DEFAULT_PROVIDER_WATCH
+            config.DEFAULT_PROVIDER_DOWNLOAD
+            if args.action == "Download" else config.DEFAULT_PROVIDER_WATCH
         )
 
     if args.debug is True:
