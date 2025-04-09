@@ -60,13 +60,13 @@ SUPPORTED_PROVIDERS = [
     "VOE", "Doodstream", "Vidmoly", "Vidoza", "SpeedFiles", "Streamtape"
 ]
 
-LULUVDO_USER_AGENT = ("User-Agent: "
-                      "Mozilla/5.0 (Android 15; Mobile; rv:132.0) Gecko/132.0 Firefox/132.0")
+LULUVDO_USER_AGENT = "Mozilla/5.0 (Android 15; Mobile; rv:132.0) Gecko/132.0 Firefox/132.0"
 
 PROVIDER_HEADERS = {
     "Vidmoly": 'Referer: "https://vidmoly.to"',
     "Doodstream": 'Referer: "https://dood.li/"',
-    "VOE": 'Referer: "https://nathanfromsubject.com/"'
+    "VOE": 'Referer: "https://nathanfromsubject.com/"',
+    "Luluvdo": f'User-Agent: {LULUVDO_USER_AGENT}'
 }
 
 USES_DEFAULT_PROVIDER = False
