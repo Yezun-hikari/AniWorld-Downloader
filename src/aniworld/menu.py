@@ -53,7 +53,7 @@ class SelectionMenu(npyscreen.NPSApp):
         self.episode_selection = None
         self.select_all_button = None
 
-    def main(self):
+    def main(self):  # pylint: disable=too-many-locals, too-many-statements
         available_languages = self.anime[0].language_name
         season_episode_count = self.anime[0].season_episode_count
         movie_episode_count = self.anime[0].movie_episode_count

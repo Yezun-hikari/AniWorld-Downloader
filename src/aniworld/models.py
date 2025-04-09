@@ -189,7 +189,7 @@ class Episode:
         _selected_language (int): The selected language code for streaming.
     """
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-locals
         self,
         anime_title: str = None,
         title_german: str = None,

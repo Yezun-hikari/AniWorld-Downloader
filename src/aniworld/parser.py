@@ -63,7 +63,7 @@ def get_random_anime_slug(genre) -> str:
     return None
 
 
-def parse_arguments() -> argparse.Namespace:
+def parse_arguments() -> argparse.Namespace:  # pylint: disable=too-many-locals
     parser = argparse.ArgumentParser(
         description="Parse command-line arguments for anime streaming, "
                     "downloading, and playback management."
@@ -254,9 +254,10 @@ _____________________________
         invalid_links = [
             link for link in args.provider_link if not link.startswith("http")]
         if invalid_links:
-            print("Invalid provider episode URLs: %s" %
-                  ", ".join(invalid_links)
-                  )
+            print(
+                "Invalid provider episode URLs: %s" %
+                ", ".join(invalid_links)
+            )
             sys.exit(1)
 
         if not args.provider:
@@ -284,7 +285,11 @@ _____________________________
                         )
 
                         if action:
-                            header = "--add-header" if args.action == "Download" else "--http-header-fields"
+                            header = (
+                                "--add-header"
+                                if args.action == "Download"
+                                else "--http-header-fields"
+                            )
                             direct_link = (
                                 f"{action} {direct_link} "
                                 f"{header}='{PROVIDER_HEADERS[args.provider]}'"
