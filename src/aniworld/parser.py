@@ -1,4 +1,5 @@
 import argparse
+import importlib
 import json
 import logging
 import platform
@@ -19,7 +20,11 @@ from aniworld.config import (  # pylint: disable=unused-import
     SUPPORTED_PROVIDERS,
     USES_DEFAULT_PROVIDER,
     VERSION,
-    DEFAULT_REQUEST_TIMEOUT
+    DEFAULT_REQUEST_TIMEOUT,
+    PROVIDER_HEADERS,
+    MPV_PATH,
+    SYNCPLAY_PATH,
+    YTDLP_PATH
 )
 
 
@@ -124,6 +129,12 @@ def parse_arguments() -> argparse.Namespace:
         type=str,
         nargs='+',
         help='Use local MP4 files for episodes instead of URLs.'
+    )
+    episode_opts.add_argument(
+        '-pl', '--provider-link',
+        type=str,
+        nargs='+',
+        help='Specify one or more provider episode urls.'
     )
 
     # Action options
@@ -238,6 +249,54 @@ _____________________________
 """
         print(cowsay.strip())
         sys.exit()
+
+    if args.provider_link:
+        invalid_links = [
+            link for link in args.provider_link if not link.startswith("http")]
+        if invalid_links:
+            print("Invalid provider episode URLs: %s" %
+                  ", ".join(invalid_links)
+                  )
+            sys.exit(1)
+
+        if not args.provider:
+            print("Provider must be specified when using provider links.")
+            sys.exit(1)
+
+        logging.info("Using provider: %s", args.provider)
+
+        if args.provider in SUPPORTED_PROVIDERS:
+            module = importlib.import_module("aniworld.extractors")
+            func = getattr(
+                module, f"get_direct_link_from_{args.provider.lower()}"
+            )
+
+            for provider_episode in args.provider_link:
+                direct_link = f'"{func(provider_episode)}"'
+
+                if args.provider in PROVIDER_HEADERS:
+                    if PROVIDER_HEADERS.get(args.provider):
+                        action = (
+                            YTDLP_PATH if args.action == "Download" else
+                            MPV_PATH if args.action == "Watch" else
+                            SYNCPLAY_PATH if args.action == "Syncplay" else
+                            None
+                        )
+
+                        if action:
+                            header = "--add-header" if args.action == "Download" else "--http-header-fields"
+                            direct_link = (
+                                f"{action} {direct_link} "
+                                f"{header}='{PROVIDER_HEADERS[args.provider]}'"
+                            )
+                        else:
+                            raise ValueError("Invalid action.")
+
+                print(f"-> {provider_episode}")
+                print(direct_link)
+                print("-" * 40)
+
+            sys.exit()
 
     if args.update:
         def update_yt_dlp():
