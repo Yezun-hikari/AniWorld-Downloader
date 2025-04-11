@@ -1,16 +1,9 @@
-import ctypes
-import platform
-
 from aniworld.entry import aniworld
 from aniworld.config import VERSION
 
 
 def main():
-    if platform.system() == "Windows":
-        ctypes.windll.kernel32.SetConsoleTitleW(
-            f"AniWorld-Downloader {VERSION}"
-        )
-
+    print(f"\033]0;AniWorld-Downloader {VERSION}\007", end='', flush=True)
     aniworld()
 
 
