@@ -21,7 +21,7 @@ def download(anime: Anime):
         )
         output_file = (
             f"{sanitized_anime_title} - "
-            f"S{episode.season}E{episode.episode} - "
+            f"S{episode.season:02}E{episode.episode:03} - "
             f"({anime.language}).mp4"
         )
         output_path = os.path.join(
