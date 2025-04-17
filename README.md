@@ -1,7 +1,7 @@
 <a id="readme-top"></a>
 # AniWorld Downloader
 
-AniWorld Downloader is a command-line tool for downloading and streaming anime, series and movies, compatible with Windows, macOS, and Linux.
+AniWorld Downloader is a versatile command-line tool designed for downloading and streaming anime, series, and movies. It supports Windows, macOS, and Linux, offering a seamless experience across platforms.
 
 ![Downloads](https://img.shields.io/pypi/dm/aniworld?label=Downloads&color=blue)
 ![License](https://img.shields.io/pypi/l/aniworld?label=License&color=blue)
@@ -12,103 +12,304 @@ AniWorld Downloader is a command-line tool for downloading and streaming anime, 
 
 ## Features
 
-- **Episode Downloads**: Easily download single episodes or entire seasons in one go.
-- **Instant Streaming**: Stream episodes directly via the mpv player.
-- **Auto Play Next**: Automatically transition to the next episode for uninterrupted viewing.
-- **Flexible Providers**: Choose from Vidoza, VOE, and Streamtape, with Doodstream support coming soon.
-- **Language Options**: Switch between German Dub, English Sub, or German Sub based on your preference.
-- **Aniskip Integration**: Automatically skip intros and outros.
-- **Syncplay for Group Watching**: Enjoy synchronized anime watching sessions with friends.
+- **Download Episodes or Seasons**: Effortlessly download individual episodes or entire seasons with a single command.
+- **Stream Instantly**: Watch episodes directly using the integrated mpv player for a seamless experience.
+- **Auto-Next Playback**: Enjoy uninterrupted viewing with automatic transitions to the next episode.
+- **Multiple Providers**: Access a variety of streaming providers on aniworld.to for greater flexibility.
+- **Language Preferences**: Easily switch between German Dub, English Sub, or German Sub to suit your needs.
+- **Aniskip Support**: Automatically skip intros and outros for a smoother viewing experience.
+- **Group Watching with Syncplay**: Host synchronized anime sessions with friends using Syncplay integration.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-### Installation (Requires Git)
+## Installation (Requires Git)
 
-- To install the latest version from GitHub, run:
+### Prerequisites
+
+Ensure you have **[Python 3.9](https://www.python.org/downloads/)** or higher installed.<br>
+Additionally, make sure **[Git](https://git-scm.com/downloads)** is installed if you plan to install the development version.
+
+**Note**: If you are using an ARM-based system, you might face issues with the curses module. To resolve this, use the amd64 [Python version](https://www.python.org/ftp/python/3.12.7/python-3.12.7-amd64.exe) instead of the ARM version. For more details, refer to [GitHub Issue #14](https://github.com/phoenixthrush/AniWorld-Downloader/issues/14).
+
+<details>
+  <summary>Python Installation Tutorial (Windows)</summary>
+  <img src="https://github.com/phoenixthrush/AniWorld-Downloader/blob/main/.github/Python_Add_to_Path_Tutorial.png?raw=true" alt="Python Installation Tutorial">
+
+**Note:** If you've restarted the terminal and `aniworld` isn't being recognized, you have two options:
+- Add `aniworld` to your PATH so it can be found globally.
+- Run `python -m aniworld`, which should work without adding it to the PATH.
+  
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+</details>
+
+### Installation
+
+#### Install Latest Development Version (Recommended)
+
+To install the latest development version directly from GitHub, use the following command:
 
 ```shell
 pip install --upgrade git+https://github.com/phoenixthrush/AniWorld-Downloader.git@next#egg=aniworld
 ```
 
-To update, simply rerun the above command. Note that these builds may be unstable, so regular checks are recommended.
+Re-run this command periodically to update to the latest development build. These builds are from the `next` branch and may include experimental or unstable changes.
+
+If the above command fails, you can install the most recent stable release (v2.4.5) using:
+
+```shell
+python -m pip install aniworld
+```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-### Usage
+#### Local Installation
 
-AniWorld Downloader can be utilized in three different ways: through an interactive menu, via command-line arguments, or as a Python library.
+For a local installation, follow these steps:
 
-#### Menu Example
+1. Clone the repository:
+
+  ```shell
+  git clone https://github.com/phoenixthrush/AniWorld-Downloader aniworld
+  ```
+
+2. Install the package in editable mode:
+
+  ```shell
+  pip install -U -e ./aniworld
+  ```
+
+3. To update your local version, run:
+
+  ```shell
+  git -C aniworld pull
+  ```
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+### Uninstallation
+
+To uninstall AniWorld Downloader, run the following command:
+
+```shell
+pip --uninstall aniworld
+```
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Usage
+
+AniWorld Downloader offers three versatile usage modes:
+
+1. **Interactive Menu**: Launch the tool and navigate through an intuitive menu to select and manage downloads or streams.
+2. **Command-Line Arguments**: Execute specific tasks directly by providing arguments, such as downloading a particular episode or setting preferences.
+3. **Python Library**: Integrate AniWorld Downloader into your Python projects to programmatically manage anime, series, or movie downloads.
+
+Choose the method that best suits your workflow and enjoy a seamless experience!
+
+### Menu Example
+
 To start the interactive menu, simply run:
+
 ```shell
 aniworld
 ```
 
-#### Command-Line Arguments Example
-To download a specific episode directly, use:
+### Command-Line Arguments Example
+
+AniWorld Downloader provides a variety of command-line options for downloading and streaming anime without relying on the interactive menu. These options unlock advanced features such as `--aniskip`, `--keep-watching`, and `--syncplay-password`.
+
+#### Example 1: Download a Single Episode
+
+To download episode 1 of "Demon Slayer: Kimetsu no Yaiba":
+
 ```shell
-aniworld --episode https://aniworld.to/anime/stream/loner-life-in-another-world/staffel-1/episode-1
+aniworld --episode https://aniworld.to/anime/stream/demon-slayer-kimetsu-no-yaiba/staffel-1/episode-1
 ```
 
-#### Library Example
-You can also use AniWorld Downloader as a library in your Python scripts:
+#### Example 2: Download Multiple Episodes
+
+To download multiple episodes of "Demon Slayer":
+
+```shell
+aniworld --episode https://aniworld.to/anime/stream/demon-slayer-kimetsu-no-yaiba/staffel-1/episode-1 https://aniworld.to/anime/stream/demon-slayer-kimetsu-no-yaiba/staffel-1/episode-2
+```
+
+#### Example 3: Watch Episodes with Aniskip
+
+To watch an episode while skipping intros and outros:
+
+```shell
+aniworld --episode https://aniworld.to/anime/stream/demon-slayer-kimetsu-no-yaiba/staffel-1/episode-1 --action Watch --aniskip
+```
+
+#### Example 4: Syncplay with Friends
+
+To syncplay a specific episode with friends:
+
+```shell
+aniworld --episode https://aniworld.to/anime/stream/demon-slayer-kimetsu-no-yaiba/staffel-1/episode-1 --action Syncplay --keep-watching
+```
+
+#### Language Options for Syncplay
+
+You can select different languages for yourself and your friends:
+
+- For German Dub:
+
+  ```shell
+  aniworld --episode https://aniworld.to/anime/stream/demon-slayer-kimetsu-no-yaiba/staffel-1/episode-1 --action Syncplay --keep-watching --language "German Dub" --aniskip
+  ```
+
+- For English Sub:
+
+  ```shell
+  aniworld --episode https://aniworld.to/anime/stream/demon-slayer-kimetsu-no-yaiba/staffel-1/episode-1 --action Syncplay --keep-watching --language "English Sub" --aniskip
+  ```
+
+**Note:** Syncplay automatically groups users watching the same anime (regardless of episode). To restrict access, set a password for the room:
+
+```shell
+aniworld --episode https://aniworld.to/anime/stream/demon-slayer-kimetsu-no-yaiba/staffel-1/episode-1 --action Syncplay --keep-watching --language "English Sub" --aniskip --syncplay-password beans
+```
+
+#### Example 5: Download with Specific Provider and Language
+
+To download an episode using the VOE provider with English subtitles:
+
+```shell
+aniworld --episode https://aniworld.to/anime/stream/demon-slayer-kimetsu-no-yaiba/staffel-1/episode-1 --provider VOE --language "English Sub"
+```
+
+#### Example 6: Use an Episode File
+
+You can download episodes listed in a text file. Below is an example of a text file (`test.txt`):
+
+```
+# The whole anime
+https://aniworld.to/anime/stream/alya-sometimes-hides-her-feelings-in-russian
+
+# The whole Season 2
+https://aniworld.to/anime/stream/demon-slayer-kimetsu-no-yaiba/staffel-2
+
+# Only Season 3 Episode 13
+https://aniworld.to/anime/stream/kaguya-sama-love-is-war/staffel-3/episode-13
+```
+
+To download the episodes specified in the file, use:
+
+```shell
+aniworld --episode-file test.txt --language "German Dub"
+```
+
+This can also be combined with `Watch` and `Syncplay` actions, as well as other arguments, for a more customized experience.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+### Library Example
+
+You can also use AniWorld Downloader as a library in your Python scripts to programmatically manage anime downloads or streams. Here's an example:
+
 ```python
 from aniworld.models import Anime, Episode
 
-# Create an Anime object with a list of Episode objects
+# Define an Anime object with a list of episodes
 anime = Anime(
-    episode_list=[
-        Episode(
-            slug="food-wars-shokugeki-no-sma",
-            season=1,
-            episode=5
-        ),
-        Episode(
-            link="https://aniworld.to/anime/stream/food-wars-shokugeki-no-sma/staffel-1/episode-6"
-        )
-    ]
+  episode_list=[
+    Episode(
+      slug="food-wars-shokugeki-no-sma",
+      season=1,
+      episode=5
+    ),
+    Episode(
+      link="https://aniworld.to/anime/stream/food-wars-shokugeki-no-sma/staffel-1/episode-6"
+    )
+  ]
 )
 
-# Iterate over episodes and print Episode objects
+# Iterate through the episodes and retrieve direct links
 for episode in anime:
-    print(episode)
-    print(episode.get_direct_link("VOE", "German Sub"))
+  print(f"Episode: {episode}")
+  print(f"Direct Link: {episode.get_direct_link('VOE', 'German Sub')}")
 ```
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Anime4K Setup
+
+Enhance your anime viewing experience with Anime4K. Follow the instructions below to configure Anime4K for use with the mpv player, even outside of AniWorld Downloader.
+
+### For High-Performance GPUs
+*(Examples: GTX 1080, RTX 2070, RTX 3060, RX 590, Vega 56, 5700XT, 6600XT, M1 Pro/Max/Ultra, M2 Pro/Max)*
+
+Run the following command to optimize Anime4K for high-end GPUs:
+
+```shell
+aniworld --anime4k High
+```
+
+### For Low-Performance GPUs
+*(Examples: GTX 980, GTX 1060, RX 570, M1, M2, Intel integrated GPUs)*
+
+Run the following command to configure Anime4K for low-end GPUs:
+
+```shell
+aniworld --anime4k Low
+```
+
+### Uninstall Anime4K
+To remove Anime4K from your setup, use this command:
+
+```shell
+aniworld --anime4k Remove
+```
+
+### Additional Information
+
+All required files for Anime4K are saved in the **mpv** directory during installation. Ensure these files are placed in the correct directory for your operating system:
+
+- **Windows**: `C:\Users\<YourUsername>\AppData\Roaming\mpv`
+- **macOS**: `/Users/<YourUsername>/.config/mpv`
+- **Linux**: `/home/<YourUsername>/.config/mpv`
+
+You can switch between `High` and `Low` modes at any time to match your GPU's performance. To cleanly uninstall Anime4K, use the `Remove` option.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Dependencies
 
-AniWorld Downloader requires the following Python packages:
+AniWorld Downloader depends on the following Python packages:
 
-- `requests`
-- `beautifulsoup4`
-- `npyscreen`
-- `yt-dlp`
-- `windows-curses` (only for Windows users)
+- **`requests`**: For handling HTTP requests.
+- **`beautifulsoup4`**: For parsing and scraping HTML content.
+- **`npyscreen`**: For creating interactive terminal-based user interfaces.
+- **`yt-dlp`**: For downloading videos from supported providers.
+- **`windows-curses`**: Required only for Windows users to enable terminal-based UI functionality.
 
-These packages are automatically installed when you set up AniWorld Downloader using pip.
+These dependencies are automatically installed when you set up AniWorld Downloader using `pip`.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Credits
-- **[mpv](https://github.com/mpv-player/mpv.git)**: Media player used for streaming.
-- **[yt-dlp](https://github.com/yt-dlp/yt-dlp.git)**: Tool for downloading videos.
-- **[Syncplay](https://github.com/Syncplay/syncplay.git)**: Service for synchronized playback with friends.
-- **[Anime4K](https://github.com/bloc97/Anime4K)**: A high-quality real-time upscaler for anime video.
+
+- **[mpv](https://github.com/mpv-player/mpv.git)**: A versatile media player used for seamless streaming.
+- **[yt-dlp](https://github.com/yt-dlp/yt-dlp.git)**: A powerful tool for downloading videos from various providers.
+- **[Syncplay](https://github.com/Syncplay/syncplay.git)**: Enables synchronized playback sessions with friends.
+- **[Anime4K](https://github.com/bloc97/Anime4K)**: A cutting-edge real-time upscaler for enhancing anime video quality.
 - **[htv](https://github.com/rxqv/htv)**: Backend implementation for hanime playback and downloading.
-- **[logo](https://github.com/phoenixthrush/AniWorld-Downloader/blob/next/src/aniworld/icon.png?raw=true)**: The binary logo used at `src/aniworld/icon.webp`.
+- **[Logo](https://github.com/phoenixthrush/AniWorld-Downloader/blob/next/src/aniworld/icon.png?raw=true)**: The binary logo located at `src/aniworld/icon.webp`.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Still Left Todo
 
-- [ ] Generate episodes on --episode argument with only anime or season as in episode file
+- [ ] Add dynamic episode generation for `--episode`, allowing users to specify only anime or season
 - [ ] Enable support for episode files
-- [ ] Implement provider fallback list
-- [ ] Integrate support for Anime4K
-- [ ] Introduce options for syncplay rooms
+- [ ] Implement a provider fallback mechanism
+- [ ] Add Anime4K integration
+- [ ] Introduce advanced Syncplay room options
 
 <details>
-  <summary>Command-Line Arguments</summary>
+  <summary>Command-Line Arguments Still Missing from v2</summary>
 
 - [x] --help
 - [x] --version
@@ -133,7 +334,7 @@ These packages are automatically installed when you set up AniWorld Downloader u
 - [x] --syncplay-password
 - [x] --aniskip
 - [ ] --keep-watching
-- [ ] --random-anime
+- [x] --random-anime
 - [x] --only-direct-link
 - [x] --only-command
 
@@ -142,53 +343,52 @@ These packages are automatically installed when you set up AniWorld Downloader u
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Contributing
-Contributions to AniWorld Downloader are welcome! Your input helps improve the project, whether it’s through:
-- Reporting bugs
-- Suggesting features
-- Submitting pull requests
+
+Contributions to AniWorld Downloader are highly appreciated! You can help enhance the project by:
+
+- **Reporting Bugs**: Identify and report issues to improve functionality.
+- **Suggesting Features**: Share ideas to expand the tool's capabilities.
+- **Submitting Pull Requests**: Contribute code to fix bugs or add new features.
 
 ### Contributors
 
 <a href="https://github.com/phoenixthrush/Aniworld-Downloader/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=phoenixthrush/Aniworld-Downloader" />
+  <img src="https://contrib.rocks/image?repo=phoenixthrush/Aniworld-Downloader" alt="Contributors" />
 </a>
 
 - **Lulu** (since Sep 14, 2024)  
-  ![wakatime](https://wakatime.com/badge/user/ebc8f6ad-7a1c-4f3a-ad43-cc402feab5fc/project/408bbea7-23d0-4d6c-846d-79628e6b136c.svg)
+  ![Wakatime Badge](https://wakatime.com/badge/user/ebc8f6ad-7a1c-4f3a-ad43-cc402feab5fc/project/408bbea7-23d0-4d6c-846d-79628e6b136c.svg)
 
 - **Tmaster055** (since Oct 21, 2024)  
-  ![wakatime](https://wakatime.com/badge/user/79a1926c-65a1-4f1c-baf3-368712ebbf97/project/5f191c34-1ee2-4850-95c3-8d85d516c449.svg)
+  ![Wakatime Badge](https://wakatime.com/badge/user/79a1926c-65a1-4f1c-baf3-368712ebbf97/project/5f191c34-1ee2-4850-95c3-8d85d516c449.svg)
 
-  Thank you [Tmaster055](https://github.com/Tmaster055) for fixing Aniskip by fetching the correct MAL ID!<br>
-  Thank you [fundyjo](https://github.com/fundyjo) for the Doodstream extractor!
+  Special thanks to [Tmaster055](https://github.com/Tmaster055) for resolving the Aniskip issue by correctly fetching the MAL ID!  
+  Additional thanks to [fundyjo](https://github.com/fundyjo) for contributing the Doodstream extractor!
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Support
 
-I’ve received several reports from users experiencing unexpected menu quits. Recently, streaming providers have started blocking IP addresses from downloading. You can bypass this by using a VPN.
+If you need help with AniWorld Downloader, you can:
 
-### How to Get Help
-If you still need assistance with AniWorld Downloader, you can:
+- **Submit an issue** on the [GitHub Issues](https://github.com/phoenixthrush/AniWorld-Downloader/issues) page.
+- **Reach out directly** via email at [contact@phoenixthrush.com](mailto:contact@phoenixthrush.com) or on Discord at `phoenixthrush`.
 
-- **File a report** via the [GitHub Issues](https://github.com/phoenixthrush/AniWorld-Downloader/issues) page.
-- **Contact me directly** via email at [contact@phoenixthrush.com](mailto:contact@phoenixthrush.com), on Matrix `@phoenixthrush:matrix.org`, or on Discord `phoenixthrush`.
+While email support is available, opening a GitHub issue is preferred, even for installation-related questions, as it helps others benefit from shared solutions. However, feel free to email if that’s your preference.
 
-While I do respond to emails, opening a GitHub issue is preferable, even for installation questions, so others can find solutions too. However, I’m still happy to help via email if you prefer.
+If you find AniWorld Downloader useful, consider starring the repository on GitHub. Your support is greatly appreciated and inspires continued development.
 
-If you enjoy AniWorld Downloader and want to support the project, please consider starring the repository on GitHub. It’s a small gesture that means a lot and motivates me to keep improving the project.
-
-Thank you for your support and feedback!
+Thank you for using AniWorld Downloader!
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Legal Disclaimer
 
-Aniworld-Downloader is intended only for accessing publicly available content and does not support or encourage piracy or copyright infringement. As the program's creator, I am not liable for, nor associated with, any external links or the content they lead to.
+AniWorld Downloader is made for accessing content that’s already publicly available online. It doesn’t support or promote piracy or copyright violations. The developer isn’t responsible for how the tool is used or for any content found through external links.
 
-All content accessed through this program is freely available online, and the program does not host or distribute copyrighted material. The program has no control over the nature, content, or availability of the linked websites.
+All content accessed with AniWorld Downloader is available on the internet, and the tool itself doesn’t host or share copyrighted files. It also has no control over the accuracy, legality, or availability of the websites it links to.
 
-If you have concerns or objections about the content accessed via this program, please address them to the relevant website owners, administrators, or hosting providers. Thank you.
+If you have concerns about any content accessed through this tool, please reach out directly to the website’s owner, admin, or hosting provider. Thanks for your understanding.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -199,5 +399,8 @@ If you have concerns or objections about the content accessed via this program, 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## License
+
 This project is licensed under the **[MIT License](LICENSE)**.  
 For more details, see the LICENSE file.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
