@@ -255,6 +255,9 @@ class Episode:
         return german_title, english_title
 
     def _get_season_from_link(self) -> int:
+        if "/filme/" in self.link:
+            return 0  # Set season to 0 for movies
+
         season = self.link.split("/")[-2]  # e.g. staffel-2
         numbers = re.findall(r'\d+', season)
 

@@ -19,11 +19,20 @@ def download(anime: Anime):
         sanitized_anime_title = ''.join(
             char for char in anime.title if char not in INVALID_PATH_CHARS
         )
-        output_file = (
-            f"{sanitized_anime_title} - "
-            f"S{episode.season:02}E{episode.episode:03} - "
-            f"({anime.language}).mp4"
-        )
+
+        if episode.season == 0:  # TODO: needs to be done in Watch and Syncplay too :)
+            output_file = (
+                f"{sanitized_anime_title} - "
+                f"Movie {episode.episode:02} - "
+                f"({anime.language}).mp4"
+            )
+        else:
+            output_file = (
+                f"{sanitized_anime_title} - "
+                f"S{episode.season:02}E{episode.episode:03} - "
+                f"({anime.language}).mp4"
+            )
+
         output_path = os.path.join(
             arguments.output_dir, sanitized_anime_title, output_file
         )
