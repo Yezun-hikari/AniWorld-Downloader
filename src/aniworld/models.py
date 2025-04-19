@@ -384,21 +384,44 @@ class Episode:
         return languages
 
     def _get_direct_link_from_provider(self) -> str:
-        if self._selected_provider == "Vidmoly":
-            return get_direct_link_from_vidmoly(embeded_vidmoly_link=self.embeded_link)
-        if self._selected_provider == "Vidoza":
-            return get_direct_link_from_vidoza(embeded_vidoza_link=self.embeded_link)
-        if self._selected_provider == "VOE":
-            return get_direct_link_from_voe(embeded_voe_link=self.embeded_link)
-        if self._selected_provider == "Doodstream":
-            return get_direct_link_from_doodstream(embeded_doodstream_link=self.embeded_link)
-        if self._selected_provider == "SpeedFiles":
-            return get_direct_link_from_speedfiles(embeded_speedfiles_link=self.embeded_link)
-        if self._selected_provider == "Luluvdo":
-            return get_direct_link_from_luluvdo(embeded_luluvdo_link=self.embeded_link)
+        providers = {
+            "Vidmoly": get_direct_link_from_vidmoly,
+            "Vidoza": get_direct_link_from_vidoza,
+            "VOE": get_direct_link_from_voe,
+            "Doodstream": get_direct_link_from_doodstream,
+            "SpeedFiles": get_direct_link_from_speedfiles,
+            "Luluvdo": get_direct_link_from_luluvdo
+        }
 
-        raise ValueError(
-            f"{self._selected_provider} is currently not supported.")
+        # first, try the selected provider
+        if self._selected_provider in providers:
+            try:
+                print(f"Trying selected provider: {self._selected_provider}")
+                return providers[self._selected_provider](self.embeded_link).get_direct_link()
+            except ValueError as e:
+                print(f"An error occurred with {self._selected_provider}: {e}")
+
+        # if the selected provider fails, try all other providers
+        for provider_name, provider_func in providers.items():
+            if provider_name == self._selected_provider:
+                continue  # skip the selected provider since we've already tried it
+
+            try:
+                print(f"Trying {provider_name}")
+
+                # TODO: this fails because self.embeded_link is from the selected_provider
+                # and needs to be set to the next trying provider
+                direct_link = provider_func(self.embeded_link)
+
+                if direct_link is None:
+                    raise ValueError
+
+            except ValueError as e:
+                print(f"An error occurred with {provider_name}: {e}")
+                continue  # try the next provider if this one fails
+
+        # if all providers fail, raise an error
+        raise ValueError("All providers have failed.")
 
     def _get_season_episode_count(self) -> dict:
         base_url = f"https://aniworld.to/anime/stream/{self.slug}/"
@@ -455,7 +478,7 @@ class Episode:
 
         if (self._selected_provider not in self.provider or
                 lang_key not in self.provider[self._selected_provider]
-                ):
+            ):
             for provider_name, lang_dict in self.provider.items():
                 if lang_key in lang_dict:
                     self._selected_provider = provider_name
