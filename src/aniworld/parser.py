@@ -13,6 +13,19 @@ from aniworld.common import download_mpv, download_syncplay
 from aniworld import config
 
 
+class CaseInsensitiveChoices:
+    def __init__(self, choices):
+        self.choices = choices
+        self.normalized = {c.lower(): c for c in choices}
+
+    def __call__(self, value):
+        key = value.lower()
+        if key in self.normalized:
+            return self.normalized[key]
+        raise argparse.ArgumentTypeError(
+            f"invalid choice: {value} (choose from {', '.join(self.choices)})")
+
+
 def get_random_anime_slug(genre) -> str:
     url = 'https://aniworld.to/ajax/randomGeneratorSeries'
 
@@ -126,8 +139,7 @@ def parse_arguments() -> argparse.Namespace:  # pylint: disable=too-many-locals
     action_opts = parser.add_argument_group('Action Options')
     action_opts.add_argument(
         '-a', '--action',
-        type=str,
-        choices=['Watch', 'Download', 'Syncplay'],
+        type=CaseInsensitiveChoices(['Watch', 'Download', 'Syncplay']),
         default=config.DEFAULT_ACTION,
         help='Specify the action to perform.'
     )
@@ -144,15 +156,15 @@ def parse_arguments() -> argparse.Namespace:  # pylint: disable=too-many-locals
     )
     action_opts.add_argument(
         '-L', '--language',
-        type=str,
-        choices=['German Dub', 'English Sub', 'German Sub'],
+        type=CaseInsensitiveChoices(
+            ['German Dub', 'English Sub', 'German Sub']
+        ),
         default=config.DEFAULT_LANGUAGE,
         help='Specify the language for playback or download.'
     )
     action_opts.add_argument(
         '-p', '--provider',
-        type=str,
-        choices=config.SUPPORTED_PROVIDERS,
+        type=CaseInsensitiveChoices(config.SUPPORTED_PROVIDERS),
         help='Specify the preferred provider.'
     )
 
@@ -160,8 +172,7 @@ def parse_arguments() -> argparse.Namespace:  # pylint: disable=too-many-locals
     anime4k_opts = parser.add_argument_group('Anime4K Options')
     anime4k_opts.add_argument(
         '-A', '--anime4k',
-        type=str,
-        choices=['High', 'Low', 'Remove'],
+        type=CaseInsensitiveChoices(['High', 'Low', 'Remove']),
         help='Set Anime4K mode (High, Low, or Remove for performance tuning).'
     )
 
