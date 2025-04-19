@@ -62,7 +62,7 @@ def show_menu(stdscr: curses.window, options: list) -> str:
                 year = anime.get('productionYear', 'Unknown Year')
                 highlight = curses.A_REVERSE if idx == current_row else 0
                 stdscr.attron(highlight)
-                stdscr.addstr(idx, 0, f"{name} ({year})")
+                stdscr.addstr(idx, 0, f"{name} {year}")
                 stdscr.attroff(highlight)
 
             stdscr.refresh()
