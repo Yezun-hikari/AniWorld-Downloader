@@ -384,6 +384,23 @@ class Episode:
         return languages
 
     def _get_direct_link_from_provider(self) -> str:
+        if self._selected_provider == "Vidmoly":
+            return get_direct_link_from_vidmoly(embeded_vidmoly_link=self.embeded_link)
+        if self._selected_provider == "Vidoza":
+            return get_direct_link_from_vidoza(embeded_vidoza_link=self.embeded_link)
+        if self._selected_provider == "VOE":
+            return get_direct_link_from_voe(embeded_voe_link=self.embeded_link)
+        if self._selected_provider == "Doodstream":
+            return get_direct_link_from_doodstream(embeded_doodstream_link=self.embeded_link)
+        if self._selected_provider == "SpeedFiles":
+            return get_direct_link_from_speedfiles(embeded_speedfiles_link=self.embeded_link)
+        if self._selected_provider == "Luluvdo":
+            return get_direct_link_from_luluvdo(embeded_luluvdo_link=self.embeded_link)
+
+        raise ValueError(
+            f"{self._selected_provider} is currently not supported.")
+
+        """
         providers = {
             "Vidmoly": get_direct_link_from_vidmoly,
             "Vidoza": get_direct_link_from_vidoza,
@@ -422,6 +439,7 @@ class Episode:
 
         # if all providers fail, raise an error
         raise ValueError("All providers have failed.")
+        """
 
     def _get_season_episode_count(self) -> dict:
         base_url = f"https://aniworld.to/anime/stream/{self.slug}/"
@@ -477,8 +495,8 @@ class Episode:
         lang_key = self._get_key_from_language(self._selected_language)
 
         if (self._selected_provider not in self.provider or
-                lang_key not in self.provider[self._selected_provider]
-            ):
+                    lang_key not in self.provider[self._selected_provider]
+                ):
             for provider_name, lang_dict in self.provider.items():
                 if lang_key in lang_dict:
                     self._selected_provider = provider_name
