@@ -1,15 +1,59 @@
 import re
 import base64
 import json
-import requests
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError, URLError
 
+import requests
+from bs4 import BeautifulSoup
+
 from aniworld.config import DEFAULT_REQUEST_TIMEOUT, RANDOM_USER_AGENT
 
-REDIRECT_PATTERN = re.compile(r"https?://[^'\"<>]+")
-EXTRACT_VEO_HLS_PATTERN = re.compile(r"'hls': '(?P<hls>.*)'")
-HIDDEN_JSON_PATTERN = re.compile(r"var a168c='(?P<hidden_json>[^']+)'")
+
+def shift_letters(input_str):
+    result = ''
+    for c in input_str:
+        code = ord(c)
+        if 65 <= code <= 90:
+            code = (code - 65 + 13) % 26 + 65
+        elif 97 <= code <= 122:
+            code = (code - 97 + 13) % 26 + 97
+        result += chr(code)
+    return result
+
+
+def replace_junk(input_str):
+    junk_parts = ['@$', '^^', '~@', '%?', '*~', '!!', '#&']
+    for part in junk_parts:
+        input_str = re.sub(re.escape(part), '_', input_str)
+    return input_str
+
+
+def shift_back(s, n):
+    return ''.join(chr(ord(c) - n) for c in s)
+
+
+def decode_voe_string(encoded):
+    step1 = shift_letters(encoded)
+    step2 = replace_junk(step1).replace('_', '')
+    step3 = base64.b64decode(step2).decode()
+    step4 = shift_back(step3, 3)
+    step5 = base64.b64decode(step4[::-1]).decode()
+    return json.loads(step5)
+
+
+def extract_voe_from_script(html):
+    soup = BeautifulSoup(html, "html.parser")
+    scripts = soup.find_all("script")
+    for script in scripts:
+        text = str(script)
+        if text.startswith("<script>(function () {var KGMAaM="):
+            try:
+                encoded_part = text.split('MKGMa="')[1].split('"')[0]
+                return decode_voe_string(encoded_part)["source"]
+            except Exception:
+                return None
+    return None
 
 
 def get_direct_link_from_voe(embeded_voe_link: str) -> str:
@@ -19,11 +63,12 @@ def get_direct_link_from_voe(embeded_voe_link: str) -> str:
         timeout=DEFAULT_REQUEST_TIMEOUT
     )
 
-    redirect_match = REDIRECT_PATTERN.search(response.text)
-    if not redirect_match:
-        raise ValueError("No redirect link found.")
+    redirect = re.search(r"https?://[^'\"<>]+", response.text)
+    if not redirect:
+        raise ValueError("No redirect found.")
 
-    redirect_url = redirect_match.group(0)
+    redirect_url = redirect.group(0)
+
     try:
         with urlopen(
             Request(
@@ -31,28 +76,27 @@ def get_direct_link_from_voe(embeded_voe_link: str) -> str:
                 headers={'User-Agent': RANDOM_USER_AGENT}
             ),
             timeout=10
-        ) as response:
-            redirect_content = response.read()
-        redirect_content_str = redirect_content.decode('utf-8')
-    except (HTTPError, URLError, TimeoutError) as e:
-        raise ValueError(f"Failed to fetch URL {redirect_url}: {e}") from e
+        ) as resp:
+            html = resp.read().decode()
+    except (HTTPError, URLError, TimeoutError) as err:
+        raise ValueError(f"Redirect failed: {err}") from err
 
-    hidden_json_match = HIDDEN_JSON_PATTERN.search(redirect_content_str)
-    if hidden_json_match:
-        hidden_json = base64.b64decode(
-            hidden_json_match.group("hidden_json")).decode()
-        hidden_json = hidden_json[::-1]
-        hidden_json = json.loads(hidden_json)
-        return hidden_json["source"]
+    extracted = extract_voe_from_script(html)
+    if extracted:
+        return extracted
 
-    hls_match = EXTRACT_VEO_HLS_PATTERN.search(redirect_content_str)
-    if not hls_match:
-        raise ValueError("No HLS link found.")
+    b64match = re.search(r"var a168c='([^']+)'", html)
+    if b64match:
+        decoded = base64.b64decode(b64match.group(1)).decode()[::-1]
+        return json.loads(decoded)["source"]
 
-    hls_link = base64.b64decode(hls_match.group("hls")).decode()
-    return hls_link
+    hls = re.search(r"'hls': '(?P<hls>[^']+)'", html)
+    if hls:
+        return base64.b64decode(hls.group("hls")).decode()
+
+    raise ValueError("No source link found.")
 
 
 if __name__ == '__main__':
     link = input("Enter VOE Link: ")
-    print(get_direct_link_from_voe(embeded_voe_link=link))
+    print(get_direct_link_from_voe(link))
