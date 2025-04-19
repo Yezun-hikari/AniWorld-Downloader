@@ -293,7 +293,7 @@ def menu(arguments, slug):
         curses.endwin()
         sys.exit()
 
-    curses.endwin()
+    # curses.endwin()
     return anime
 
 
