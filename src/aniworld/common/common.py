@@ -78,7 +78,14 @@ def download_mpv(dep_path: str = None, appdata_path: str = None, update: bool = 
     if update:
         print("Updating MPV...")
 
-    if sys.platform != 'win32':
+    if sys.platform == 'darwin':
+        if shutil.which("brew"):
+            subprocess.run(["brew", "update"], check=True)
+            subprocess.run(["brew", "upgrade", "--formula", "mpv"], check=True)
+        return
+
+    if sys.platform == 'linux':
+        print("Not implemented.")
         return
 
     appdata_path = appdata_path or os.path.join(
@@ -149,7 +156,15 @@ def download_syncplay(dep_path: str = None, appdata_path: str = None, update: bo
     if update:
         print("Updating Syncplay...")
 
-    if sys.platform != 'win32':
+    if sys.platform == 'darwin':
+        if shutil.which("brew"):
+            subprocess.run(["brew", "update"], check=True)
+            subprocess.run(
+                ["brew", "upgrade", "--cask", "syncplay"], check=True)
+        return
+
+    if sys.platform == 'linux':
+        print("Not implemented.")
         return
 
     appdata_path = appdata_path or os.path.join(
