@@ -6,8 +6,11 @@ import subprocess
 import sys
 import os
 import re
+from tqdm import tqdm
 
 import requests
+from aniworld.config import DEFAULT_REQUEST_TIMEOUT
+
 
 # extremly unreliable lol
 
@@ -68,10 +71,7 @@ def get_github_release(repo: str) -> dict:
 def download_7z(zip_tool: str) -> None:
     if not os.path.exists(zip_tool):
         print("Downloading 7z...")
-        r = requests.get('https://7-zip.org/a/7zr.exe',
-                         allow_redirects=True, timeout=15)
-        with open(zip_tool, 'wb') as f:
-            f.write(r.content)
+        download_file('https://7-zip.org/a/7zr.exe', zip_tool)
 
 
 def download_mpv(dep_path: str = None, appdata_path: str = None, update: bool = False):
@@ -118,16 +118,9 @@ def download_mpv(dep_path: str = None, appdata_path: str = None, update: bool = 
 
     if not os.path.exists(zip_path):
         logging.debug("Downloading MPV from %s to %s", direct_link, zip_path)
-        try:
-            print(
-                f"Downloading MPV ({'without' if not avx2_supported else 'with'} AVX2)...")
-            with requests.get(direct_link, allow_redirects=True, timeout=15) as r:
-                r.raise_for_status()
-                with open(zip_path, 'wb') as f:
-                    f.write(r.content)
-        except requests.RequestException as e:
-            logging.error("Failed to download MPV: %s", e)
-            return
+        print(
+            f"Downloading MPV ({'without' if not avx2_supported else 'with'} AVX2)...")
+        download_file(direct_link, zip_path)
 
     download_7z(zip_tool)
 
@@ -182,9 +175,7 @@ def download_syncplay(dep_path: str = None, appdata_path: str = None, update: bo
 
     if not os.path.exists(executable_path):
         print("Downloading Syncplay...")
-        r = requests.get(direct_link, allow_redirects=True, timeout=15)
-        with open(zip_path, 'wb') as file:
-            file.write(r.content)
+        download_file(direct_link, zip_path)
 
     logging.debug("Extracting Syncplay to %s", dep_path)
     try:
@@ -202,3 +193,19 @@ def download_syncplay(dep_path: str = None, appdata_path: str = None, update: bo
 
     if os.path.exists(zip_path):
         os.remove(zip_path)
+
+
+def download_file(url: str, path: str):
+    try:
+        response = requests.get(
+            url, stream=True, allow_redirects=True, timeout=DEFAULT_REQUEST_TIMEOUT)
+        total_size = int(response.headers.get('content-length', 0))
+        block_size = 1024
+        t = tqdm(total=total_size, unit='B', unit_scale=True)
+        with open(path, 'wb') as f:
+            for data in response.iter_content(block_size):
+                t.update(len(data))
+                f.write(data)
+        t.close()
+    except requests.RequestException as e:
+        logging.error("Failed to download: %s", e)

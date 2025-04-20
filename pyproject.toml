@@ -16,6 +16,7 @@ dependencies = [
     'bs4',
     'yt-dlp',
     'npyscreen',
+    'tqdm',
     'windows-curses; platform_system == "Windows"'
 ]
 classifiers = [

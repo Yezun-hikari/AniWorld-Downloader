@@ -7,7 +7,7 @@ import shutil
 import requests
 
 from aniworld.config import MPV_DIRECTORY
-from aniworld.common import get_github_release
+from aniworld.common import get_github_release, download_file
 
 
 def get_anime4k_download_link(mode: str = "High") -> str:
@@ -30,21 +30,13 @@ def download_anime4k(mode):
 
         return
 
-    print("Downloading Anime4K...")
-
     os.makedirs(MPV_DIRECTORY, exist_ok=True)
     archive_path = os.path.join(MPV_DIRECTORY, "anime4k.zip")
 
     if not os.path.exists(archive_path):
         download_link = get_anime4k_download_link(mode)
-
-        response = requests.get(download_link)
-        if response.status_code == 200:
-            with open(archive_path, 'wb') as f:
-                f.write(response.content)
-        else:
-            raise ValueError(
-                f"Failed to download file. Status code: {response.status_code}")
+        print("Downloading Anime4K...")
+        download_file(download_link, archive_path)
 
         extract_anime4k(zip_path=archive_path, dep_path=MPV_DIRECTORY)
     else:

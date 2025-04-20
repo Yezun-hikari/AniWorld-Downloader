@@ -327,7 +327,7 @@ These dependencies are automatically installed when you set up AniWorld Download
 - [x] --output-directory
 - [x] --language
 - [x] --provider
-- [ ] --anime4k
+- [x] --anime4k
 - [x] --syncplay-hostname
 - [x] --syncplay-username
 - [x] --syncplay-room
