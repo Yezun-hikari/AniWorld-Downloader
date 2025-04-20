@@ -1,3 +1,5 @@
+import traceback
+
 from aniworld.action import watch, syncplay
 from aniworld.models import Anime, Episode
 from aniworld.parser import arguments
@@ -43,6 +45,12 @@ def aniworld() -> None:
             execute(anime_list=[anime])
     except KeyboardInterrupt:
         pass
+    except Exception as e:
+        if arguments.debug:
+            traceback.print_exc()
+        else:
+            # hide traceback only show output
+            print(str(e))
 
 
 if __name__ == "__main__":
