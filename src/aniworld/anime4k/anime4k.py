@@ -1,0 +1,76 @@
+import os
+import platform
+import logging
+import subprocess
+import shutil
+
+import requests
+
+from aniworld.config import MPV_DIRECTORY
+from aniworld.common import get_github_release
+
+
+def get_anime4k_download_link(mode: str = "High") -> str:
+    os_type = "Windows" if platform.system() == "Windows" else "Mac_Linux"
+
+    latest_release = get_github_release("Tama47/Anime4K")
+    download_path = os.path.dirname(list(latest_release.values())[0])
+    download_link = f"{download_path}/GLSL_{os_type}_{mode}-end.zip"
+
+    return download_link
+
+
+def download_anime4k(mode):
+    if mode == "Remove":
+        print("Removing Anime4K...")
+
+        anime4k_shader_path = os.path.join(MPV_DIRECTORY, "shaders")
+        if os.path.exists(anime4k_shader_path):
+            shutil.rmtree(anime4k_shader_path)
+
+        return
+
+    print("Downloading Anime4K...")
+
+    os.makedirs(MPV_DIRECTORY, exist_ok=True)
+    archive_path = os.path.join(MPV_DIRECTORY, "anime4k.zip")
+
+    if not os.path.exists(archive_path):
+        download_link = get_anime4k_download_link(mode)
+
+        response = requests.get(download_link)
+        if response.status_code == 200:
+            with open(archive_path, 'wb') as f:
+                f.write(response.content)
+        else:
+            raise ValueError(
+                f"Failed to download file. Status code: {response.status_code}")
+
+        extract_anime4k(zip_path=archive_path, dep_path=MPV_DIRECTORY)
+    else:
+        logging.warning(f"File already exists at: {archive_path}")
+
+
+def extract_anime4k(zip_path, dep_path):
+    logging.debug("Extracting Anime4K to %s", dep_path)
+    try:
+        subprocess.run(
+            ["tar", "-xf", zip_path],
+            check=True,
+            cwd=dep_path
+        )
+    except subprocess.CalledProcessError as e:
+        logging.error("Failed to extract files: %s", e)
+    except subprocess.SubprocessError as e:
+        logging.error("An error occurred: %s", e)
+
+    if os.path.exists(zip_path):
+        os.remove(zip_path)
+
+    anime4k_path = os.path.join(MPV_DIRECTORY, "__MACOSX")
+    if os.path.exists(anime4k_path):
+        shutil.rmtree(anime4k_path)
+
+
+if __name__ == "__main__":
+    download_anime4k("High")

@@ -11,6 +11,7 @@ import requests
 
 from aniworld.common import download_mpv, download_syncplay
 from aniworld.extractors import get_direct_link_from_hanime
+from aniworld.anime4k import download_anime4k
 from aniworld import config
 
 
@@ -246,6 +247,9 @@ _____________________________
 """
         print(cowsay.strip())
         sys.exit()
+
+    if args.anime4k:
+        download_anime4k(args.anime4k)
 
     if args.provider_link:
         invalid_links = [

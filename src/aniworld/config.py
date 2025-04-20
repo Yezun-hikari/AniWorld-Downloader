@@ -195,11 +195,12 @@ DEFAULT_APPDATA_PATH = os.getenv(
     "APPDATA"
 ) or os.path.expanduser("~/.aniworld")
 
-MPV_SCRIPTS_DIRECTORY = (
-    os.path.join(os.environ.get('APPDATA', ''), 'mpv', 'scripts')
-    if os.name == 'nt'
-    else os.path.expanduser('~/.config/mpv/scripts')
-)
+if os.name == 'nt':
+    MPV_DIRECTORY = os.path.join(os.environ.get('APPDATA', ''), 'mpv')
+else:
+    MPV_DIRECTORY = os.path.expanduser('~/.config/mpv')
+
+MPV_SCRIPTS_DIRECTORY = os.path.join(MPV_DIRECTORY, 'scripts')
 
 if platform.system() == "Windows":
     mpv_path = shutil.which("mpv")
