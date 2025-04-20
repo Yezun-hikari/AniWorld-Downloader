@@ -262,6 +262,9 @@ _____________________________
         args.provider_link = [link for link in args.provider_link if not link.startswith(
             "https://hanime.tv/videos/")]
 
+        if not args.provider_link:
+            sys.exit()
+
         if not args.provider:
             print("Provider must be specified when using provider links.")
             sys.exit(1)

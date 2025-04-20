@@ -77,7 +77,6 @@ def get_direct_link_from_hanime(url=None):
                 selected_index = get_user_selection(video_data['streams'])
 
             print(f"M3U8 URL: {video_data['streams'][selected_index]['url']}")
-            print()
         except ValueError as e:
             print(f"Error: {e}")
     except KeyboardInterrupt:
