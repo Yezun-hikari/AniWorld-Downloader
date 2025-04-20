@@ -1,6 +1,7 @@
 import os
 import curses
 import sys
+import urllib3
 import npyscreen
 
 from aniworld.models import Anime, Episode
@@ -265,22 +266,26 @@ class SelectionMenu(npyscreen.NPSApp):
         # print(f"Provider: {selected_provider}")
         # print(f"Output Directory: {selected_output_directory}")
 
-        return Anime(
-            title=self.anime.title,
-            episode_list=[
-                Episode(
-                    slug=self.anime.slug,
-                    link=link,
-                    _selected_language=selected_language,
-                    _selected_provider=selected_provider
-                ) for link in self.selected_episodes
-            ],
-            action=selected_action,
-            language=selected_language,
-            provider=selected_provider,
-            output_directory=selected_output_directory,
-            aniskip=selected_aniskip
-        )
+        try:
+            return Anime(
+                title=self.anime.title,
+                episode_list=[
+                    Episode(
+                        slug=self.anime.slug,
+                        link=link,
+                        _selected_language=selected_language,
+                        _selected_provider=selected_provider
+                    ) for link in self.selected_episodes
+                ],
+                action=selected_action,
+                language=selected_language,
+                provider=selected_provider,
+                output_directory=selected_output_directory,
+                aniskip=selected_aniskip
+            )
+        except urllib3.exceptions.ReadTimeoutError:
+            print("Request timed out. Please try again later or use a VPN.")
+            sys.exit()
 
 
 def menu(arguments, slug):
