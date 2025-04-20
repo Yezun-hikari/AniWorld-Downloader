@@ -10,6 +10,7 @@ import sys
 import requests
 
 from aniworld.common import download_mpv, download_syncplay
+from aniworld.extractors import get_direct_link_from_hanime
 from aniworld import config
 
 
@@ -248,10 +249,18 @@ _____________________________
 
     if args.provider_link:
         invalid_links = [
-            link for link in args.provider_link if not link.startswith("http")]
+            link for link in args.provider_link if not link.startswith("http")
+        ]
         if invalid_links:
             print(f"Invalid provider episode URLs: {', '.join(invalid_links)}")
             sys.exit(1)
+
+        for link in args.provider_link:
+            if link.startswith("https://hanime.tv/videos/"):
+                get_direct_link_from_hanime(link)
+
+        args.provider_link = [link for link in args.provider_link if not link.startswith(
+            "https://hanime.tv/videos/")]
 
         if not args.provider:
             print("Provider must be specified when using provider links.")
