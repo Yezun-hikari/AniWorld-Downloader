@@ -1,5 +1,6 @@
 import traceback
 
+from aniworld.ascii_art import display_traceback_art
 from aniworld.action import watch, syncplay
 from aniworld.models import Anime, Episode
 from aniworld.parser import arguments
@@ -50,7 +51,9 @@ def aniworld() -> None:
             traceback.print_exc()
         else:
             # hide traceback only show output
-            print(str(e))
+            print(display_traceback_art())
+            print(f"Error: {e}")
+            print("\nFor more detailed information, use --debug and try again.")
 
 
 if __name__ == "__main__":
