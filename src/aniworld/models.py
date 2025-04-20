@@ -330,7 +330,13 @@ class Episode:
         providers = {}
 
         episode_links = soup.find_all(
-            'li', class_=lambda x: x and x.startswith('episodeLink'))
+            'li', class_=lambda x: x and x.startswith('episodeLink')
+        )
+
+        if not episode_links:
+            raise ValueError(
+                f"{self.link}\nDerzeit keine Streams für diese Episode verfügbar. Versuche es später noch einmal oder frage in der Shoutbox etc. nach ;)"
+            )
 
         for link in episode_links:
             provider_name_tag = link.find('h4')
@@ -350,7 +356,8 @@ class Episode:
 
         if not providers:
             raise ValueError(
-                f"Could not get providers from {self.html.content}")
+                f"Could not get providers from {self.link}"
+            )
 
         logging.debug("Final providers dictionary: %s", providers)
         return providers
