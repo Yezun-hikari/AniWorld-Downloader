@@ -10,7 +10,7 @@ import re
 
 import requests
 
-from aniworld.common import download_mpv, download_syncplay
+from aniworld.common import download_mpv, download_syncplay, get_season_episode_count
 from aniworld.extractors import get_direct_link_from_hanime
 from aniworld.anime4k import download_anime4k
 from aniworld import config
@@ -64,15 +64,16 @@ def get_random_anime_slug(genre) -> str:
     return None
 
 
-def generate_links(urls, seasons_info):
+def generate_links(urls):
     """
+    Example usage:
     seasons = {1: 12, 2: 13, 3: 4}
     base_url = [
         "https://aniworld.to/anime/stream/food-wars-shokugeki-no-sma/staffel-1/episode-1",
         "https://aniworld.to/anime/stream/food-wars-shokugeki-no-sma/staffel-2",
         "https://aniworld.to/anime/stream/overlord"
     ]
-    result = generate_links(base_url, seasons)
+    result = generate_links(base_url)
 
     for url in result:
         print(url)
@@ -80,7 +81,26 @@ def generate_links(urls, seasons_info):
 
     unique_links = set()
 
+    # TODO: save season data for every anime and use this cached season info in the
+    # for loop instead of generating the season_info each time
     for base_url in urls:
+        seasons_info = {}
+        parts = base_url.split('/')
+
+        if "anime" in parts:
+            series_slug_index = parts.index("stream") + 1
+            series_slug = parts[series_slug_index]
+
+            if series_slug not in seasons_info:
+                # seasons_info[series_slug] = get_season_episode_count(
+                #    slug=series_slug
+                # )
+                seasons_info = get_season_episode_count(
+                    slug=series_slug
+                )
+
+        # print(seasons_info)
+
         if base_url.endswith("/"):
             base_url = base_url[:-1]
 
@@ -90,7 +110,7 @@ def generate_links(urls, seasons_info):
             for season, episodes in seasons_info.items():
                 season_url = f"{base_url}/staffel-{season}/"
                 for episode in range(1, episodes + 1):
-                    unique_links.add(f"{season_url}/episode-{episode}")
+                    unique_links.add(f"{season_url}episode-{episode}")
             continue
 
         if "staffel" in base_url and "episode" not in base_url:
@@ -99,6 +119,8 @@ def generate_links(urls, seasons_info):
                 for episode in range(1, seasons_info[season] + 1):
                     unique_links.add(f"{base_url}/episode-{episode}")
             continue
+
+        # TODO: also append movies
 
         unique_links.add(base_url)
 
@@ -299,13 +321,18 @@ _____________________________
     if args.episode_file:
         try:
             with open(args.episode_file, 'r') as file:
+                urls = []
                 for line in file:
                     line = line.strip()
                     if line.startswith("http"):
-                        print(line)
-                        if args.episode is None:
-                            args.episode = []
-                        args.episode.append(line)
+                        urls.append(line)
+
+                if args.episode is None:
+                    args.episode = []
+
+                links = generate_links(urls)
+                # print(links)
+                args.episode.append(links)
         except FileNotFoundError:
             logging.error(
                 "The specified episode file does not exist: %s", args.episode_file
@@ -480,4 +507,10 @@ _____________________________
 arguments = parse_arguments()
 
 if __name__ == "__main__":
-    print(get_random_anime_slug("all"))
+    urls = [
+        "https://aniworld.to/anime/stream/food-wars-shokugeki-no-sma/staffel-1/episode-1",
+        "https://aniworld.to/anime/stream/food-wars-shokugeki-no-sma/staffel-2",
+        "https://aniworld.to/anime/stream/overlord"
+    ]
+
+    print(generate_links(urls))

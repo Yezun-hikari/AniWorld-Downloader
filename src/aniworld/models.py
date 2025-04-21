@@ -1,7 +1,6 @@
 import re
 import json
 import logging
-import concurrent.futures
 
 import requests
 import requests.models
@@ -10,6 +9,7 @@ from bs4 import BeautifulSoup
 from aniworld.aniskip import get_mal_id_from_title
 from aniworld.config import DEFAULT_REQUEST_TIMEOUT, RANDOM_USER_AGENT
 from aniworld.parser import arguments
+from aniworld.common import get_season_episode_count, get_movie_episode_count
 
 from aniworld.extractors import (
     get_direct_link_from_vidmoly,
@@ -448,56 +448,6 @@ class Episode:
         raise ValueError("All providers have failed.")
         """
 
-    def _get_season_episode_count(self) -> dict:
-        base_url = f"https://aniworld.to/anime/stream/{self.slug}/"
-        response = requests.get(base_url, timeout=15)
-        soup = BeautifulSoup(response.content, 'html.parser')
-
-        season_meta = soup.find('meta', itemprop='numberOfSeasons')
-        number_of_seasons = int(season_meta['content']) if season_meta else 0
-
-        episode_counts = {}
-
-        for season in range(1, number_of_seasons + 1):
-            season_url = f"{base_url}staffel-{season}"
-            response = requests.get(season_url, timeout=15)
-            soup = BeautifulSoup(response.content, 'html.parser')
-
-            episode_links = soup.find_all('a', href=True)
-            unique_links = set(
-                link['href']
-                for link in episode_links
-                if f"staffel-{season}/episode-" in link['href']
-            )
-
-            episode_counts[season] = len(unique_links)
-
-        return episode_counts
-
-    def _get_movie_episode_count(self) -> int:
-        movie_page_url = f"https://aniworld.to/anime/stream/{self.slug}/filme"
-        response = requests.get(
-            movie_page_url, timeout=DEFAULT_REQUEST_TIMEOUT)
-
-        parsed_html = BeautifulSoup(response.content, 'html.parser')
-        movie_indices = []
-
-        movie_index = 1
-        while True:
-            expected_subpath = f"{self.slug}/filme/film-{movie_index}"
-
-            matching_links = [link['href'] for link in parsed_html.find_all(
-                'a', href=True) if expected_subpath in link['href']]
-
-            if matching_links:
-                movie_indices.append(movie_index)
-                movie_index += 1
-            else:
-                break
-
-        self.has_movies = bool(movie_indices)
-        return max(movie_indices) if movie_indices else 0
-
     def get_redirect_link(self):
         lang_key = self._get_key_from_language(self._selected_language)
 
@@ -576,8 +526,8 @@ class Episode:
         self.language_name = self._get_languages_from_keys(self.language)
         self.provider = self._get_provider_from_html()
         self.provider_name = list(self.provider.keys())
-        self.season_episode_count = self._get_season_episode_count()
-        self.movie_episode_count = self._get_movie_episode_count()
+        self.season_episode_count = get_season_episode_count(self.slug)
+        self.movie_episode_count = get_movie_episode_count(self.slug)
 
         if self.movie_episode_count:
             # remove last season as its the same as movies and 0

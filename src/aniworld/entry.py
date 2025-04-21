@@ -22,6 +22,7 @@ def aniworld() -> None:
             anime_list = []
             for link in (arguments.episode or [None]):
                 if link:
+                    print(link)
                     episode = Episode(
                         link=link
                     )

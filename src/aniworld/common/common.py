@@ -6,11 +6,12 @@ import subprocess
 import sys
 import os
 import re
-from tqdm import tqdm
 
 import requests
-from aniworld.config import DEFAULT_REQUEST_TIMEOUT
+import tqdm
+from bs4 import BeautifulSoup
 
+from aniworld.config import DEFAULT_REQUEST_TIMEOUT
 
 # extremly unreliable lol
 
@@ -224,3 +225,59 @@ def download_file(url: str, path: str):
         t.close()
     except requests.RequestException as e:
         logging.error("Failed to download: %s", e)
+
+
+def get_season_episode_count(slug) -> dict:
+    base_url = f"https://aniworld.to/anime/stream/{slug}/"
+    response = requests.get(base_url, timeout=15)
+    soup = BeautifulSoup(response.content, 'html.parser')
+
+    season_meta = soup.find('meta', itemprop='numberOfSeasons')
+    number_of_seasons = int(season_meta['content']) if season_meta else 0
+
+    episode_counts = {}
+
+    for season in range(1, number_of_seasons + 1):
+        season_url = f"{base_url}staffel-{season}"
+        response = requests.get(season_url, timeout=15)
+        soup = BeautifulSoup(response.content, 'html.parser')
+
+        episode_links = soup.find_all('a', href=True)
+        unique_links = set(
+            link['href']
+            for link in episode_links
+            if f"staffel-{season}/episode-" in link['href']
+        )
+
+        episode_counts[season] = len(unique_links)
+
+    return episode_counts
+
+
+def get_movie_episode_count(slug) -> int:
+    movie_page_url = f"https://aniworld.to/anime/stream/{slug}/filme"
+    response = requests.get(
+        movie_page_url, timeout=DEFAULT_REQUEST_TIMEOUT)
+
+    parsed_html = BeautifulSoup(response.content, 'html.parser')
+    movie_indices = []
+
+    movie_index = 1
+    while True:
+        expected_subpath = f"{slug}/filme/film-{movie_index}"
+
+        matching_links = [link['href'] for link in parsed_html.find_all(
+            'a', href=True) if expected_subpath in link['href']]
+
+        if matching_links:
+            movie_indices.append(movie_index)
+            movie_index += 1
+        else:
+            break
+
+    # has_movies = bool(movie_indices)
+    return max(movie_indices) if movie_indices else 0
+
+
+if __name__ == "__main__":
+    print(get_season_episode_count("go-go-loser-ranger"))
