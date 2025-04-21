@@ -6,6 +6,7 @@ import platform
 import random
 import subprocess
 import sys
+import re
 
 import requests
 

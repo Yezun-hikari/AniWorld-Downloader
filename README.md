@@ -320,7 +320,7 @@ These dependencies are automatically installed when you set up AniWorld Download
 - [ ] --link
 - [ ] --query
 - [x] --episode
-- [ ] --episode-file
+- [x] --episode-file
 - [x] --episode-local
 - [x] --action
 - [ ] --output
