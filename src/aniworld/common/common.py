@@ -300,19 +300,18 @@ def generate_links(urls):
     # for loop instead of generating the season_info each time
     for base_url in urls:
         seasons_info = {}
+        movies_info = 0
         parts = base_url.split('/')
 
         if "anime" in parts:
             series_slug_index = parts.index("stream") + 1
             series_slug = parts[series_slug_index]
-
-            if series_slug not in seasons_info:
-                # seasons_info[series_slug] = get_season_episode_count(
-                #    slug=series_slug
-                # )
-                seasons_info = get_season_episode_count(
-                    slug=series_slug
-                )
+            seasons_info = get_season_episode_count(
+                slug=series_slug
+            )
+            movies_info = get_movie_episode_count(
+                slug=series_slug
+            )
 
         # print(seasons_info)
 
@@ -321,7 +320,7 @@ def generate_links(urls):
 
         parts = base_url.split("/")
 
-        if "staffel" not in base_url and "episode" not in base_url:
+        if "staffel" not in base_url and "episode" not in base_url and not "film" in base_url:
             for season, episodes in seasons_info.items():
                 season_url = f"{base_url}/staffel-{season}/"
                 for episode in range(1, episodes + 1):
@@ -333,6 +332,11 @@ def generate_links(urls):
             if season in seasons_info:
                 for episode in range(1, seasons_info[season] + 1):
                     unique_links.add(f"{base_url}/episode-{episode}")
+            continue
+
+        if "filme" in base_url and "film-" not in base_url:
+            for episode in range(1, movies_info + 1):
+                unique_links.add(f"{base_url}/film-{episode}")
             continue
 
         # TODO: also append movies
