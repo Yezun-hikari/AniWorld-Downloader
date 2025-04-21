@@ -55,7 +55,8 @@ def _process_anime_episodes(anime):
             title,
             PROVIDER_HEADERS.get(anime.provider),
             aniskip(anime.title, episode.episode,
-                    episode.season) if anime.aniskip else None
+                    episode.season, episode.season_episode_count[episode.season])
+            if anime.aniskip else None
         )
         _print_or_run(title, command)
 

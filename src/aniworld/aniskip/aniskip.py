@@ -160,7 +160,7 @@ def build_flags(anime_id: str, episode: int, chapters_file: str) -> str:
     return f"--chapters-file={chapters_file} --script-opts={options}"
 
 
-def aniskip(title: str, episode: int, season: int) -> str:
+def aniskip(title: str, episode: int, season: int, aniworld_episodes: int) -> str:
     setup_autostart()
     setup_autoexit()
     setup_aniskip()
@@ -171,7 +171,7 @@ def aniskip(title: str, episode: int, season: int) -> str:
         logging.warning("No MAL ID found.")
         return ""
 
-    if check_episodes(anime_id):
+    if check_episodes(anime_id) == aniworld_episodes:
         with tempfile.NamedTemporaryFile(mode="w+", delete=False) as chapters_file:
             return build_flags(anime_id, episode, chapters_file.name)
     else:
