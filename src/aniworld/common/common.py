@@ -13,44 +13,19 @@ from bs4 import BeautifulSoup
 
 from aniworld.config import DEFAULT_REQUEST_TIMEOUT
 
-# extremly unreliable lol
-
 
 def check_avx2_support() -> bool:  # TODO Not working yet right
     if platform.system() != "Windows":
         logging.debug("AVX2 check is only supported on Windows.")
         return False
 
-    try:
-        if shutil.which("wmic"):
-            cpu_info = subprocess.run(
-                ['wmic', 'cpu', 'get', 'Caption,InstructionSet'],
-                capture_output=True,
-                text=True,
-                errors="replace",
-                check=False
-            )
-            if 'avx2' in cpu_info.stdout.lower():
-                return True
-            logging.debug("AVX2 not found in CPU info.")
-    except subprocess.SubprocessError as e:
-        logging.error("Error checking AVX2 support: %s", e)
+    import cpuinfo  # type: ignore
 
-    try:
-        registry_info = subprocess.run(
-            [
-                'reg', 'query',
-                'HKEY_LOCAL_MACHINE\\HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0',
-                '/v', 'FeatureSet'
-            ],
-            capture_output=True,
-            text=True,
-            check=False
-        )
-        if 'avx2' in registry_info.stdout.lower():
-            return True
-    except subprocess.SubprocessError as e:
-        logging.error("Error checking AVX2 support via registry: %s", e)
+    info = cpuinfo.get_cpu_info()
+    flags = info.get('flags', [])
+
+    if 'avx2' in flags:
+        return True
 
     return False
 
