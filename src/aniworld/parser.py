@@ -63,6 +63,50 @@ def get_random_anime_slug(genre) -> str:
     return None
 
 
+def generate_links(urls, seasons_info):
+    """
+    seasons = {1: 12, 2: 13, 3: 4}
+    base_url = [
+        "https://aniworld.to/anime/stream/food-wars-shokugeki-no-sma/staffel-1/episode-1",
+        "https://aniworld.to/anime/stream/food-wars-shokugeki-no-sma/staffel-2",
+        "https://aniworld.to/anime/stream/overlord"
+    ]
+    result = generate_links(base_url, seasons)
+
+    for url in result:
+        print(url)
+    """
+
+    unique_links = set()
+
+    for base_url in urls:
+        if base_url.endswith("/"):
+            base_url = base_url[:-1]
+
+        parts = base_url.split("/")
+
+        if "staffel" not in base_url and "episode" not in base_url:
+            for season, episodes in seasons_info.items():
+                season_url = f"{base_url}/staffel-{season}/"
+                for episode in range(1, episodes + 1):
+                    unique_links.add(f"{season_url}/episode-{episode}")
+            continue
+
+        if "staffel" in base_url and "episode" not in base_url:
+            season = int(parts[-1].split("-")[-1])
+            if season in seasons_info:
+                for episode in range(1, seasons_info[season] + 1):
+                    unique_links.add(f"{base_url}/episode-{episode}")
+            continue
+
+        unique_links.add(base_url)
+
+    def natural_sort_key(link_url):
+        return [int(text) if text.isdigit() else text for text in re.split(r'(\d+)', link_url)]
+
+    return sorted(unique_links, key=natural_sort_key)
+
+
 def parse_arguments() -> argparse.Namespace:  # pylint: disable=too-many-locals
     parser = argparse.ArgumentParser(
         description="Parse command-line arguments for anime streaming, "
@@ -251,6 +295,25 @@ _____________________________
     if args.anime4k:
         download_anime4k(args.anime4k)
 
+    if args.episode_file:
+        try:
+            with open(args.episode_file, 'r') as file:
+                for line in file:
+                    line = line.strip()
+                    if line.startswith("http"):
+                        print(line)
+                        if args.episode is None:
+                            args.episode = []
+                        args.episode.append(line)
+        except FileNotFoundError:
+            logging.error(
+                "The specified episode file does not exist: %s", args.episode_file
+            )
+            sys.exit(1)
+        except IOError as e:
+            logging.error("Error reading the episode file: %s", e)
+            sys.exit(1)
+
     if args.provider_link:
         invalid_links = [
             link for link in args.provider_link if not link.startswith("http")
@@ -258,7 +321,6 @@ _____________________________
         if invalid_links:
             print(f"Invalid provider episode URLs: {', '.join(invalid_links)}")
             sys.exit(1)
-
         for link in args.provider_link:
             if link.startswith("https://hanime.tv/videos/"):
                 get_direct_link_from_hanime(link)

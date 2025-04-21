@@ -502,8 +502,8 @@ class Episode:
         lang_key = self._get_key_from_language(self._selected_language)
 
         if (self._selected_provider not in self.provider or
-                    lang_key not in self.provider[self._selected_provider]
-                ):
+            lang_key not in self.provider[self._selected_provider]
+            ):
             for provider_name, lang_dict in self.provider.items():
                 if lang_key in lang_dict:
                     self._selected_provider = provider_name
@@ -622,54 +622,8 @@ def get_anime_title_from_html(html: requests.models.Response):
     return ""
 
 
-# Please dont use this for now
-# Lazy loading is not implemented yet
-# Fetching all episodes at once will be time consuming and lead to timeouts
-def generate_links(urls, seasons_info):
-    """
-    seasons = {1: 12, 2: 13, 3: 4}
-    base_url = [
-        "https://aniworld.to/anime/stream/food-wars-shokugeki-no-sma/staffel-1/episode-1",
-        "https://aniworld.to/anime/stream/food-wars-shokugeki-no-sma/staffel-2",
-        "https://aniworld.to/anime/stream/overlord"
-    ]
-    result = generate_links(base_url, seasons)
-
-    for url in result:
-        print(url)
-    """
-
-    unique_links = set()
-
-    for base_url in urls:
-        if base_url.endswith("/"):
-            base_url = base_url[:-1]
-
-        parts = base_url.split("/")
-
-        if "staffel" not in base_url and "episode" not in base_url:
-            for season, episodes in seasons_info.items():
-                season_url = f"{base_url}/staffel-{season}/"
-                for episode in range(1, episodes + 1):
-                    unique_links.add(f"{season_url}/episode-{episode}")
-            continue
-
-        if "staffel" in base_url and "episode" not in base_url:
-            season = int(parts[-1].split("-")[-1])
-            if season in seasons_info:
-                for episode in range(1, seasons_info[season] + 1):
-                    unique_links.add(f"{base_url}/episode-{episode}")
-            continue
-
-        unique_links.add(base_url)
-
-    def natural_sort_key(link_url):
-        return [int(text) if text.isdigit() else text for text in re.split(r'(\d+)', link_url)]
-
-    return sorted(unique_links, key=natural_sort_key)
-
-
 if __name__ == "__main__":
+    """
     # links from eg. argparse
     links = [
         "https://aniworld.to/anime/stream/food-wars-shokugeki-no-sma/staffel-1/episode-3",
@@ -693,3 +647,4 @@ if __name__ == "__main__":
 
     for episode in anime:
         print(f"Episode Details:\n{episode}\n{'=' * 79}")
+    """
