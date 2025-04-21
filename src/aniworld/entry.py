@@ -1,4 +1,6 @@
 import traceback
+import logging
+import sys
 
 from aniworld.ascii_art import display_traceback_art
 from aniworld.action import watch, syncplay
@@ -7,6 +9,7 @@ from aniworld.parser import arguments
 from aniworld.search import search_anime
 from aniworld.execute import execute
 from aniworld.menu import menu
+from aniworld.common import generate_links
 
 
 def aniworld() -> None:
@@ -16,13 +19,36 @@ def aniworld() -> None:
                 watch(None)
             elif arguments.action == "Syncplay":
                 syncplay(None)
-        if arguments.episode:
+        if arguments.episode or arguments.episode_file:
+            links = []
+            if arguments.episode_file:
+                try:
+                    with open(arguments.episode_file, 'r', encoding="UTF-8") as file:
+                        urls = []
+                        for line in file:
+                            line = line.strip()
+                            if line.startswith("http"):
+                                urls.append(line)
+
+                        links = generate_links(urls)
+                        arguments.episode.extend(links)
+                except FileNotFoundError:
+                    logging.error(
+                        "The specified episode file does not exist: %s", arguments.episode_file
+                    )
+                    sys.exit(1)
+                except IOError as e:
+                    logging.error("Error reading the episode file: %s", e)
+                    sys.exit(1)
+
+            if arguments.episode:
+                links = generate_links(arguments.episode)
+
             # TODO: this needs to pass all links to a function
             #       that will return Anime objects instead
             anime_list = []
-            for link in (arguments.episode or [None]):
+            for link in (links or [None]):
                 if link:
-                    print(link)
                     episode = Episode(
                         link=link
                     )

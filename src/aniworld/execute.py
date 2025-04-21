@@ -7,7 +7,6 @@ from aniworld.action import watch, download, syncplay
 def execute(anime_list: list[Anime]):
     for anime in anime_list:
         try:
-            # print(anime)
             if anime.action == "Watch":
                 watch(anime)
             elif anime.action == "Download":

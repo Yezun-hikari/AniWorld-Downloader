@@ -8,7 +8,7 @@ import os
 import re
 
 import requests
-import tqdm
+from tqdm import tqdm
 from bs4 import BeautifulSoup
 
 from aniworld.config import DEFAULT_REQUEST_TIMEOUT
@@ -277,6 +277,72 @@ def get_movie_episode_count(slug) -> int:
 
     # has_movies = bool(movie_indices)
     return max(movie_indices) if movie_indices else 0
+
+
+def generate_links(urls):
+    """
+    Example usage:
+    seasons = {1: 12, 2: 13, 3: 4}
+    base_url = [
+        "https://aniworld.to/anime/stream/food-wars-shokugeki-no-sma/staffel-1/episode-1",
+        "https://aniworld.to/anime/stream/food-wars-shokugeki-no-sma/staffel-2",
+        "https://aniworld.to/anime/stream/overlord"
+    ]
+    result = generate_links(base_url)
+
+    for url in result:
+        print(url)
+    """
+
+    unique_links = set()
+
+    # TODO: save season data for every anime and use this cached season info in the
+    # for loop instead of generating the season_info each time
+    for base_url in urls:
+        seasons_info = {}
+        parts = base_url.split('/')
+
+        if "anime" in parts:
+            series_slug_index = parts.index("stream") + 1
+            series_slug = parts[series_slug_index]
+
+            if series_slug not in seasons_info:
+                # seasons_info[series_slug] = get_season_episode_count(
+                #    slug=series_slug
+                # )
+                seasons_info = get_season_episode_count(
+                    slug=series_slug
+                )
+
+        # print(seasons_info)
+
+        if base_url.endswith("/"):
+            base_url = base_url[:-1]
+
+        parts = base_url.split("/")
+
+        if "staffel" not in base_url and "episode" not in base_url:
+            for season, episodes in seasons_info.items():
+                season_url = f"{base_url}/staffel-{season}/"
+                for episode in range(1, episodes + 1):
+                    unique_links.add(f"{season_url}episode-{episode}")
+            continue
+
+        if "staffel" in base_url and "episode" not in base_url:
+            season = int(parts[-1].split("-")[-1])
+            if season in seasons_info:
+                for episode in range(1, seasons_info[season] + 1):
+                    unique_links.add(f"{base_url}/episode-{episode}")
+            continue
+
+        # TODO: also append movies
+
+        unique_links.add(base_url)
+
+    def natural_sort_key(link_url):
+        return [int(text) if text.isdigit() else text for text in re.split(r'(\d+)', link_url)]
+
+    return sorted(unique_links, key=natural_sort_key)
 
 
 if __name__ == "__main__":

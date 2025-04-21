@@ -1,1 +1,3 @@
-from .common import get_github_release, download_mpv, download_syncplay, download_file, get_season_episode_count, get_movie_episode_count
+from .common import (get_github_release, download_mpv, download_syncplay,
+                     download_file, get_season_episode_count,
+                     get_movie_episode_count, generate_links)

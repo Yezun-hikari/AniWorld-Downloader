@@ -4,8 +4,6 @@ import logging
 import subprocess
 import shutil
 
-import requests
-
 from aniworld.config import MPV_DIRECTORY
 from aniworld.common import get_github_release, download_file
 
@@ -40,7 +38,7 @@ def download_anime4k(mode):
 
         extract_anime4k(zip_path=archive_path, dep_path=MPV_DIRECTORY)
     else:
-        logging.warning(f"File already exists at: {archive_path}")
+        logging.warning("File already exists at: %s", archive_path)
 
 
 def extract_anime4k(zip_path, dep_path):

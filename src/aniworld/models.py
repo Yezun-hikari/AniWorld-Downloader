@@ -335,7 +335,8 @@ class Episode:
 
         if not episode_links:
             raise ValueError(
-                f"{self.link}\nDerzeit keine Streams für diese Episode verfügbar. Versuche es später noch einmal oder frage in der Shoutbox etc. nach ;)"
+                f"{self.link}\nDerzeit keine Streams für diese Episode verfügbar. "
+                f"Versuche es später noch einmal oder frage in der Shoutbox etc. nach ;)"
             )
 
         for link in episode_links:
