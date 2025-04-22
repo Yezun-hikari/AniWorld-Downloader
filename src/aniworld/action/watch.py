@@ -3,12 +3,12 @@ import logging
 
 from aniworld.aniskip import aniskip
 from aniworld.common import download_mpv
-from aniworld.config import MPV_PATH, PROVIDER_HEADERS, LULUVDO_USER_AGENT
+from aniworld.config import MPV_PATH, PROVIDER_HEADERS
 from aniworld.models import Anime
 from aniworld.parser import arguments
 
 
-def _build_watch_command(anime, source, title=None, headers=None, aniskip_data=None):
+def _build_watch_command(source, title=None, headers=None, aniskip_data=None, anime=None):
     command = [MPV_PATH, source, "--fs", "--quiet"]
     if title:
         command.append(f'--force-media-title="{title}"')
@@ -55,13 +55,13 @@ def _process_anime_episodes(anime):
 
         title = _generate_episode_title(anime, episode)
         command = _build_watch_command(
-            anime,
             episode.get_direct_link(),
             title,
             PROVIDER_HEADERS.get(anime.provider),
             aniskip(anime.title, episode.episode,
                     episode.season, episode.season_episode_count[episode.season])
-            if anime.aniskip else None
+            if anime.aniskip else None,
+            anime
         )
         _print_or_run(title, command)
 

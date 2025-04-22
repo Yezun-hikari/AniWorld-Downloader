@@ -333,7 +333,7 @@ These dependencies are automatically installed when you set up AniWorld Download
 - [x] --syncplay-room
 - [x] --syncplay-password
 - [x] --aniskip
-- [ ] --keep-watching
+- [x] --keep-watching
 - [x] --random-anime
 - [x] --only-direct-link
 - [x] --only-command

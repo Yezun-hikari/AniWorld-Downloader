@@ -254,7 +254,7 @@ def get_movie_episode_count(slug) -> int:
     return max(movie_indices) if movie_indices else 0
 
 
-def generate_links(urls):
+def generate_links(urls, arguments):
     """
     Example usage:
     seasons = {1: 12, 2: 13, 3: 4}
@@ -295,6 +295,37 @@ def generate_links(urls):
 
         parts = base_url.split("/")
 
+        if arguments.keep_watching:
+            season_start = 1
+            episode_start = 1
+            movie_start = 1
+            season_match = re.search(r"staffel-(\d+)", base_url)
+            episode_match = re.search(r"episode-(\d+)", base_url)
+            movie_match = re.search(r"film-(\d+)", base_url)
+
+            if season_match:
+                season_start = int(season_match.group(1))
+
+            if episode_match:
+                episode_start = int(episode_match.group(1))
+
+            if movie_match:
+                movie_start = int(movie_match.group(1))
+
+            raw_url = "/".join(base_url.split("/")[:6])
+
+            if "film" not in base_url:
+                for season in range(season_start, len(seasons_info) + 1):
+                    season_url = f"{raw_url}/staffel-{season}/"
+                    for episode in range(episode_start, seasons_info[season] + 1):
+                        unique_links.add(f"{season_url}episode-{episode}")
+                    episode_start = 1
+                continue
+
+            for episode in range(movie_start, movies_info + 1):
+                unique_links.add(f"{raw_url}/filme/film-{episode}")
+            continue
+
         if "staffel" not in base_url and "episode" not in base_url and not "film" in base_url:
             for season, episodes in seasons_info.items():
                 season_url = f"{base_url}/staffel-{season}/"
@@ -313,8 +344,6 @@ def generate_links(urls):
             for episode in range(1, movies_info + 1):
                 unique_links.add(f"{base_url}/film-{episode}")
             continue
-
-        # TODO: also append movies
 
         unique_links.add(base_url)
 
