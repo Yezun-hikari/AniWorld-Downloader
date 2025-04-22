@@ -9,7 +9,7 @@ import sys
 
 import requests
 
-from aniworld.common import download_mpv, download_syncplay, get_season_episode_count
+from aniworld.common import download_mpv, download_syncplay
 from aniworld.extractors import get_direct_link_from_hanime
 from aniworld.anime4k import download_anime4k
 from aniworld import config

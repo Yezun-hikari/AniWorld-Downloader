@@ -12,6 +12,7 @@ from aniworld.config import (
     DEFAULT_PROVIDER_WATCH,
     USES_DEFAULT_PROVIDER
 )
+from aniworld import parser
 
 
 class CustomTheme(npyscreen.ThemeManager):
@@ -258,6 +259,7 @@ class SelectionMenu(npyscreen.NPSApp):
         selected_provider = self.provider_selection.get_selected_objects()[0]
         selected_output_directory = self.folder_selection.value
         selected_aniskip = bool(self.aniskip_selection.value)
+        parser.arguments.action = selected_action
 
         # print(f"Anime Title: {self.anime.title}")
         # print(f"Selected Episodes: {self.selected_episodes}")

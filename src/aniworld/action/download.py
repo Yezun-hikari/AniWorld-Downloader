@@ -49,10 +49,12 @@ def download(anime: Anime):
             "--no-warnings",
             "--progress"
         ]
-        logging.debug("Executing command:\n%s", command)
 
         if anime.provider in PROVIDER_HEADERS:
-            command.extend(["--add-header", PROVIDER_HEADERS[anime.provider]])
+            for header in PROVIDER_HEADERS[anime.provider]:
+                command.extend(["--add-header", header])
+
+        logging.debug("Executing command:\n%s", command)
 
         if arguments.only_command:
             print(

@@ -82,7 +82,8 @@ def _build_syncplay_command(source, title=None, headers=None, aniskip_data=None)
     command = _append_password(command, title)
 
     if headers:
-        command.append(f"--http-header-fields={headers}")
+        for header in headers:
+            command.append(f"--http-header-fields={header}")
 
     if aniskip_data:
         command.extend(aniskip_data.split()[:2])

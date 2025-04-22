@@ -59,14 +59,24 @@ SUPPORTED_PROVIDERS = [
     "VOE", "Doodstream", "Vidmoly", "Vidoza", "SpeedFiles", "Streamtape", "Luluvdo"
 ]
 
+#########################################################################################
+# User Agents
+#########################################################################################
+
+RANDOM_USER_AGENT = UserAgent().random
+
 LULUVDO_USER_AGENT = "Mozilla/5.0 (Android 15; Mobile; rv:132.0) Gecko/132.0 Firefox/132.0"
 
 PROVIDER_HEADERS = {
-    "Vidmoly": 'Referer: "https://vidmoly.to"',
-    "Doodstream": 'Referer: "https://dood.li/"',
-    "VOE": 'Referer: "https://nathanfromsubject.com/"',
-    "Luluvdo": f'User-Agent: {LULUVDO_USER_AGENT}'
-}
+    "Vidmoly": ['Referer: "https://vidmoly.to"'],
+    "Doodstream": ['Referer: "https://dood.li/"'],
+    "VOE": ['Referer: "https://nathanfromsubject.com/"'],
+    "Luluvdo": [
+        f'User-Agent: {LULUVDO_USER_AGENT}',
+        'Accept-Language: de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7',
+        'Origin: "https://luluvdo.com"',
+        'Referer: "https://luluvdo.com/"'
+    ]}
 
 USES_DEFAULT_PROVIDER = False
 
@@ -87,13 +97,6 @@ DEFAULT_TERMINAL_SIZE = (90, 30)
 
 # https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file
 INVALID_PATH_CHARS = ['<', '>', ':', '"', '/', '\\', '|', '?', '*', '&']
-
-
-#########################################################################################
-# User Agents
-#########################################################################################
-
-RANDOM_USER_AGENT = UserAgent().random
 
 #########################################################################################
 # Executable Path Resolution

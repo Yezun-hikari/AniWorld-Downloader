@@ -403,7 +403,7 @@ class Episode:
         if self._selected_provider == "SpeedFiles":
             return get_direct_link_from_speedfiles(embeded_speedfiles_link=self.embeded_link)
         if self._selected_provider == "Luluvdo":
-            return get_direct_link_from_luluvdo(embeded_luluvdo_link=self.embeded_link)
+            return get_direct_link_from_luluvdo(embeded_luluvdo_link=self.embeded_link, arguments=arguments)
 
         raise ValueError(
             f"{self._selected_provider} is currently not supported.")
