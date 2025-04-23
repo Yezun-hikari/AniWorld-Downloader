@@ -1,12 +1,6 @@
 name: Build with Nuitka
 
 on:
-  # push:
-  #   branches:
-  #     - next
-  # pull_request:
-  #   branches:
-  #     - next
   workflow_dispatch:
 
 permissions:
@@ -15,7 +9,19 @@ permissions:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-13, macos-13-arm64]
+        include:
+          - os: windows-latest
+            ext: .exe
+          - os: ubuntu-latest
+            ext: ""
+          - os: macos-13
+            ext: ""
+          - os: macos-13-arm64
+            ext: ""
 
     steps:
       - name: Checkout repository
@@ -34,18 +40,19 @@ jobs:
 
       - name: Build executable with Nuitka
         run: |
-            python -m nuitka --onefile --assume-yes-for-downloads --include-package=aniworld --output-filename=aniworld.exe `
-            --company-name="Phoenixthrush UwU" `
-            --product-name="AniWorld Downloader" `
-            --file-version=$(python -c "import toml; print(toml.load(open('pyproject.toml'))['project']['version'])") `
-            --product-version=$(python -c "import toml; print(toml.load(open('pyproject.toml'))['project']['version'])") `
-            --file-description="AniWorld Downloader is a command-line tool built to download and stream anime content from aniworld.to" `
-            --copyright="Copyright (c) 2024-$(python -c "import datetime; print(datetime.datetime.now().year)") Phoenixthrush UwU" `
-            --windows-icon-from-ico=src/aniworld/icon.webp `
-            src/aniworld/entry.py
+          python -m nuitka --onefile --assume-yes-for-downloads --include-package=aniworld \
+          --output-filename=aniworld${{ matrix.ext }} \
+          --company-name="Phoenixthrush UwU" \
+          --product-name="AniWorld Downloader" \
+          --file-version=$(python -c "import toml; print(toml.load(open('pyproject.toml'))['project']['version'])") \
+          --product-version=$(python -c "import toml; print(toml.load(open('pyproject.toml'))['project']['version'])") \
+          --file-description="AniWorld Downloader is a command-line tool built to download and stream anime content from aniworld.to" \
+          --copyright="Copyright (c) 2024-$(python -c 'import datetime; print(datetime.datetime.now().year)') Phoenixthrush UwU" \
+          ${{ matrix.os == 'windows-latest' && '--windows-icon-from-ico=src/aniworld/icon.webp' || '' }} \
+          src/aniworld/entry.py
 
       - name: Upload executable
         uses: actions/upload-artifact@v4
         with:
-          name: aniworld
-          path: aniworld.exe
+          name: aniworld-${{ matrix.os }}
+          path: aniworld${{ matrix.ext }}
