@@ -54,13 +54,22 @@ def download_mpv(dep_path: str = None, appdata_path: str = None, update: bool = 
     if update:
         print("Updating MPV...")
 
-    if sys.platform == 'darwin' and update:
+    if sys.platform == 'darwin':
         if shutil.which("brew"):
-            print("Updating MPV using Homebrew...")
-            subprocess.run(["brew", "update"], check=True,
-                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            subprocess.run(["brew", "upgrade", "--formula", "mpv"], check=True,
-                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            if update:
+                print("Updating MPV using Homebrew...")
+                subprocess.run(["brew", "update"], check=True,
+                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                subprocess.run(["brew", "upgrade", "--formula", "mpv"], check=True,
+                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                return
+            if not shutil.which("mpv"):
+                print("Installing MPV using Homebrew...")
+                subprocess.run(["brew", "update"], check=True,
+                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                subprocess.run(["brew", "install", "--formula", "mpv"], check=True,
+                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                return
         return
 
     if sys.platform == 'linux' and update:
