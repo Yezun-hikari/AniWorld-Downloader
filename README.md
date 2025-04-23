@@ -22,6 +22,11 @@ AniWorld Downloader is a versatile command-line tool designed for downloading an
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+## Supported Providers
+
+To see the list of supported providers, check the [SUPPORTED_PROVIDERS](https://github.com/phoenixthrush/AniWorld-Downloader/blob/next/src/aniworld/config.py) variable.
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 ## Installation (Requires Git)
 
 ### Prerequisites
