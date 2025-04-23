@@ -23,8 +23,17 @@ def download_anime4k(mode):
         print("Removing Anime4K...")
 
         anime4k_shader_path = os.path.join(MPV_DIRECTORY, "shaders")
+        anime4k_input_conf_path = os.path.join(MPV_DIRECTORY, "input.conf")
+        anime4k_mpv_conf_path = os.path.join(MPV_DIRECTORY, "mpv.conf")
+
         if os.path.exists(anime4k_shader_path):
             shutil.rmtree(anime4k_shader_path)
+
+        if os.path.exists(anime4k_shader_path):
+            os.remove(anime4k_input_conf_path)
+
+        if os.path.exists(anime4k_shader_path):
+            os.remove(anime4k_mpv_conf_path)
 
         return
 
