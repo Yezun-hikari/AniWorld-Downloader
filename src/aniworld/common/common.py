@@ -54,13 +54,16 @@ def download_mpv(dep_path: str = None, appdata_path: str = None, update: bool = 
     if update:
         print("Updating MPV...")
 
-    if sys.platform == 'darwin':
+    if sys.platform == 'darwin' and update:
         if shutil.which("brew"):
-            subprocess.run(["brew", "update"], check=True)
-            subprocess.run(["brew", "upgrade", "--formula", "mpv"], check=True)
+            print("Updating MPV using Homebrew...")
+            subprocess.run(["brew", "update"], check=True,
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run(["brew", "upgrade", "--formula", "mpv"], check=True,
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         return
 
-    if sys.platform == 'linux':
+    if sys.platform == 'linux' and update:
         print("Not implemented.")
         return
 
@@ -132,14 +135,17 @@ def download_syncplay(dep_path: str = None, appdata_path: str = None, update: bo
     if update:
         print("Updating Syncplay...")
 
-    if sys.platform == 'darwin':
+    if sys.platform == 'darwin' and update:
         if shutil.which("brew"):
-            subprocess.run(["brew", "update"], check=True)
+            print("Updating Syncplay using Homebrew...")
+            subprocess.run(["brew", "update"], check=True,
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             subprocess.run(
-                ["brew", "upgrade", "--cask", "syncplay"], check=True)
+                ["brew", "upgrade", "--cask", "syncplay"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+            )
         return
 
-    if sys.platform == 'linux':
+    if sys.platform == 'linux' and update:
         print("Not implemented.")
         return
 
