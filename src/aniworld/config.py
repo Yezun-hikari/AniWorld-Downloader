@@ -4,10 +4,12 @@ import pathlib
 import platform
 import shutil
 import tempfile
+from packaging.version import Version
 
 from importlib.metadata import PackageNotFoundError, version
 from urllib3.exceptions import InsecureRequestWarning
 import urllib3
+import requests
 from fake_useragent import UserAgent
 
 #########################################################################################
@@ -52,7 +54,28 @@ try:
 except PackageNotFoundError:
     VERSION = ""
 
-IS_NEWEST_VERSION = True  # For now :)
+
+def get_latest_github_version():
+    try:
+        url = "https://api.github.com/repos/phoenixthrush/AniWorld-Downloader/releases/latest"
+        response = requests.get(url, timeout=15)
+        return response.json().get('tag_name', '') if response.status_code == 200 else ""
+    except requests.RequestException as e:
+        logging.error("Error fetching latest release: %s", e)
+        return ""
+
+
+def is_newest_version():
+    try:
+        current = Version(VERSION.lstrip('v').lstrip('.'))
+        latest = Version(get_latest_github_version().lstrip('v').lstrip('.'))
+        return latest, current >= latest
+    except Exception as e:
+        logging.error("Version comparison failed: %s", e)
+        return False
+
+
+LATEST_VERSION, IS_NEWEST_VERSION = is_newest_version()
 PLATFORM_SYSTEM = platform.system()
 
 SUPPORTED_PROVIDERS = [

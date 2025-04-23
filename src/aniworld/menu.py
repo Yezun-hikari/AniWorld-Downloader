@@ -10,7 +10,8 @@ from aniworld.config import (
     SUPPORTED_PROVIDERS,
     DEFAULT_PROVIDER_DOWNLOAD,
     DEFAULT_PROVIDER_WATCH,
-    USES_DEFAULT_PROVIDER
+    USES_DEFAULT_PROVIDER,
+    IS_NEWEST_VERSION
 )
 from aniworld import parser
 
@@ -91,7 +92,11 @@ class SelectionMenu(npyscreen.NPSApp):
         max_episode_height = max(3, terminal_height - total_reserved_height)
 
         npyscreen.setTheme(CustomTheme)
-        f = npyscreen.Form(name=f"Welcome to AniWorld-Downloader {VERSION}")
+        form_title = (
+            f"Welcome to AniWorld-Downloader v.{VERSION}"
+            f"{' (Update Available)' if not IS_NEWEST_VERSION else ''}"
+        )
+        f = npyscreen.Form(name=form_title)
 
         self.action_selection = f.add(
             npyscreen.TitleSelectOne,

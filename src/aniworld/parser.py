@@ -237,13 +237,16 @@ def parse_arguments() -> argparse.Namespace:  # pylint: disable=too-many-locals
     if args.version:
         cowsay = fR"""
 _____________________________
-< AniWorld-Downloader {config.VERSION} >
+< AniWorld-Downloader v.{config.VERSION} >
 -----------------------------
         \   ^__^
          \  (oo)\_______
             (__)\       )\/\
                 ||----w |
                 ||     ||
+
+Your version is outdated.
+Please update to the latest version (v.{config.LATEST_VERSION}).
 """
         print(cowsay.strip())
         sys.exit()
