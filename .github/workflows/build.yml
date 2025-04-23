@@ -39,7 +39,7 @@ jobs:
             --file-version=$(python -c "import toml; print(toml.load(open('pyproject.toml'))['project']['version'])") `
             --product-version=$(python -c "import toml; print(toml.load(open('pyproject.toml'))['project']['version'])") `
             --file-description="AniWorld Downloader is a command-line tool built to download and stream anime content from aniworld.to" `
-            --copyright="Copyright (c) 2024-$(python -c "import datetime; print(datetime.datetime.now().year)") Phoenixthrush UwU" `
+            --copyright="Copyright (c) 2024-$(python -c "import datetime; print(datetime.datetime.now().year)") phoenixthrush, Tmaster055" `
             --windows-icon-from-ico=src/aniworld/icon.webp `
             src/aniworld/entry.py
 
@@ -67,13 +67,22 @@ jobs:
           pip install .
 
       - name: Build executable with Nuitka
-        run: python -m nuitka --onefile src/aniworld/entry.py
+        run: |
+          python3 -m nuitka --onefile --assume-yes-for-downloads --include-package=aniworld --output-filename=aniworld \
+          --company-name="Phoenixthrush UwU" \
+          --product-name="AniWorld Downloader" \
+          --file-version=$(python3 -c "import toml; print(toml.load(open('pyproject.toml'))['project']['version'])") \
+          --product-version=$(python3 -c "import toml; print(toml.load(open('pyproject.toml'))['project']['version'])") \
+          --file-description="AniWorld Downloader is a command-line tool built to download and stream anime content from aniworld.to" \
+          --copyright="Copyright (c) 2024-$(python3 -c "import datetime; print(datetime.datetime.now().year)") phoenixthrush, Tmaster055" \
+          --linux-icon=src/aniworld/icon.webp \
+          src/aniworld/entry.py
 
       - name: Upload executable
         uses: actions/upload-artifact@v4
         with:
           name: aniworld-linux
-          path: entry.bin
+          path: aniworld
 
   build-macos-intel:
     runs-on: macos-13
@@ -93,13 +102,23 @@ jobs:
           pip install .
 
       - name: Build executable with Nuitka
-        run: python -m nuitka --onefile src/aniworld/entry.py
+        run: |
+          python3 -m nuitka --onefile --assume-yes-for-downloads --include-package=aniworld --output-filename=aniworld \
+          --company-name="Phoenixthrush UwU" \
+          --product-name="AniWorld Downloader" \
+          --file-version=$(python3 -c "import toml; print(toml.load(open('pyproject.toml'))['project']['version'])") \
+          --product-version=$(python3 -c "import toml; print(toml.load(open('pyproject.toml'))['project']['version'])") \
+          --file-description="AniWorld Downloader is a command-line tool built to download and stream anime content from aniworld.to" \
+          --copyright="Copyright (c) 2024-$(python3 -c "import datetime; print(datetime.datetime.now().year)") phoenixthrush, Tmaster055" \
+          --macos-app-icon=src/aniworld/icon.webp \
+          --macos-signed-app-name=com.phoenixthrush.aniworld \
+          src/aniworld/entry.py
 
       - name: Upload executable
         uses: actions/upload-artifact@v4
         with:
           name: aniworld-macos-intel
-          path: entry.bin
+          path: aniworld
 
   build-macos-arm:
     runs-on: macos-13-arm64
@@ -119,10 +138,20 @@ jobs:
           pip install .
 
       - name: Build executable with Nuitka
-        run: python -m nuitka --onefile src/aniworld/entry.py
+        run: |
+          python3 -m nuitka --onefile --assume-yes-for-downloads --include-package=aniworld --output-filename=aniworld \
+          --company-name="Phoenixthrush UwU" \
+          --product-name="AniWorld Downloader" \
+          --file-version=$(python3 -c "import toml; print(toml.load(open('pyproject.toml'))['project']['version'])") \
+          --product-version=$(python3 -c "import toml; print(toml.load(open('pyproject.toml'))['project']['version'])") \
+          --file-description="AniWorld Downloader is a command-line tool built to download and stream anime content from aniworld.to" \
+          --copyright="Copyright (c) 2024-$(python3 -c "import datetime; print(datetime.datetime.now().year)") phoenixthrush, Tmaster055" \
+          --macos-app-icon=src/aniworld/icon.webp \
+          --macos-signed-app-name=com.phoenixthrush.aniworld \
+          src/aniworld/entry.py
 
       - name: Upload executable
         uses: actions/upload-artifact@v4
         with:
           name: aniworld-macos-arm
-          path: entry.bin
+          path: aniworld
