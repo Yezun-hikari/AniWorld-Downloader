@@ -49,6 +49,8 @@ urllib3.disable_warnings(InsecureRequestWarning)
 # Default Configuration Constants
 #########################################################################################
 
+DEFAULT_REQUEST_TIMEOUT = 30
+
 try:
     VERSION = version('aniworld')
 except PackageNotFoundError:
@@ -58,7 +60,7 @@ except PackageNotFoundError:
 def get_latest_github_version():
     try:
         url = "https://api.github.com/repos/phoenixthrush/AniWorld-Downloader/releases/latest"
-        response = requests.get(url, timeout=15)
+        response = requests.get(url, timeout=DEFAULT_REQUEST_TIMEOUT)
         return response.json().get('tag_name', '') if response.status_code == 200 else ""
     except requests.RequestException as e:
         logging.error("Error fetching latest release: %s", e)
@@ -115,7 +117,6 @@ DEFAULT_ONLY_DIRECT_LINK = False
 # SUPPORTED_PROVIDERS above
 DEFAULT_PROVIDER_DOWNLOAD = "VOE"
 DEFAULT_PROVIDER_WATCH = "Doodstream"
-DEFAULT_REQUEST_TIMEOUT = 30
 DEFAULT_TERMINAL_SIZE = (90, 30)
 
 # https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file

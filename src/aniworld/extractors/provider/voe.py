@@ -73,7 +73,7 @@ def get_direct_link_from_voe(embeded_voe_link: str) -> str:
                 redirect_url,
                 headers={'User-Agent': RANDOM_USER_AGENT}
             ),
-            timeout=10
+            timeout=DEFAULT_REQUEST_TIMEOUT
         ) as resp:
             html = resp.read().decode()
     except (HTTPError, URLError, TimeoutError) as err:

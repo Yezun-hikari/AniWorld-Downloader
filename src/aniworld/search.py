@@ -7,7 +7,7 @@ import curses
 import requests
 
 from aniworld.ascii_art import display_ascii_art
-
+from aniworld.config import DEFAULT_REQUEST_TIMEOUT
 
 def search_anime(keyword: str = None) -> str:
     print(display_ascii_art())
@@ -30,7 +30,7 @@ def search_anime(keyword: str = None) -> str:
 
 def fetch_anime_list(url: str) -> list:
     try:
-        response = requests.get(url, timeout=15)
+        response = requests.get(url, timeout=DEFAULT_REQUEST_TIMEOUT)
         response.raise_for_status()
         decoded_data = json.loads(html.unescape(response.text))
         if isinstance(decoded_data, list):

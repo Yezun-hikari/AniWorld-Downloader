@@ -34,7 +34,7 @@ def get_github_release(repo: str) -> dict:
     api_url = f"https://api.github.com/repos/{repo}/releases/latest"
 
     try:
-        response = requests.get(api_url, timeout=15)
+        response = requests.get(api_url, timeout=DEFAULT_REQUEST_TIMEOUT)
         response.raise_for_status()
         release_data = response.json()
         assets = release_data.get('assets', [])
@@ -204,7 +204,7 @@ def download_file(url: str, path: str):
 
 def get_season_episode_count(slug) -> dict:
     base_url = f"https://aniworld.to/anime/stream/{slug}/"
-    response = requests.get(base_url, timeout=15)
+    response = requests.get(base_url, timeout=DEFAULT_REQUEST_TIMEOUT)
     soup = BeautifulSoup(response.content, 'html.parser')
 
     season_meta = soup.find('meta', itemprop='numberOfSeasons')
@@ -214,7 +214,7 @@ def get_season_episode_count(slug) -> dict:
 
     for season in range(1, number_of_seasons + 1):
         season_url = f"{base_url}staffel-{season}"
-        response = requests.get(season_url, timeout=15)
+        response = requests.get(season_url, timeout=DEFAULT_REQUEST_TIMEOUT)
         soup = BeautifulSoup(response.content, 'html.parser')
 
         episode_links = soup.find_all('a', href=True)
