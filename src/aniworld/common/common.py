@@ -14,12 +14,12 @@ from bs4 import BeautifulSoup
 from aniworld.config import DEFAULT_REQUEST_TIMEOUT
 
 
-def check_avx2_support() -> bool:  # TODO Not working yet right
+def check_avx2_support() -> bool:
     if platform.system() != "Windows":
         logging.debug("AVX2 check is only supported on Windows.")
         return False
 
-    import cpuinfo  # type: ignore
+    import cpuinfo  # type: ignore # pylint: disable=import-outside-toplevel
 
     info = cpuinfo.get_cpu_info()
     flags = info.get('flags', [])
@@ -354,4 +354,4 @@ def generate_links(urls, arguments):
 
 
 if __name__ == "__main__":
-    print(get_season_episode_count("go-go-loser-ranger"))
+    print(check_avx2_support())

@@ -48,11 +48,9 @@ def extract_voe_from_script(html):
     for script in scripts:
         text = str(script)
         if text.startswith("<script>(function () {var KGMAaM="):
-            try:
-                encoded_part = text.split('MKGMa="')[1].split('"')[0]
-                return decode_voe_string(encoded_part)["source"]
-            except Exception:
-                return None
+            encoded_part = text.split('MKGMa="')[1].split('"')[0]
+            return decode_voe_string(encoded_part)["source"]
+
     return None
 
 

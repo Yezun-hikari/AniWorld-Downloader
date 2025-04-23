@@ -73,7 +73,7 @@ def aniworld() -> None:
             execute(anime_list=[anime])
     except KeyboardInterrupt:
         pass
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-exception-caught
         if arguments.debug:
             traceback.print_exc()
         else:

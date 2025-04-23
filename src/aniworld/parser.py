@@ -416,10 +416,4 @@ _____________________________
 arguments = parse_arguments()
 
 if __name__ == "__main__":
-    urls = [
-        "https://aniworld.to/anime/stream/food-wars-shokugeki-no-sma/staffel-1/episode-1",
-        "https://aniworld.to/anime/stream/food-wars-shokugeki-no-sma/staffel-2",
-        "https://aniworld.to/anime/stream/overlord"
-    ]
-
-    print(generate_links(urls))
+    pass

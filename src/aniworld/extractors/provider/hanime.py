@@ -2,15 +2,17 @@ import re
 import json
 import sys
 import requests
+from aniworld.config import DEFAULT_REQUEST_TIMEOUT
 
 
 def fetch_page_content(url):
     try:
-        response = requests.get(url)
+        response = requests.get(url, timeout=DEFAULT_REQUEST_TIMEOUT)
         response.raise_for_status()
         return response.text
-    except requests.RequestException:
-        raise ValueError("Failed to fetch the page content.")
+    except requests.exceptions.RequestException as e:
+        print(f"Failed to fetch the page content: {e}")
+        return None
 
 
 def extract_video_data(page_content):
@@ -42,7 +44,8 @@ def display_streams(streams):
     for i, stream in enumerate(streams, 1):
         premium_tag = "(Premium)" if not stream['is_guest_allowed'] else ""
         print(
-            f"{i}. {stream['width']}x{stream['height']}\t({stream['filesize_mbs']}MB) {premium_tag}")
+            f"{i}. {stream['width']}x{stream['height']}\t"
+            f"({stream['filesize_mbs']}MB) {premium_tag}")
 
 
 def get_user_selection(streams):
@@ -50,9 +53,9 @@ def get_user_selection(streams):
         selected_index = int(input("Select a stream: ").strip()) - 1
         if 0 <= selected_index < len(streams):
             return selected_index
-        else:
-            print("Invalid selection.")
-            return None
+
+        print("Invalid selection.")
+        return None
     except ValueError:
         print("Invalid input.")
         return None

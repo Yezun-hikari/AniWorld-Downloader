@@ -4,7 +4,7 @@ import logging
 import hashlib
 
 from aniworld.models import Anime
-from aniworld.config import MPV_PATH, PROVIDER_HEADERS, SYNCPLAY_PATH
+from aniworld.config import MPV_PATH, PROVIDER_HEADERS, SYNCPLAY_PATH, INVALID_PATH_CHARS
 from aniworld.common import download_mpv, download_syncplay
 from aniworld.aniskip import aniskip
 from aniworld.parser import arguments
@@ -62,7 +62,8 @@ def _execute_command(command):
         )
 
 
-def _build_syncplay_command(source, title=None, headers=None, aniskip_data=None):
+def _build_syncplay_command(source, title=None, headers=None, aniskip_data=None,
+                            anime=None, media_title=None):
     command = [
         SYNCPLAY_PATH,
         "--no-gui",
@@ -76,14 +77,17 @@ def _build_syncplay_command(source, title=None, headers=None, aniskip_data=None)
         "--fs"
     ]
 
-    if title:
-        command.append(f'--force-media-title="{title}"')
+    if media_title:
+        command.append(f'--force-media-title="{media_title}"')
 
     command = _append_password(command, title)
 
     if headers:
-        for header in headers:
-            command.append(f"--http-header-fields={header}")
+        if anime.provider != "Luluvdo":
+            for header in headers:
+                command.append(f"--http-header-fields={header}")
+        else:
+            command.append(f"--http-header-fields={headers[0]}")
 
     if aniskip_data:
         command.extend(aniskip_data.split()[:2])
@@ -99,13 +103,32 @@ def _process_anime_episodes(anime):
             print(f"{episode.get_direct_link()}\n")
             continue
 
+        sanitized_anime_title = ''.join(
+            char for char in anime.title if char not in INVALID_PATH_CHARS
+        )
+
+        if episode.season == 0:
+            media_title = (
+                f"{sanitized_anime_title} - "
+                f"Movie {episode.episode:02} - "
+                f"({anime.language})"
+            )
+        else:
+            media_title = (
+                f"{sanitized_anime_title} - "
+                f"S{episode.season:02}E{episode.episode:03} - "
+                f"({anime.language})"
+            )
+
         command = _build_syncplay_command(
             episode.get_direct_link(),
             episode.title_german,
             PROVIDER_HEADERS.get(anime.provider),
             aniskip(anime.title, episode.episode,
                     episode.season, episode.season_episode_count[episode.season])
-            if anime.aniskip else None
+            if anime.aniskip else None,
+            anime,
+            media_title
         )
         _execute_command(command)
 

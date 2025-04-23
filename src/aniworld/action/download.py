@@ -20,7 +20,7 @@ def download(anime: Anime):
             char for char in anime.title if char not in INVALID_PATH_CHARS
         )
 
-        if episode.season == 0:  # TODO: needs to be done in Watch and Syncplay too :)
+        if episode.season == 0:
             output_file = (
                 f"{sanitized_anime_title} - "
                 f"Movie {episode.episode:02} - "

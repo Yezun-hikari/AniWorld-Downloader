@@ -3,15 +3,15 @@ import logging
 
 from aniworld.aniskip import aniskip
 from aniworld.common import download_mpv
-from aniworld.config import MPV_PATH, PROVIDER_HEADERS
+from aniworld.config import MPV_PATH, PROVIDER_HEADERS, INVALID_PATH_CHARS
 from aniworld.models import Anime
 from aniworld.parser import arguments
 
 
-def _build_watch_command(source, title=None, headers=None, aniskip_data=None, anime=None):
+def _build_watch_command(source, media_title=None, headers=None, aniskip_data=None, anime=None):
     command = [MPV_PATH, source, "--fs", "--quiet"]
-    if title:
-        command.append(f'--force-media-title="{title}"')
+    if media_title:
+        command.append(f'--force-media-title="{media_title}"')
     if headers:
         if anime.provider != "Luluvdo":
             for header in headers:
@@ -53,10 +53,27 @@ def _process_anime_episodes(anime):
             print(f"{episode.get_direct_link()}\n")
             continue
 
+        sanitized_anime_title = ''.join(
+            char for char in anime.title if char not in INVALID_PATH_CHARS
+        )
+
+        if episode.season == 0:
+            media_title = (
+                f"{sanitized_anime_title} - "
+                f"Movie {episode.episode:02} - "
+                f"({anime.language})"
+            )
+        else:
+            media_title = (
+                f"{sanitized_anime_title} - "
+                f"S{episode.season:02}E{episode.episode:03} - "
+                f"({anime.language})"
+            )
+
         title = _generate_episode_title(anime, episode)
         command = _build_watch_command(
             episode.get_direct_link(),
-            title,
+            media_title,
             PROVIDER_HEADERS.get(anime.provider),
             aniskip(anime.title, episode.episode,
                     episode.season, episode.season_episode_count[episode.season])
