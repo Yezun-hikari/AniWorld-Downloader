@@ -81,7 +81,7 @@ LATEST_VERSION, IS_NEWEST_VERSION = is_newest_version()
 PLATFORM_SYSTEM = platform.system()
 
 SUPPORTED_PROVIDERS = [
-    "Doodstream", "Vidmoly", "Vidoza", "SpeedFiles", "Streamtape", "Luluvdo",  # "VOE"
+    "Doodstream", "Vidmoly", "Vidoza", "SpeedFiles", "Streamtape", "Luluvdo", "VOE"
 ]
 
 #########################################################################################

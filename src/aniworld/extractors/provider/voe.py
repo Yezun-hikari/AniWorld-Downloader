@@ -47,7 +47,7 @@ def extract_voe_from_script(html):
     scripts = soup.find_all("script")
     for script in scripts:
         text = str(script)
-        if text.startswith("<script>(function () {var KGMAaM="):
+        if "KGMAaM=" in text:
             encoded_part = text.split('MKGMa="')[1].split('"')[0]
             return decode_voe_string(encoded_part)["source"]
 

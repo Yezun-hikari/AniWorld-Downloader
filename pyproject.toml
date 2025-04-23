@@ -18,6 +18,7 @@ dependencies = [
     'npyscreen',
     'tqdm',
     'fake_useragent',
+    'packaging',
     'py-cpuinfo; platform_system == "Windows"',
     'windows-curses; platform_system == "Windows"'
 ]
