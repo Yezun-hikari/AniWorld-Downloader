@@ -81,7 +81,7 @@ LATEST_VERSION, IS_NEWEST_VERSION = is_newest_version()
 PLATFORM_SYSTEM = platform.system()
 
 SUPPORTED_PROVIDERS = [
-    "VOE", "Doodstream", "Vidmoly", "Vidoza", "SpeedFiles", "Streamtape", "Luluvdo"
+    "Doodstream", "Vidmoly", "Vidoza", "SpeedFiles", "Streamtape", "Luluvdo",  # "VOE"
 ]
 
 #########################################################################################
@@ -115,8 +115,8 @@ DEFAULT_LANGUAGE = "German Sub"
 DEFAULT_ONLY_COMMAND = False
 DEFAULT_ONLY_DIRECT_LINK = False
 # SUPPORTED_PROVIDERS above
-DEFAULT_PROVIDER_DOWNLOAD = "VOE"
-DEFAULT_PROVIDER_WATCH = "Doodstream"
+DEFAULT_PROVIDER_DOWNLOAD = "Vidmoly"
+DEFAULT_PROVIDER_WATCH = "Vidmoly"
 DEFAULT_TERMINAL_SIZE = (90, 30)
 
 # https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file

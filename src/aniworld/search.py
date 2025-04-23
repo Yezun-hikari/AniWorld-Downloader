@@ -9,6 +9,7 @@ import requests
 from aniworld.ascii_art import display_ascii_art
 from aniworld.config import DEFAULT_REQUEST_TIMEOUT
 
+
 def search_anime(keyword: str = None) -> str:
     print(display_ascii_art())
     if not keyword:
