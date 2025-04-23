@@ -30,8 +30,7 @@ def aniworld() -> None:
                             if line.startswith("http"):
                                 urls.append(line)
 
-                        links = generate_links(urls, arguments)
-                        arguments.episode.extend(links)
+                        links.extend(urls)
                 except FileNotFoundError:
                     logging.error(
                         "The specified episode file does not exist: %s", arguments.episode_file
@@ -42,7 +41,8 @@ def aniworld() -> None:
                     sys.exit(1)
 
             if arguments.episode:
-                links = generate_links(arguments.episode, arguments)
+                links.extend(arguments.episode)
+            links = generate_links(links, arguments)
 
             # TODO: this needs to pass all links to a function
             #       that will return Anime objects instead
