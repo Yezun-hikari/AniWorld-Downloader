@@ -95,7 +95,7 @@ LULUVDO_USER_AGENT = "Mozilla/5.0 (Android 15; Mobile; rv:132.0) Gecko/132.0 Fir
 PROVIDER_HEADERS = {
     "Vidmoly": ['Referer: "https://vidmoly.to"'],
     "Doodstream": ['Referer: "https://dood.li/"'],
-    "VOE": ['Referer: "https://nathanfromsubject.com/"'],
+    "VOE": ['Referer: "https://richardsignfish.com/"'],
     "Luluvdo": [
         f'User-Agent: {LULUVDO_USER_AGENT}',
         'Accept-Language: de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7',
