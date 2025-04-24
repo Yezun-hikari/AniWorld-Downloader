@@ -95,6 +95,7 @@ jobs:
           path: aniworld-${{ env.VERSION }}-${{ matrix.os }}.exe
 
       - uses: actions/upload-artifact@v4
+        if: matrix.os != 'windows-latest'
         with:
           name: aniworld-${{ matrix.os }}
           path: aniworld-${{ env.VERSION }}-${{ matrix.os }}
@@ -106,6 +107,7 @@ jobs:
           files: aniworld-${{ env.VERSION }}-${{ matrix.os }}.exe
 
       - name: Upload Nuitka build to GitHub Release
+        if: matrix.os != 'windows-latest'
         uses: softprops/action-gh-release@v2
         with:
           files: aniworld-${{ env.VERSION }}-${{ matrix.os }}
