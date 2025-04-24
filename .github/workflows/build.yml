@@ -11,7 +11,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest, macos-13, macos-13-arm64]
+        os: [windows-latest, ubuntu-latest, macos-13]
         include:
           - os: windows-latest
             ext: .exe
@@ -22,10 +22,7 @@ jobs:
           - os: macos-13
             ext: ""
             icon: --macos-app-icon=src/aniworld/icon.webp --macos-signed-app-name=com.phoenixthrush.aniworld
-          - os: macos-13-arm64
-            ext: ""
-            icon: --macos-app-icon=src/aniworld/icon.webp --macos-signed-app-name=com.phoenixthrush.aniworld
-
+            
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -41,10 +38,6 @@ jobs:
           pip install toml imageio nuitka
           pip install .
 
-      - name: Show directory tree (cross-platform)
-        run: |
-          python -c "import os; [print(os.path.join(dp, f)) for dp, dn, filenames in os.walk('.') for f in filenames]"
-
       - name: Build with Nuitka
         shell: bash
         run: |
@@ -53,7 +46,7 @@ jobs:
             python -c "import toml; print(toml.load(open('pyproject.toml'))['project']['version'])"
           )
           Y=$(python -c "import datetime; print(datetime.datetime.now().year)")
-          python -m nuitka --onefile --assume-yes-for-downloads --include-package=aniworld,fake_useragent \
+          python -m nuitka --onefile --assume-yes-for-downloads --include-package=aniworld \
           --include-data-file=$JSON_PATH=fake_useragent/data/browsers.jsonl \
           --output-filename=aniworld${{ matrix.ext }} \
           --company-name="Phoenixthrush UwU" \
