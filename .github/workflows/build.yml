@@ -19,7 +19,7 @@ jobs:
           - os: ubuntu-latest
             icon: --linux-icon=src/aniworld/icon.webp
           - os: macos-latest
-            icon: --macos-app-icon=src/aniworld/icon.webp --macos-signed-app-name=com.phoenixthrush.aniworld --macos-target-arch=universal
+            icon: --macos-app-icon=src/aniworld/icon.webp --macos-signed-app-name=com.phoenixthrush.aniworld --macos-target-arch=arm64
 
     runs-on: ${{ matrix.os }}
 
