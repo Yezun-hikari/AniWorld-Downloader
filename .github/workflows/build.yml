@@ -1,7 +1,8 @@
-name: Build with Nuitka
+name: Build with Nuitka and Upload to PyPI
 
 on:
-  workflow_dispatch:
+  release:
+    types: [created]
 
 permissions:
   contents: read
@@ -22,7 +23,7 @@ jobs:
           - os: macos-13
             ext: ""
             icon: --macos-app-icon=src/aniworld/icon.webp --macos-signed-app-name=com.phoenixthrush.aniworld
-            
+
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -35,16 +36,32 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install toml imageio nuitka
+          pip install toml imageio nuitka build twine
           pip install .
+
+      - name: Build distribution
+        run: |
+          python -m build
+
+      - name: Upload to PyPI
+        if: matrix.os == 'ubuntu-latest'
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+        run: |
+          twine upload dist/* -u __token__ -p ${{ secrets.PYPI_TOKEN }}
+
+      - name: Upload dist files to GitHub Release
+        if: matrix.os == 'ubuntu-latest'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
 
       - name: Build with Nuitka
         shell: bash
         run: |
           JSON_PATH=$(python -c "import fake_useragent, os; print(os.path.join(os.path.dirname(fake_useragent.__file__), 'data', 'browsers.jsonl'))")
-          V=$(
-            python -c "import toml; print(toml.load(open('pyproject.toml'))['project']['version'])"
-          )
+          V=$(python -c "import toml; print(toml.load(open('pyproject.toml'))['project']['version'])")
           Y=$(python -c "import datetime; print(datetime.datetime.now().year)")
           python -m nuitka --onefile --assume-yes-for-downloads --include-package=aniworld \
           --include-data-file=$JSON_PATH=fake_useragent/data/browsers.jsonl \
@@ -62,3 +79,8 @@ jobs:
         with:
           name: aniworld-${{ matrix.os }}
           path: aniworld${{ matrix.ext }}
+
+      - name: Upload dist files to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: aniworld${{ matrix.ext }}
