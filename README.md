@@ -307,10 +307,10 @@ These dependencies are automatically installed when you set up AniWorld Download
 
 ### Still Left Todo
 
-- [ ] Add dynamic episode generation for `--episode`, allowing users to specify only anime or season
-- [ ] Enable support for episode files
+- [x] Add dynamic episode generation for `--episode`, allowing users to specify only anime or season
+- [x] Enable support for episode files
 - [ ] Implement a provider fallback mechanism
-- [ ] Add Anime4K integration
+- [x] Add Anime4K integration
 - [ ] Introduce advanced Syncplay room options
 
 <details>
@@ -322,13 +322,10 @@ These dependencies are automatically installed when you set up AniWorld Download
 - [ ] --uninstall
 - [x] --update
 - [x] --slug
-- [ ] --link
-- [ ] --query
 - [x] --episode
 - [x] --episode-file
 - [x] --episode-local
 - [x] --action
-- [ ] --output
 - [x] --output-directory
 - [x] --language
 - [x] --provider

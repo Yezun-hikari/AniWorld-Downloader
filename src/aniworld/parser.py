@@ -96,19 +96,9 @@ def parse_arguments() -> argparse.Namespace:  # pylint: disable=too-many-locals
     # Search options
     search_opts = parser.add_argument_group('Search Options')
     search_opts.add_argument(
-        '-l', '--link',
-        type=str,
-        help='Provide a direct link (e.g., https://aniworld.to/anime/stream/...).'
-    )
-    search_opts.add_argument(
         '-s', '--slug',
         type=str,
         help='Specify a search slug (e.g., demon-slayer-kimetsu-no-yaiba).'
-    )
-    search_opts.add_argument(
-        '-q', '--query',
-        type=str,
-        help='Enter a search query (e.g., demon).'
     )
 
     # Episode options
@@ -150,11 +140,6 @@ def parse_arguments() -> argparse.Namespace:  # pylint: disable=too-many-locals
         type=str,
         default=config.DEFAULT_DOWNLOAD_PATH,
         help='Set the download directory (e.g., /path/to/downloads).'
-    )
-    action_opts.add_argument(
-        '-O', '--final-dir',
-        type=str,
-        help='Set the final download directory (defaults to anime name if not specified).'
     )
     action_opts.add_argument(
         '-L', '--language',
@@ -233,6 +218,9 @@ def parse_arguments() -> argparse.Namespace:  # pylint: disable=too-many-locals
     )
 
     args = parser.parse_args()
+
+    if args.uninstall:
+        print("Uninstall is not implemented yet!")
 
     if args.version:
         cowsay = fR"""
