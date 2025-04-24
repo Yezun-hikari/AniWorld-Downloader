@@ -293,7 +293,8 @@ def generate_links(urls, arguments):
         movies_info = 0
         parts = base_url.split('/')
 
-        if "anime" in parts:
+        if ("anime" in parts and not "episode" in base_url or
+                "anime" in parts and arguments.keep_watching):
             series_slug_index = parts.index("stream") + 1
             series_slug = parts[series_slug_index]
             seasons_info = get_season_episode_count(
@@ -302,6 +303,9 @@ def generate_links(urls, arguments):
             movies_info = get_movie_episode_count(
                 slug=series_slug
             )
+        else:
+            unique_links.add(base_url)
+            continue
 
         # print(seasons_info)
 
