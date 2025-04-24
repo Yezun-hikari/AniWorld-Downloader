@@ -48,7 +48,7 @@ jobs:
       - name: Build with Nuitka
         shell: bash
         run: |
-          JSON_PATH=$(find .venv -path "*site-packages/fake_useragent/data/browsers.jsonl" | head -n 1)
+          JSON_PATH=$(python -c "import fake_useragent, os; print(os.path.join(os.path.dirname(fake_useragent.__file__), 'data', 'browsers.jsonl'))")
           V=$(
             python -c "import toml; print(toml.load(open('pyproject.toml'))['project']['version'])"
           )
