@@ -37,6 +37,7 @@ jobs:
           pip install .
 
       - name: Extract version from pyproject.toml
+        shell: bash
         id: extract_version
         run: |
           VERSION=$(python -c "import toml; print(toml.load('pyproject.toml')['project']['version'])")
