@@ -61,7 +61,7 @@ def aniworld() -> None:
                 anime_list.append(anime)
 
             execute(anime_list=anime_list)
-        if not arguments.episode and not arguments.local_episodes:
+        if not arguments.episode and not arguments.local_episodes and not arguments.episode_file:
             while True:
                 try:
                     slug = arguments.slug if arguments.slug else search_anime()
