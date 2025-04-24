@@ -46,6 +46,7 @@ jobs:
           python -c "import os; [print(os.path.join(dp, f)) for dp, dn, filenames in os.walk('.') for f in filenames]"
 
       - name: Build with Nuitka
+        shell: bash
         run: |
           V=$(
             python -c "import toml; print(toml.load(open('pyproject.toml'))['project']['version'])"
