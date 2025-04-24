@@ -12,16 +12,13 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest, macos-13]
+        os: [windows-latest, ubuntu-latest, macos-latest]
         include:
           - os: windows-latest
-            ext: .exe
             icon: --windows-icon-from-ico=src/aniworld/icon.webp
           - os: ubuntu-latest
-            ext: ""
             icon: --linux-icon=src/aniworld/icon.webp
-          - os: macos-13
-            ext: ""
+          - os: macos-latest
             icon: --macos-app-icon=src/aniworld/icon.webp --macos-signed-app-name=com.phoenixthrush.aniworld
 
     runs-on: ${{ matrix.os }}
@@ -38,6 +35,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install toml imageio nuitka
           pip install .
+
+      - name: Extract version from pyproject.toml
+        id: extract_version
+        run: |
+          VERSION=$(python -c "import toml; print(toml.load('pyproject.toml')['project']['version'])")
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+          echo "Version extracted: ${VERSION}"
 
       - name: Build distribution
         if: matrix.os == 'ubuntu-latest'
@@ -64,11 +68,16 @@ jobs:
         shell: bash
         run: |
           JSON_PATH=$(python -c "import fake_useragent, os; print(os.path.join(os.path.dirname(fake_useragent.__file__), 'data', 'browsers.jsonl'))")
-          V=$(python -c "import toml; print(toml.load(open('pyproject.toml'))['project']['version'])")
+          V=$VERSION
           Y=$(python -c "import datetime; print(datetime.datetime.now().year)")
+          if [[ ${{ matrix.os }} == 'windows-latest' ]]; then
+            EXT=".exe"
+          else
+            EXT=""
+          fi
           python -m nuitka --onefile --assume-yes-for-downloads --include-package=aniworld \
           --include-data-file=$JSON_PATH=fake_useragent/data/browsers.jsonl \
-          --output-filename=aniworld${{ matrix.ext }} \
+          --output-filename=aniworld-${V}-${{ matrix.os }}${EXT} \
           --company-name="Phoenixthrush UwU" \
           --product-name="AniWorld Downloader" \
           --file-version=$V \
@@ -81,9 +90,9 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: aniworld-${{ matrix.os }}
-          path: aniworld${{ matrix.ext }}
+          path: aniworld-${{ env.VERSION }}-${{ matrix.os }}${EXT}
 
-      - name: Upload dist files to GitHub Release
+      - name: Upload Nuitka build to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: aniworld${{ matrix.ext }}
+          files: aniworld-${{ env.VERSION }}-${{ matrix.os }}${EXT}
