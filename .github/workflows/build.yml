@@ -33,7 +33,7 @@ jobs:
 
       - name: Build executable with Nuitka
         run: |
-            python -m nuitka --onefile --assume-yes-for-downloads --include-package=aniworld --output-filename=aniworld.exe `
+            python -m nuitka --onefile --assume-yes-for-downloads --include-package=aniworld,fake_useragent --output-filename=aniworld.exe `
             --company-name="Phoenixthrush UwU" `
             --product-name="AniWorld Downloader" `
             --file-version=$(python -c "import toml; print(toml.load(open('pyproject.toml'))['project']['version'])") `
@@ -68,7 +68,7 @@ jobs:
 
       - name: Build executable with Nuitka
         run: |
-          python3 -m nuitka --onefile --assume-yes-for-downloads --include-package=aniworld --output-filename=aniworld \
+          python3 -m nuitka --onefile --assume-yes-for-downloads --include-package=aniworld,fake_useragent --output-filename=aniworld \
           --company-name="Phoenixthrush UwU" \
           --product-name="AniWorld Downloader" \
           --file-version=$(python3 -c "import toml; print(toml.load(open('pyproject.toml'))['project']['version'])") \
@@ -103,7 +103,7 @@ jobs:
 
       - name: Build executable with Nuitka
         run: |
-          python3 -m nuitka --onefile --assume-yes-for-downloads --include-package=aniworld --output-filename=aniworld \
+          python3 -m nuitka --onefile --assume-yes-for-downloads --include-package=aniworld,fake_useragent --output-filename=aniworld \
           --company-name="Phoenixthrush UwU" \
           --product-name="AniWorld Downloader" \
           --file-version=$(python3 -c "import toml; print(toml.load(open('pyproject.toml'))['project']['version'])") \
@@ -139,7 +139,7 @@ jobs:
 
       - name: Build executable with Nuitka
         run: |
-          python3 -m nuitka --onefile --assume-yes-for-downloads --include-package=aniworld --output-filename=aniworld \
+          python3 -m nuitka --onefile --assume-yes-for-downloads --include-package=aniworld,fake_useragent --output-filename=aniworld \
           --company-name="Phoenixthrush UwU" \
           --product-name="AniWorld Downloader" \
           --file-version=$(python3 -c "import toml; print(toml.load(open('pyproject.toml'))['project']['version'])") \
