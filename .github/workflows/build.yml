@@ -49,7 +49,7 @@ jobs:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
         run: |
-          twine upload dist/* -u __token__ -p ${{ secrets.PYPI_TOKEN }}
+          twine upload dist/* -u __token__ -p ${{ secrets.PYPI_TOKEN }} || true
 
       - name: Upload dist files to GitHub Release
         if: matrix.os == 'ubuntu-latest'
