@@ -48,11 +48,13 @@ jobs:
       - name: Build with Nuitka
         shell: bash
         run: |
+          JSON_PATH=$(find .venv -path "*site-packages/fake_useragent/data/browsers.jsonl" | head -n 1)
           V=$(
             python -c "import toml; print(toml.load(open('pyproject.toml'))['project']['version'])"
           )
           Y=$(python -c "import datetime; print(datetime.datetime.now().year)")
           python -m nuitka --onefile --assume-yes-for-downloads --include-package=aniworld,fake_useragent \
+          --include-data-file=$JSON_PATH=fake_useragent/data/browsers.jsonl \
           --output-filename=aniworld${{ matrix.ext }} \
           --company-name="Phoenixthrush UwU" \
           --product-name="AniWorld Downloader" \
