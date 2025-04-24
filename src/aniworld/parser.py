@@ -1,6 +1,7 @@
 import argparse
 import importlib
 import json
+import os
 import logging
 import platform
 import random
@@ -345,28 +346,33 @@ Please update to the latest version (v.{config.LATEST_VERSION}).
 
     if args.debug is True:
         def open_terminal_with_command(command):
-            terminal_emulators = [
-                ('gnome-terminal', ['gnome-terminal', '--',
-                 'bash', '-c', f'{command}; exec bash']),
-                ('xterm', ['xterm', '-hold', '-e', command]),
-                ('konsole', ['konsole', '--hold', '-e', command])
-            ]
+            if os.environ.get('DISPLAY'):
+                terminal_emulators = [
+                    ('gnome-terminal', ['gnome-terminal', '--',
+                     'bash', '-c', f'{command}; exec bash']),
+                    ('xterm', ['xterm', '-hold', '-e', command]),
+                    ('konsole', ['konsole', '--hold', '-e', command])
+                ]
 
-            for terminal, cmd in terminal_emulators:
-                try:
-                    subprocess.Popen(  # pylint: disable=consider-using-with
-                        cmd
-                    )
-                    return
-                except FileNotFoundError:
-                    logging.debug(
-                        "%s not found, trying next option.", terminal)
-                except subprocess.SubprocessError as e:
-                    logging.error(
-                        "Error opening terminal with %s: %s", terminal, e)
+                for terminal, cmd in terminal_emulators:
+                    try:
+                        subprocess.Popen(  # pylint: disable=consider-using-with
+                            cmd
+                        )
+                        return
+                    except FileNotFoundError:
+                        logging.debug(
+                            "%s not found, trying next option.", terminal)
+                    except subprocess.SubprocessError as e:
+                        logging.error(
+                            "Error opening terminal with %s: %s", terminal, e)
 
-            logging.error(
-                "No supported terminal emulator found. Install gnome-terminal, xterm, or konsole.")
+                logging.error(
+                    "No supported terminal emulator found. "
+                    "Install gnome-terminal, xterm, or konsole.")
+            print("It looks like you are on a headless machine! "
+                  "For advanced log look in your temp folder!")
+            return
 
         logging.getLogger().setLevel(logging.DEBUG)
         logging.debug("============================================")
