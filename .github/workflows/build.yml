@@ -91,7 +91,8 @@ jobs:
           ${{ matrix.icon }} \
           src/aniworld/entry.py
 
-      - uses: actions/upload-artifact@v2'
+      - name: Upload Nuitka build to GitHub Release
+        uses: actions/upload-artifact@v4'
         with:
           name: aniworld-${{ matrix.filename }}
           path: aniworld-${{ env.VERSION }}-${{ matrix.filename }}${{ matrix.ext }}
