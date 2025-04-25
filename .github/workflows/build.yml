@@ -91,7 +91,7 @@ jobs:
           ${{ matrix.icon }} \
           src/aniworld/entry.py
 
-      - uses: actions/upload-artifact@v4.6.2'
+      - uses: actions/upload-artifact@v2'
         with:
           name: aniworld-${{ matrix.filename }}
           path: aniworld-${{ env.VERSION }}-${{ matrix.filename }}${{ matrix.ext }}
