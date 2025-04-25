@@ -54,8 +54,6 @@ def download(anime: Anime):
             for header in PROVIDER_HEADERS[anime.provider]:
                 command.extend(["--add-header", header])
 
-        logging.debug("Executing command:\n%s", command)
-
         if arguments.only_command:
             print(
                 f"\n{anime.title} - S{episode.season}E{episode.episode} - ({anime.language}):"

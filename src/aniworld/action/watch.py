@@ -24,12 +24,12 @@ def _build_watch_command(source, media_title=None, headers=None, aniskip_data=No
 
 
 def _print_or_run(title, command):
-    logging.debug("Executing command:\n%s", command)
     if arguments.only_command:
         print(f"\n{title}:")
         print(" ".join(str(item) for item in command if item is not None))
         return
     try:
+        logging.debug("Running Command:\n%s", command)
         subprocess.run(command, check=True)
     except subprocess.CalledProcessError as e:
         logging.error(

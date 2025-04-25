@@ -306,8 +306,11 @@ Please update to the latest version (v.{config.LATEST_VERSION}).
     if args.update:
         def update_yt_dlp():
             logging.info("Upgrading yt-dlp...")
+            yt_dlp_update_command = ["pip", "install", "-U", "yt-dlp"]
+
+            logging.debug("Running Command: %s", yt_dlp_update_command)
             subprocess.run(
-                ["pip", "install", "-U", "yt-dlp"],
+                yt_dlp_update_command,
                 check=False,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL
@@ -362,7 +365,8 @@ Please update to the latest version (v.{config.LATEST_VERSION}).
                         return
                     except FileNotFoundError:
                         logging.debug(
-                            "%s not found, trying next option.", terminal)
+                            "%s not found, trying next option.", terminal
+                        )
                     except subprocess.SubprocessError as e:
                         logging.error(
                             "Error opening terminal with %s: %s", terminal, e)
@@ -375,33 +379,32 @@ Please update to the latest version (v.{config.LATEST_VERSION}).
             return
 
         logging.getLogger().setLevel(logging.DEBUG)
-        logging.debug("============================================")
-        logging.debug("Welcome to Aniworld!")
-        logging.debug("============================================\n")
-        logging.debug("Debug mode enabled")
+        logging.debug("=============================================")
+        logging.debug(
+            "   Welcome to AniWorld Downloader v.%s!   ", config.VERSION)
+        logging.debug("=============================================\n")
 
         system = platform.system()
 
         if system == "Darwin":
             try:
-                subprocess.run([
+                darwin_open_debug_log = [
                     "osascript", "-e",
                     'tell application "Terminal" to do script "trap exit SIGINT; '
                     'tail -f -n +1 $TMPDIR/aniworld.log" activate'
-                ], check=True)
-                logging.debug(
-                    "Started tailing the log file in a new Terminal window.")
+                ]
+                logging.debug("Running Command: %s", darwin_open_debug_log)
+                subprocess.run(darwin_open_debug_log, check=True)
             except subprocess.CalledProcessError as e:
                 logging.error("Failed to start tailing the log file: %s", e)
         elif system == "Windows":
             try:
-                command = (
+                windows_open_debug_log = (
                     "start cmd /c \"powershell -NoExit -c "
                     "Get-Content -Wait \"$env:TEMP\\aniworld.log\"\""
                 )
-                subprocess.run(command, shell=True, check=True)
-                logging.debug(
-                    "Started tailing the log file in a new Terminal window.")
+                logging.debug("Running Command: %s", windows_open_debug_log)
+                subprocess.run(windows_open_debug_log, shell=True, check=True)
             except subprocess.CalledProcessError as e:
                 logging.error("Failed to start tailing the log file: %s", e)
         elif system == "Linux":

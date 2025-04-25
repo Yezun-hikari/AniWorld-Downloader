@@ -360,7 +360,8 @@ class Episode:
                 f"Could not get providers from {self.link}"
             )
 
-        logging.debug("Final providers dictionary: %s", providers)
+        logging.debug("Available Episodes for \"%s\":\n%s",
+                      self.anime_title, json.dumps(providers, indent=4))
         return providers
 
     def _get_key_from_language(self, language: str) -> int:
@@ -454,7 +455,7 @@ class Episode:
 
         if (self._selected_provider not in self.provider or
                 lang_key not in self.provider[self._selected_provider]
-                ):
+            ):
             for provider_name, lang_dict in self.provider.items():
                 if lang_key in lang_dict:
                     self._selected_provider = provider_name

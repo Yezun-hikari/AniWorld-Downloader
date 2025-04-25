@@ -131,8 +131,6 @@ def download_mpv(dep_path: str = None, appdata_path: str = None, update: bool = 
             subprocess.SubprocessError) as e:
         logging.error("Failed to extract files: %s", e)
 
-    logging.debug("Download and extraction complete.")
-
     logging.debug("Adding MPV path to environment: %s", dep_path)
     os.environ["PATH"] += os.pathsep + dep_path
 

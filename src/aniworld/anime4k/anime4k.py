@@ -51,7 +51,7 @@ def download_anime4k(mode):
 
 
 def extract_anime4k(zip_path, dep_path):
-    logging.debug("Extracting Anime4K to %s", dep_path)
+    logging.debug("Unpacking Anime4K to %s", dep_path)
     try:
         subprocess.run(
             ["tar", "-xf", zip_path],

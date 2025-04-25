@@ -2,6 +2,7 @@ import json
 import html
 import webbrowser
 from urllib.parse import quote
+import logging
 
 import curses
 import requests
@@ -13,6 +14,7 @@ from aniworld.config import DEFAULT_REQUEST_TIMEOUT
 def search_anime(keyword: str = None) -> str:
     print(display_ascii_art())
     if not keyword:
+        logging.debug("Prompting user for search.")
         keyword = input("Search for a series: ").strip()
         if keyword.strip().lower() == "boku no piko":
             raise ValueError("Really? This is not on AniWorld...")

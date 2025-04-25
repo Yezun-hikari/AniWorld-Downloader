@@ -48,11 +48,11 @@ def _append_password(command, title):
 
 
 def _execute_command(command):
-    logging.debug("Executing command:\n%s", command)
     if arguments.only_command:
         print("\n" + " ".join(str(item) for item in command))
         return
     try:
+        logging.debug("Running Command:\n%s", command)
         subprocess.run(command, check=True)
     except subprocess.CalledProcessError as e:
         logging.error(

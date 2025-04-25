@@ -2,6 +2,7 @@ import os
 import curses
 import sys
 import urllib3
+import logging
 import npyscreen
 
 from aniworld.models import Anime, Episode
@@ -272,6 +273,24 @@ class SelectionMenu(npyscreen.NPSApp):
         # print(f"Language: {selected_language}")
         # print(f"Provider: {selected_provider}")
         # print(f"Output Directory: {selected_output_directory}")
+
+        log_message = (
+            "Selected Values:\n"
+            f"Selected Action: {selected_action}\n"
+        )
+
+        if selected_action == "Watch":
+            log_message += f"Selected Aniskip: {selected_aniskip}\n"
+        elif selected_action == "Download":
+            log_message += f"Selected Output Directory: {selected_output_directory}\n"
+
+        log_message += (
+            f"Selected Language: {selected_language}\n"
+            f"Selected Provider: {selected_provider}\n"
+            f"Selected Episode: {self.selected_episodes}\n"
+        )
+
+        logging.debug(log_message)
 
         try:
             return Anime(

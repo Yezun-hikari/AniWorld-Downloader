@@ -4,6 +4,7 @@ import tempfile
 from typing import Dict
 import os
 import shutil
+import json
 
 import requests
 from bs4 import BeautifulSoup
@@ -31,7 +32,6 @@ def check_episodes(anime_id):
 
     if episodes_span and episodes_span.parent:
         episodes = episodes_span.parent.text.replace("Episodes:", "").strip()
-        logging.debug("Count of the episodes %s", episodes)
         return int(episodes)
 
     logging.warning("The Number can not be found!")
@@ -48,11 +48,12 @@ def get_mal_id_from_title(title: str, season: int) -> int:
         MAL_SEARCH_URL.format(keyword),
         timeout=DEFAULT_REQUEST_TIMEOUT
     )
-    logging.debug("Response status code: %d", response.status_code)
+    logging.debug("MyAnimeList response status code: %d", response.status_code)
 
     if response.status_code != 200:
         logging.error(
-            "Failed to fetch MyAnimeList data. HTTP Status: %d", response.status_code)
+            "Failed to fetch MyAnimeList data. HTTP Status: %d", response.status_code
+        )
         return 0
 
     mal_metadata = response.json()
@@ -67,7 +68,8 @@ def get_mal_id_from_title(title: str, season: int) -> int:
 
     best_match = results[0]
     anime_id = best_match['id']
-    logging.debug("Found MAL ID: %s for %s", anime_id, best_match)
+    logging.debug("Found MAL ID: %s for %s", anime_id,
+                  print(json.dumps(best_match, indent=4)))
 
     while season > 1:
         anime_id = get_sequel_anime_id(anime_id)
@@ -190,7 +192,8 @@ def copy_file_if_different(source_path, destination_path):
         if source_content != destination_content:
             logging.debug(
                 "Content differs, overwriting %s", os.path.basename(
-                    destination_path)
+                    destination_path
+                )
             )
             shutil.copy(source_path, destination_path)
         else:
@@ -223,19 +226,25 @@ def setup_aniskip():
 
 
 def setup_autostart():
-    logging.debug("Copying autostart.lua to mpv script directory")
     script_directory = os.path.dirname(
-        os.path.dirname(os.path.abspath(__file__)))
+        os.path.dirname(os.path.abspath(__file__))
+    )
+
     mpv_scripts_directory = MPV_SCRIPTS_DIRECTORY
 
     if not os.path.exists(mpv_scripts_directory):
         os.makedirs(mpv_scripts_directory)
 
     autostart_source_path = os.path.join(
-        script_directory, 'aniskip', 'scripts', 'autostart.lua')
-    autostart_destination_path = os.path.join(
-        mpv_scripts_directory, 'autostart.lua')
+        script_directory, 'aniskip', 'scripts', 'autostart.lua'
+    )
 
+    autostart_destination_path = os.path.join(
+        mpv_scripts_directory, 'autostart.lua'
+    )
+
+    logging.debug("Copying %s to %s if needed.",
+                  autostart_source_path, autostart_destination_path)
     copy_file_if_different(autostart_source_path, autostart_destination_path)
 
 
