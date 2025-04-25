@@ -233,10 +233,14 @@ _____________________________
             (__)\       )\/\
                 ||----w |
                 ||     ||
-
-Your version is outdated.
-Please update to the latest version (v.{config.LATEST_VERSION}).
 """
+        if not config.IS_NEWEST_VERSION:
+            cowsay += (
+                f"\nYour version is outdated.\n"
+                f"Please update to the latest version (v.{config.LATEST_VERSION})."
+            )
+        else:
+            cowsay += "\nYou are on the latest version."
         print(cowsay.strip())
         sys.exit()
 
