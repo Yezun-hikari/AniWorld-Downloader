@@ -27,7 +27,7 @@ AniWorld Downloader is a versatile command-line tool designed for downloading an
 To see the list of supported providers, check the [SUPPORTED_PROVIDERS](https://github.com/phoenixthrush/AniWorld-Downloader/blob/next/src/aniworld/config.py) variable.
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## Installation (Requires Git)
+## Installation
 
 ### Prerequisites
 
@@ -49,7 +49,15 @@ Additionally, make sure **[Git](https://git-scm.com/downloads)** is installed if
 
 ### Installation
 
-#### Install Latest Development Version (Recommended)
+#### Install Latest Stable Release (Recommended)
+
+To install the latest stable version directly from GitHub, use the following command:
+
+```shell
+pip install --upgrade aniworld
+```
+
+#### Install Latest Development Version (Requires Git)
 
 To install the latest development version directly from GitHub, use the following command:
 
@@ -67,7 +75,7 @@ python -m pip install aniworld
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-#### Local Installation
+#### Local Installation (Requires Git)
 
 For a local installation, follow these steps:
 
@@ -88,6 +96,14 @@ For a local installation, follow these steps:
   ```shell
   git -C aniworld pull
   ```
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+#### Executable Releases
+
+You don't need Python installed to use the binary builds of AniWorld available on GitHub.
+
+[Releases](https://github.com/phoenixthrush/AniWorld-Downloader/releases/latest)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -286,9 +302,13 @@ AniWorld Downloader depends on the following Python packages:
 
 - **`requests`**: For handling HTTP requests.
 - **`beautifulsoup4`**: For parsing and scraping HTML content.
-- **`npyscreen`**: For creating interactive terminal-based user interfaces.
 - **`yt-dlp`**: For downloading videos from supported providers.
-- **`windows-curses`**: Required only for Windows users to enable terminal-based UI functionality.
+- **`npyscreen`**: For creating interactive terminal-based user interfaces.
+- **`tqdm`**: For providing progress bars during downloads.
+- **`fake_useragent`**: For generating random user-agent strings.
+- **`packaging`**: For parsing version numbers and handling package versions.
+- **`py-cpuinfo`**: Only required on Windows for gathering CPU information.
+- **`windows-curses`**: Required on Windows systems to enable terminal-based UI functionality.
 
 These dependencies are automatically installed when you set up AniWorld Downloader using `pip`.
 
@@ -300,47 +320,14 @@ These dependencies are automatically installed when you set up AniWorld Download
 - **[yt-dlp](https://github.com/yt-dlp/yt-dlp.git)**: A powerful tool for downloading videos from various providers.
 - **[Syncplay](https://github.com/Syncplay/syncplay.git)**: Enables synchronized playback sessions with friends.
 - **[Anime4K](https://github.com/bloc97/Anime4K)**: A cutting-edge real-time upscaler for enhancing anime video quality.
-- **[htv](https://github.com/rxqv/htv)**: Backend implementation for hanime playback and downloading.
-- **[Logo](https://github.com/phoenixthrush/AniWorld-Downloader/blob/next/src/aniworld/icon.png?raw=true)**: The binary logo located at `src/aniworld/icon.webp`.
+- **[Logo](https://github.com/phoenixthrush/AniWorld-Downloader/blob/next/src/aniworld/icon.webp?raw=true)**: The binary logo located at `src/aniworld/icon.webp`.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Still Left Todo
 
-- [x] Add dynamic episode generation for `--episode`, allowing users to specify only anime or season
-- [x] Enable support for episode files
 - [ ] Implement a provider fallback mechanism
-- [x] Add Anime4K integration
-- [ ] Introduce advanced Syncplay room options
-
-<details>
-  <summary>Command-Line Arguments Still Missing from v2</summary>
-
-- [x] --help
-- [x] --version
-- [x] --debug
-- [ ] --uninstall
-- [x] --update
-- [x] --slug
-- [x] --episode
-- [x] --episode-file
-- [x] --episode-local
-- [x] --action
-- [x] --output-directory
-- [x] --language
-- [x] --provider
-- [x] --anime4k
-- [x] --syncplay-hostname
-- [x] --syncplay-username
-- [x] --syncplay-room
-- [x] --syncplay-password
-- [x] --aniskip
-- [x] --keep-watching
-- [x] --random-anime
-- [x] --only-direct-link
-- [x] --only-command
-
-</details>
+- [ ] Implement --uninstall argument
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
