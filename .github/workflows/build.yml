@@ -24,9 +24,9 @@ jobs:
             ext: ""
             filename: linux_x64
           - os: macos-latest
-            ext: .app
+            ext: ""
             filename: macos_x64
-            icon: --macos-create-app-bundle --macos-app-icon=src/aniworld/icon.webp --macos-signed-app-name=com.phoenixthrush.aniworld 
+            icon: --macos-app-icon=src/aniworld/icon.webp --macos-signed-app-name=com.phoenixthrush.aniworld 
 
     runs-on: ${{ matrix.os }}
 
