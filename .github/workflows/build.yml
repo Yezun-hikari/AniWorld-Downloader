@@ -90,12 +90,12 @@ jobs:
           --copyright="Copyright (c) 2024-$Y phoenixthrush, Tmaster055" \
           ${{ matrix.icon }} \
           src/aniworld/entry.py
-
-      - name: Upload Nuitka build to GitHub Release
-        uses: actions/upload-artifact@v4'
-        with:
-          name: aniworld-${{ matrix.filename }}
-          path: aniworld-${{ env.VERSION }}-${{ matrix.filename }}${{ matrix.ext }}
+          
+   #   - uses: actions/upload-artifact@v4'
+   #     if: matrix.os != 'windows-lates'
+   #     with:
+   #       name: aniworld-${{ matrix.filename }}
+   #       path: aniworld-${{ env.VERSION }}-${{ matrix.filename }}${{ matrix.ext }}
 
       - name: Upload Nuitka build to GitHub Release
         uses: softprops/action-gh-release@v2
