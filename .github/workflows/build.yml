@@ -3,6 +3,7 @@ name: Build with Nuitka, Upload to PyPI and Releases
 on:
   release:
     types: [created]
+  workflow_dispatch:
 
 permissions:
   contents: write
