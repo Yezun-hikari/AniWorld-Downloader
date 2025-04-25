@@ -78,7 +78,6 @@ jobs:
           JSON_PATH=$(python -c "import fake_useragent, os; print(os.path.join(os.path.dirname(fake_useragent.__file__), 'data', 'browsers.jsonl'))")
           V=$VERSION
           Y=$(python -c "import datetime; print(datetime.datetime.now().year)")
-          fi
           python -m nuitka --onefile --assume-yes-for-downloads --include-package=aniworld \
           --include-data-file=$JSON_PATH=fake_useragent/data/browsers.jsonl \
           --output-filename=aniworld-${V}-${{ matrix.filename }}${{ matrix.ext }} \
@@ -90,12 +89,11 @@ jobs:
           --copyright="Copyright (c) 2024-$Y phoenixthrush, Tmaster055" \
           ${{ matrix.icon }} \
           src/aniworld/entry.py
-          
-   #   - uses: actions/upload-artifact@v4'
-   #     if: matrix.os != 'windows-lates'
-   #     with:
-   #       name: aniworld-${{ matrix.filename }}
-   #       path: aniworld-${{ env.VERSION }}-${{ matrix.filename }}${{ matrix.ext }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: aniworld-${{ matrix.filename }}
+          path: aniworld-${{ env.VERSION }}-${{ matrix.filename }}${{ matrix.ext }}
 
       - name: Upload Nuitka build to GitHub Release
         uses: softprops/action-gh-release@v2
