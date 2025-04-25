@@ -7,7 +7,7 @@ from urllib.error import HTTPError, URLError
 import requests
 from bs4 import BeautifulSoup
 
-from aniworld.config import DEFAULT_REQUEST_TIMEOUT, RANDOM_USER_AGENT
+from aniworld import config
 
 
 def shift_letters(input_str):
@@ -57,8 +57,8 @@ def extract_voe_from_script(html):
 def get_direct_link_from_voe(embeded_voe_link: str) -> str:
     response = requests.get(
         embeded_voe_link,
-        headers={'User-Agent': RANDOM_USER_AGENT},
-        timeout=DEFAULT_REQUEST_TIMEOUT
+        headers={'User-Agent': config.RANDOM_USER_AGENT},
+        timeout=config.DEFAULT_REQUEST_TIMEOUT
     )
 
     redirect = re.search(r"https?://[^'\"<>]+", response.text)
@@ -66,14 +66,17 @@ def get_direct_link_from_voe(embeded_voe_link: str) -> str:
         raise ValueError("No redirect found.")
 
     redirect_url = redirect.group(0)
+    parts = redirect_url.strip().split("/")
+    config.PROVIDER_HEADERS["VOE"].append(
+        f'Referer: "{parts[0]}//{parts[2]}/"')
 
     try:
         with urlopen(
             Request(
                 redirect_url,
-                headers={'User-Agent': RANDOM_USER_AGENT}
+                headers={'User-Agent': config.RANDOM_USER_AGENT}
             ),
-            timeout=DEFAULT_REQUEST_TIMEOUT
+            timeout=config.DEFAULT_REQUEST_TIMEOUT
         ) as resp:
             html = resp.read().decode()
     except (HTTPError, URLError, TimeoutError) as err:
