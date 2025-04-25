@@ -16,10 +16,16 @@ jobs:
         include:
           - os: windows-latest
             icon: --windows-icon-from-ico=src/aniworld/icon.webp
+            ext: .exe
+            filename: windows_x64
           - os: ubuntu-latest
             icon: --linux-icon=src/aniworld/icon.webp
+            ext: ""
+            filename: linux_x64
           - os: macos-latest
-            icon: --macos-app-icon=src/aniworld/icon.webp --macos-signed-app-name=com.phoenixthrush.aniworld --macos-target-arch=arm64
+            ext: .app
+            filename: macos_x64
+            icon: --macos-create-app-bundle --macos-app-icon=src/aniworld/icon.webp --macos-signed-app-name=com.phoenixthrush.aniworld 
 
     runs-on: ${{ matrix.os }}
 
@@ -71,14 +77,10 @@ jobs:
           JSON_PATH=$(python -c "import fake_useragent, os; print(os.path.join(os.path.dirname(fake_useragent.__file__), 'data', 'browsers.jsonl'))")
           V=$VERSION
           Y=$(python -c "import datetime; print(datetime.datetime.now().year)")
-          if [[ ${{ matrix.os }} == 'windows-latest' ]]; then
-            EXT=".exe"
-          else
-            EXT=""
           fi
           python -m nuitka --onefile --assume-yes-for-downloads --include-package=aniworld \
           --include-data-file=$JSON_PATH=fake_useragent/data/browsers.jsonl \
-          --output-filename=aniworld-${V}-${{ matrix.os }}${EXT} \
+          --output-filename=aniworld-${V}-${{ matrix.filename }}${{ matrix.ext }} \
           --company-name="Phoenixthrush UwU" \
           --product-name="AniWorld Downloader" \
           --file-version=$V \
@@ -88,26 +90,12 @@ jobs:
           ${{ matrix.icon }} \
           src/aniworld/entry.py
 
-      - uses: actions/upload-artifact@v4
-        if: matrix.os == 'windows-latest'
+      - uses: actions/upload-artifact@v4'
         with:
-          name: aniworld-${{ matrix.os }}
-          path: aniworld-${{ env.VERSION }}-${{ matrix.os }}.exe
-
-      - uses: actions/upload-artifact@v4
-        if: matrix.os != 'windows-latest'
-        with:
-          name: aniworld-${{ matrix.os }}
-          path: aniworld-${{ env.VERSION }}-${{ matrix.os }}
+          name: aniworld-${{ matrix.filename }}
+          path: aniworld-${{ env.VERSION }}-${{ matrix.filename }}${{ matrix.ext }}
 
       - name: Upload Nuitka build to GitHub Release
-        if: matrix.os == 'windows-latest'
         uses: softprops/action-gh-release@v2
         with:
-          files: aniworld-${{ env.VERSION }}-${{ matrix.os }}.exe
-
-      - name: Upload Nuitka build to GitHub Release
-        if: matrix.os != 'windows-latest'
-        uses: softprops/action-gh-release@v2
-        with:
-          files: aniworld-${{ env.VERSION }}-${{ matrix.os }}
+          files: aniworld-${{ env.VERSION }}-${{ matrix.filename }}${{ matrix.ext }}
