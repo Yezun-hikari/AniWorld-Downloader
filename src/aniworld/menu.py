@@ -86,8 +86,8 @@ class SelectionMenu(npyscreen.NPSApp):
 
         # these are the heights of each widget
         total_reserved_height = (
-            3 + 2 + 2 + 2 + len(available_languages) +
-            len(supported_providers) + 5
+            3 + 2 + 2 + 2 + max(2, len(available_languages)) +
+            max(2, len(supported_providers)) + 5
         )
 
         max_episode_height = max(3, terminal_height - total_reserved_height)
@@ -128,7 +128,7 @@ class SelectionMenu(npyscreen.NPSApp):
 
         self.language_selection = f.add(
             npyscreen.TitleSelectOne,
-            max_height=len(available_languages),
+            max_height=max(2, len(available_languages)),
             value=[
                 available_languages.index(self.arguments.language)
                 if self.arguments.language in available_languages else 0
@@ -141,7 +141,7 @@ class SelectionMenu(npyscreen.NPSApp):
 
         self.provider_selection = f.add(
             npyscreen.TitleSelectOne,
-            max_height=len(supported_providers),
+            max_height=max(2, len(supported_providers)),
             value=[
                 supported_providers.index(self.arguments.provider)
                 if self.arguments.provider in supported_providers else 0
