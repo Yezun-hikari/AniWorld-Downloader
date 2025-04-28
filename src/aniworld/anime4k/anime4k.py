@@ -29,10 +29,10 @@ def download_anime4k(mode):
         if os.path.exists(anime4k_shader_path):
             shutil.rmtree(anime4k_shader_path)
 
-        if os.path.exists(anime4k_shader_path):
+        if os.path.exists(anime4k_input_conf_path):
             os.remove(anime4k_input_conf_path)
 
-        if os.path.exists(anime4k_shader_path):
+        if os.path.exists(anime4k_mpv_conf_path):
             os.remove(anime4k_mpv_conf_path)
 
         return
