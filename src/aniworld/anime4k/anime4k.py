@@ -5,7 +5,7 @@ import subprocess
 import shutil
 
 from aniworld.config import MPV_DIRECTORY
-from aniworld.common import get_github_release, download_file
+from aniworld.common import get_github_release, download_file, remove_anime4k
 
 
 def get_anime4k_download_link(mode: str = "High") -> str:
@@ -20,21 +20,7 @@ def get_anime4k_download_link(mode: str = "High") -> str:
 
 def download_anime4k(mode):
     if mode == "Remove":
-        print("Removing Anime4K...")
-
-        anime4k_shader_path = os.path.join(MPV_DIRECTORY, "shaders")
-        anime4k_input_conf_path = os.path.join(MPV_DIRECTORY, "input.conf")
-        anime4k_mpv_conf_path = os.path.join(MPV_DIRECTORY, "mpv.conf")
-
-        if os.path.exists(anime4k_shader_path):
-            shutil.rmtree(anime4k_shader_path)
-
-        if os.path.exists(anime4k_input_conf_path):
-            os.remove(anime4k_input_conf_path)
-
-        if os.path.exists(anime4k_mpv_conf_path):
-            os.remove(anime4k_mpv_conf_path)
-
+        remove_anime4k()
         return
 
     os.makedirs(MPV_DIRECTORY, exist_ok=True)

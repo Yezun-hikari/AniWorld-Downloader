@@ -11,7 +11,7 @@ import requests
 from tqdm import tqdm
 from bs4 import BeautifulSoup
 
-from aniworld.config import DEFAULT_REQUEST_TIMEOUT
+from aniworld.config import DEFAULT_REQUEST_TIMEOUT, MPV_DIRECTORY
 
 
 def check_avx2_support() -> bool:
@@ -43,6 +43,11 @@ def get_github_release(repo: str) -> dict:
         logging.error("Failed to fetch release data from GitHub: %s", e)
     return {}
 
+
+# This is necessary to keep due to the error that occurs when using py7zr.
+# Error: (b'\x03\x03\x01\x1b', 'BCJ2 filter is not supported by py7zr.
+# Please consider to contribute to XZ/liblzma project and help Python core team implementing it.
+# Or please use another tool to extract it.')
 
 def download_7z(zip_tool: str) -> None:
     if not os.path.exists(zip_tool):
@@ -368,6 +373,23 @@ def generate_links(urls, arguments):
         return [int(text) if text.isdigit() else text for text in re.split(r'(\d+)', link_url)]
 
     return sorted(unique_links, key=natural_sort_key)
+
+
+def remove_anime4k():
+    print("Removing Anime4K...")
+
+    anime4k_shader_path = os.path.join(MPV_DIRECTORY, "shaders")
+    anime4k_input_conf_path = os.path.join(MPV_DIRECTORY, "input.conf")
+    anime4k_mpv_conf_path = os.path.join(MPV_DIRECTORY, "mpv.conf")
+
+    if os.path.exists(anime4k_shader_path):
+        shutil.rmtree(anime4k_shader_path)
+
+    if os.path.exists(anime4k_input_conf_path):
+        os.remove(anime4k_input_conf_path)
+
+    if os.path.exists(anime4k_mpv_conf_path):
+        os.remove(anime4k_mpv_conf_path)
 
 
 if __name__ == "__main__":

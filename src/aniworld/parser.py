@@ -6,11 +6,12 @@ import logging
 import platform
 import random
 import subprocess
+import shutil
 import sys
 
 import requests
 
-from aniworld.common import download_mpv, download_syncplay
+from aniworld.common import download_mpv, download_syncplay, remove_anime4k
 from aniworld.extractors import get_direct_link_from_hanime
 from aniworld.anime4k import download_anime4k
 from aniworld import config
@@ -221,7 +222,21 @@ def parse_arguments() -> argparse.Namespace:  # pylint: disable=too-many-locals
     args = parser.parse_args()
 
     if args.uninstall:
-        print("Uninstall is not implemented yet!")
+        print(f"Removing: {config.DEFAULT_APPDATA_PATH}")
+        if os.path.exists(config.DEFAULT_APPDATA_PATH):
+            shutil.rmtree(config.DEFAULT_APPDATA_PATH)
+
+        remove_anime4k()
+
+        if sys.platform.startswith('win'):
+            command = "timeout /t 5 && pip uninstall -y aniword"
+        else:
+            command = "pip uninstall -y aniword"
+
+        subprocess.Popen(command, shell=True,
+                         creationflags=subprocess.CREATE_NEW_CONSOLE)
+
+        sys.exit()
 
     if args.version:
         cowsay = fR"""
