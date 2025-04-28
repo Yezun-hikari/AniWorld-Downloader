@@ -38,7 +38,7 @@ Additionally, make sure **[Git](https://git-scm.com/downloads)** is installed if
 
 <details>
   <summary>Python Installation Tutorial (Windows)</summary>
-  <img src="https://github.com/phoenixthrush/AniWorld-Downloader/blob/next/.github/Python_Add_to_Path_Tutorial.png?raw=true" alt="Python Installation Tutorial">
+  <img src="https://github.com/phoenixthrush/AniWorld-Downloader/blob/next/.github/assets/Python_Add_to_Path_Tutorial.png?raw=true" alt="Python Installation Tutorial">
 
 **Note:** If you've restarted the terminal and `aniworld` isn't being recognized, you have two options:
 - Add `aniworld` to your PATH so it can be found globally.
