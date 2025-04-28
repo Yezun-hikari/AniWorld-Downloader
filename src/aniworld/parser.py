@@ -229,10 +229,11 @@ def parse_arguments() -> argparse.Namespace:  # pylint: disable=too-many-locals
         remove_anime4k()
 
         if sys.platform.startswith('win'):
-            command = "timeout /t 5 && pip uninstall -y aniword"
+            command = "timeout 3 >nul & pip uninstall -y aniword"
         else:
             command = "pip uninstall -y aniword"
 
+        print("Removing aniworld package...")
         subprocess.Popen(command, shell=True,
                          creationflags=subprocess.CREATE_NEW_CONSOLE)
 

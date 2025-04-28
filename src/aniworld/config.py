@@ -127,8 +127,8 @@ INVALID_PATH_CHARS = ['<', '>', ':', '"', '/', '\\', '|', '?', '*', '&']
 # Executable Path Resolution
 #########################################################################################
 
-DEFAULT_APPDATA_PATH = os.getenv(
-    "APPDATA"
+DEFAULT_APPDATA_PATH = os.path.join(os.getenv(
+    "APPDATA"), "aniworld"
 ) or os.path.expanduser("~/.aniworld")
 
 if os.name == 'nt':
