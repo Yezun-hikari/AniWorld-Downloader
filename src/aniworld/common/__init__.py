@@ -6,5 +6,6 @@ from .common import (
     get_season_episode_count,
     get_movie_episode_count,
     generate_links,
-    remove_anime4k
+    remove_anime4k,
+    remove_mpv_scripts
 )

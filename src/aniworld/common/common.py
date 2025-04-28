@@ -376,20 +376,31 @@ def generate_links(urls, arguments):
 
 
 def remove_anime4k():
-    print("Removing Anime4K...")
-
     anime4k_shader_path = os.path.join(MPV_DIRECTORY, "shaders")
     anime4k_input_conf_path = os.path.join(MPV_DIRECTORY, "input.conf")
     anime4k_mpv_conf_path = os.path.join(MPV_DIRECTORY, "mpv.conf")
 
     if os.path.exists(anime4k_shader_path):
+        print(f"Removing: {anime4k_shader_path}")
         shutil.rmtree(anime4k_shader_path)
 
     if os.path.exists(anime4k_input_conf_path):
+        print(f"Removing: {anime4k_input_conf_path}")
         os.remove(anime4k_input_conf_path)
 
     if os.path.exists(anime4k_mpv_conf_path):
+        print(f"Removing: {anime4k_mpv_conf_path}")
         os.remove(anime4k_mpv_conf_path)
+
+
+def remove_mpv_scripts():
+    scripts = ["aniskip.lua", "autoexit.lua", "autostart.lua"]
+
+    for script in scripts:
+        script_path = os.path.join(MPV_DIRECTORY, "scripts", script)
+        if os.path.exists(script_path):
+            print(f"Removing: {script_path}")
+            os.remove(script_path)
 
 
 if __name__ == "__main__":

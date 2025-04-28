@@ -69,7 +69,7 @@ def get_mal_id_from_title(title: str, season: int) -> int:
     best_match = results[0]
     anime_id = best_match['id']
     logging.debug("Found MAL ID: %s for %s", anime_id,
-                  print(json.dumps(best_match, indent=4)))
+                  json.dumps(best_match, indent=4))
 
     while season > 1:
         anime_id = get_sequel_anime_id(anime_id)

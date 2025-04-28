@@ -11,7 +11,7 @@ import sys
 
 import requests
 
-from aniworld.common import download_mpv, download_syncplay, remove_anime4k
+from aniworld.common import download_mpv, download_syncplay, remove_anime4k, remove_mpv_scripts
 from aniworld.extractors import get_direct_link_from_hanime
 from aniworld.anime4k import download_anime4k
 from aniworld import config
@@ -227,13 +227,14 @@ def parse_arguments() -> argparse.Namespace:  # pylint: disable=too-many-locals
             shutil.rmtree(config.DEFAULT_APPDATA_PATH)
 
         remove_anime4k()
+        remove_mpv_scripts()
 
         if sys.platform.startswith('win'):
             command = "timeout 3 >nul & pip uninstall -y aniworld"
         else:
             command = "pip uninstall -y aniworld"
 
-        print("Removing aniworld package...")
+        print("pip uninstall -y aniworld")
         subprocess.Popen(command, shell=True,
                          creationflags=subprocess.CREATE_NEW_CONSOLE)
 
