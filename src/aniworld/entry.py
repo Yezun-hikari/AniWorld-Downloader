@@ -12,7 +12,7 @@ from aniworld.menu import menu
 from aniworld.common import generate_links
 
 
-def aniworld() -> None:
+def aniworld() -> None:  # pylint: disable=too-many-branches, too-many-statements
     try:
         if arguments.local_episodes:
             if arguments.action == "Watch":

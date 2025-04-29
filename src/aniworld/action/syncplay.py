@@ -5,7 +5,7 @@ import hashlib
 
 from aniworld.models import Anime
 from aniworld.config import MPV_PATH, PROVIDER_HEADERS, SYNCPLAY_PATH, INVALID_PATH_CHARS
-from aniworld.common import download_mpv, download_syncplay
+from aniworld.common import download_mpv, download_syncplay, setup_autostart, setup_autoexit
 from aniworld.aniskip import aniskip
 from aniworld.parser import arguments
 
@@ -142,6 +142,9 @@ def _process_local_files():
 def syncplay(anime: Anime = None):
     download_mpv()
     download_syncplay()
+
+    setup_autostart()
+    setup_autoexit()
 
     if anime is None:
         _process_local_files()

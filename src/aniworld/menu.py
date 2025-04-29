@@ -1,8 +1,8 @@
 import os
 import curses
 import sys
-import urllib3
 import logging
+import urllib3
 import npyscreen
 
 from aniworld.models import Anime, Episode

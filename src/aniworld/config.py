@@ -4,9 +4,8 @@ import pathlib
 import platform
 import shutil
 import tempfile
-from packaging.version import Version
-
 from importlib.metadata import PackageNotFoundError, version
+from packaging.version import Version, InvalidVersion
 from urllib3.exceptions import InsecureRequestWarning
 import urllib3
 import requests
@@ -79,11 +78,17 @@ def get_latest_github_version():
 def is_newest_version():
     try:
         current = Version(VERSION.lstrip('v').lstrip('.'))
-        latest = Version(get_latest_github_version().lstrip('v').lstrip('.'))
+        latest_str = get_latest_github_version().lstrip('v').lstrip('.')
+        latest = Version(latest_str)
         return latest, current >= latest
+    except InvalidVersion as e:
+        logging.error("Invalid version format: %s", e)
+    except requests.RequestException as e:
+        logging.error("Network error while fetching latest version: %s", e)
     except Exception as e:
-        logging.error("Version comparison failed: %s", e)
-        return False
+        logging.error("Unexpected error during version check: %s", e)
+
+    return False
 
 
 LATEST_VERSION, IS_NEWEST_VERSION = is_newest_version()

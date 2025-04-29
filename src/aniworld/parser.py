@@ -65,7 +65,7 @@ def get_random_anime_slug(genre) -> str:
     return None
 
 
-def parse_arguments() -> argparse.Namespace:  # pylint: disable=too-many-locals
+def parse_arguments() -> argparse.Namespace:  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
     parser = argparse.ArgumentParser(
         description="Parse command-line arguments for anime streaming, "
                     "downloading, and playback management."
@@ -264,7 +264,7 @@ _____________________________
     if args.anime4k:
         download_anime4k(args.anime4k)
 
-    if args.provider_link:
+    if args.provider_link:  # pylint: disable=too-many-nested-blocks
         invalid_links = [
             link for link in args.provider_link if not link.startswith("http")
         ]

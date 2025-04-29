@@ -3,13 +3,13 @@ import logging
 import tempfile
 from typing import Dict
 import os
-import shutil
 import json
 
 import requests
 from bs4 import BeautifulSoup
 
 from aniworld.config import DEFAULT_REQUEST_TIMEOUT, MPV_SCRIPTS_DIRECTORY
+from aniworld.common import copy_file_if_different, setup_autostart, setup_autoexit
 
 CHAPTER_FORMAT = "\n[CHAPTER]\nTIMEBASE=1/1000\nSTART={}\nEND={}\nTITLE={}\n"
 OPTION_FORMAT = "skip-{}_start={},skip-{}_end={}"
@@ -181,35 +181,6 @@ def aniskip(title: str, episode: int, season: int, aniworld_episodes: int) -> st
         return ""
 
 
-def copy_file_if_different(source_path, destination_path):
-    if os.path.exists(destination_path):
-        with open(source_path, 'r', encoding="utf-8") as source_file:
-            source_content = source_file.read()
-
-        with open(destination_path, 'r', encoding="utf-8") as destination_file:
-            destination_content = destination_file.read()
-
-        if source_content != destination_content:
-            logging.debug(
-                "Content differs, overwriting %s", os.path.basename(
-                    destination_path
-                )
-            )
-            shutil.copy(source_path, destination_path)
-        else:
-            logging.debug(
-                "%s already exists and is identical, no overwrite needed",
-                os.path.basename(destination_path)
-            )
-    else:
-        logging.debug(
-            "Copying %s to %s",
-            os.path.basename(source_path),
-            os.path.dirname(destination_path)
-        )
-        shutil.copy(source_path, destination_path)
-
-
 def setup_aniskip():
     script_directory = os.path.dirname(
         os.path.dirname(os.path.abspath(__file__)))
@@ -223,46 +194,6 @@ def setup_aniskip():
     skip_destination_path = os.path.join(mpv_scripts_directory, 'aniskip.lua')
 
     copy_file_if_different(skip_source_path, skip_destination_path)
-
-
-def setup_autostart():
-    script_directory = os.path.dirname(
-        os.path.dirname(os.path.abspath(__file__))
-    )
-
-    mpv_scripts_directory = MPV_SCRIPTS_DIRECTORY
-
-    if not os.path.exists(mpv_scripts_directory):
-        os.makedirs(mpv_scripts_directory)
-
-    autostart_source_path = os.path.join(
-        script_directory, 'aniskip', 'scripts', 'autostart.lua'
-    )
-
-    autostart_destination_path = os.path.join(
-        mpv_scripts_directory, 'autostart.lua'
-    )
-
-    logging.debug("Copying %s to %s if needed.",
-                  autostart_source_path, autostart_destination_path)
-    copy_file_if_different(autostart_source_path, autostart_destination_path)
-
-
-def setup_autoexit():
-    logging.debug("Copying autoexit.lua to mpv script directory")
-    script_directory = os.path.dirname(
-        os.path.dirname(os.path.abspath(__file__)))
-    mpv_scripts_directory = MPV_SCRIPTS_DIRECTORY
-
-    if not os.path.exists(mpv_scripts_directory):
-        os.makedirs(mpv_scripts_directory)
-
-    autoexit_source_path = os.path.join(
-        script_directory, 'aniskip', 'scripts', 'autoexit.lua')
-    autoexit_destination_path = os.path.join(
-        mpv_scripts_directory, 'autoexit.lua')
-
-    copy_file_if_different(autoexit_source_path, autoexit_destination_path)
 
 
 if __name__ == '__main__':

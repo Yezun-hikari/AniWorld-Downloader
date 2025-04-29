@@ -1,14 +1,13 @@
 import os
 import re
 import subprocess
-import logging
 
 from aniworld.models import Anime
 from aniworld.config import PROVIDER_HEADERS, INVALID_PATH_CHARS
 from aniworld.parser import arguments
 
 
-def download(anime: Anime):
+def download(anime: Anime):  # pylint: disable=too-many-branches
     for episode in anime:
         if arguments.only_direct_link:
             msg = f"{anime.title} - S{episode.season}E{episode.episode} - ({anime.language}):"

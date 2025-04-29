@@ -11,7 +11,12 @@ import requests
 from tqdm import tqdm
 from bs4 import BeautifulSoup
 
-from aniworld.config import DEFAULT_REQUEST_TIMEOUT, MPV_DIRECTORY, ANIWORLD_TO
+from aniworld.config import (
+    DEFAULT_REQUEST_TIMEOUT,
+    MPV_DIRECTORY,
+    ANIWORLD_TO,
+    MPV_SCRIPTS_DIRECTORY
+)
 
 
 def check_avx2_support() -> bool:
@@ -153,7 +158,8 @@ def download_syncplay(dep_path: str = None, appdata_path: str = None, update: bo
             subprocess.run(["brew", "update"], check=True,
                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             subprocess.run(
-                ["brew", "upgrade", "--cask", "syncplay"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+                ["brew", "upgrade", "--cask", "syncplay"],
+                check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
             )
         return
 
@@ -401,6 +407,75 @@ def remove_mpv_scripts():
         if os.path.exists(script_path):
             print(f"Removing: {script_path}")
             os.remove(script_path)
+
+
+def copy_file_if_different(source_path, destination_path):
+    if os.path.exists(destination_path):
+        with open(source_path, 'r', encoding="utf-8") as source_file:
+            source_content = source_file.read()
+
+        with open(destination_path, 'r', encoding="utf-8") as destination_file:
+            destination_content = destination_file.read()
+
+        if source_content != destination_content:
+            logging.debug(
+                "Content differs, overwriting %s", os.path.basename(
+                    destination_path
+                )
+            )
+            shutil.copy(source_path, destination_path)
+        else:
+            logging.debug(
+                "%s already exists and is identical, no overwrite needed",
+                os.path.basename(destination_path)
+            )
+    else:
+        logging.debug(
+            "Copying %s to %s",
+            os.path.basename(source_path),
+            os.path.dirname(destination_path)
+        )
+        shutil.copy(source_path, destination_path)
+
+
+def setup_autostart():
+    script_directory = os.path.dirname(
+        os.path.dirname(os.path.abspath(__file__))
+    )
+
+    mpv_scripts_directory = MPV_SCRIPTS_DIRECTORY
+
+    if not os.path.exists(mpv_scripts_directory):
+        os.makedirs(mpv_scripts_directory)
+
+    autostart_source_path = os.path.join(
+        script_directory, 'aniskip', 'scripts', 'autostart.lua'
+    )
+
+    autostart_destination_path = os.path.join(
+        mpv_scripts_directory, 'autostart.lua'
+    )
+
+    logging.debug("Copying %s to %s if needed.",
+                  autostart_source_path, autostart_destination_path)
+    copy_file_if_different(autostart_source_path, autostart_destination_path)
+
+
+def setup_autoexit():
+    logging.debug("Copying autoexit.lua to mpv script directory")
+    script_directory = os.path.dirname(
+        os.path.dirname(os.path.abspath(__file__)))
+    mpv_scripts_directory = MPV_SCRIPTS_DIRECTORY
+
+    if not os.path.exists(mpv_scripts_directory):
+        os.makedirs(mpv_scripts_directory)
+
+    autoexit_source_path = os.path.join(
+        script_directory, 'aniskip', 'scripts', 'autoexit.lua')
+    autoexit_destination_path = os.path.join(
+        mpv_scripts_directory, 'autoexit.lua')
+
+    copy_file_if_different(autoexit_source_path, autoexit_destination_path)
 
 
 if __name__ == "__main__":
