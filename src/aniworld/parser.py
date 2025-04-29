@@ -17,7 +17,7 @@ from aniworld.anime4k import download_anime4k
 from aniworld import config
 
 
-class CaseInsensitiveChoices:
+class CaseInsensitiveChoices:  # pylint: disable=too-few-public-methods
     def __init__(self, choices):
         self.choices = choices
         self.normalized = {c.lower(): c for c in choices}
@@ -235,8 +235,11 @@ def parse_arguments() -> argparse.Namespace:  # pylint: disable=too-many-locals,
             command = "pip uninstall -y aniworld"
 
         print("pip uninstall -y aniworld")
-        subprocess.Popen(command, shell=True,
-                         creationflags=subprocess.CREATE_NEW_CONSOLE)
+        subprocess.Popen(  # pylint: disable=consider-using-with
+            command,
+            shell=True,
+            creationflags=subprocess.CREATE_NEW_CONSOLE
+        )
 
         sys.exit()
 

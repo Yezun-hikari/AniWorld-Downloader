@@ -85,8 +85,6 @@ def is_newest_version():
         logging.error("Invalid version format: %s", e)
     except requests.RequestException as e:
         logging.error("Network error while fetching latest version: %s", e)
-    except Exception as e:
-        logging.error("Unexpected error during version check: %s", e)
 
     return False
 

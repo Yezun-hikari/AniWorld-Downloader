@@ -60,7 +60,7 @@ def download_7z(zip_tool: str) -> None:
         download_file('https://7-zip.org/a/7zr.exe', zip_tool)
 
 
-def download_mpv(dep_path: str = None, appdata_path: str = None, update: bool = False):
+def download_mpv(dep_path: str = None, appdata_path: str = None, update: bool = False): # pylint: disable=too-many-branches, too-many-locals, too-many-branches
     if update:
         print("Updating MPV...")
 
@@ -278,7 +278,7 @@ def get_movie_episode_count(slug) -> int:
     return max(movie_indices) if movie_indices else 0
 
 
-def generate_links(urls, arguments):
+def generate_links(urls, arguments):  # pylint: disable=too-many-locals, too-many-branches
     """
     Example usage:
     seasons = {1: 12, 2: 13, 3: 4}
