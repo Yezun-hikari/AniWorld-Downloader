@@ -8,7 +8,7 @@ import curses
 import requests
 
 from aniworld.ascii_art import display_ascii_art
-from aniworld.config import DEFAULT_REQUEST_TIMEOUT
+from aniworld.config import DEFAULT_REQUEST_TIMEOUT, ANIWORLD_TO
 
 
 def search_anime(keyword: str = None) -> str:
@@ -19,7 +19,7 @@ def search_anime(keyword: str = None) -> str:
         if keyword.strip().lower() == "boku no piko":
             raise ValueError("Really? This is not on AniWorld...")
 
-    search_url = f"https://aniworld.to/ajax/seriesSearch?keyword={quote(keyword)}"
+    search_url = f"{ANIWORLD_TO}/ajax/seriesSearch?keyword={quote(keyword)}"
     anime_list = fetch_anime_list(search_url)
 
     if len(anime_list) == 1:

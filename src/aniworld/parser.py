@@ -31,7 +31,7 @@ class CaseInsensitiveChoices:
 
 
 def get_random_anime_slug(genre) -> str:
-    url = 'https://aniworld.to/ajax/randomGeneratorSeries'
+    url = f'{config.ANIWORLD_TO}/ajax/randomGeneratorSeries'
 
     data = {
         'productionStart': 'all',
@@ -206,7 +206,7 @@ def parse_arguments() -> argparse.Namespace:  # pylint: disable=too-many-locals
         type=str,
         nargs='*',
         help='Play a random anime (default genre is "all", e.g., Drama).\n'
-             'All genres can be found here: "https://aniworld.to/random"'
+             f'All genres can be found here: "{config.ANIWORLD_TO}/random"'
     )
     misc_opts.add_argument(
         '-D', '--only-direct-link',

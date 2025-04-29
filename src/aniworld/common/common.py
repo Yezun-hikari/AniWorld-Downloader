@@ -11,7 +11,7 @@ import requests
 from tqdm import tqdm
 from bs4 import BeautifulSoup
 
-from aniworld.config import DEFAULT_REQUEST_TIMEOUT, MPV_DIRECTORY
+from aniworld.config import DEFAULT_REQUEST_TIMEOUT, MPV_DIRECTORY, ANIWORLD_TO
 
 
 def check_avx2_support() -> bool:
@@ -221,7 +221,7 @@ def download_file(url: str, path: str):
 
 
 def get_season_episode_count(slug) -> dict:
-    base_url = f"https://aniworld.to/anime/stream/{slug}/"
+    base_url = f"{ANIWORLD_TO}/anime/stream/{slug}/"
     response = requests.get(base_url, timeout=DEFAULT_REQUEST_TIMEOUT)
     soup = BeautifulSoup(response.content, 'html.parser')
 
@@ -248,7 +248,7 @@ def get_season_episode_count(slug) -> dict:
 
 
 def get_movie_episode_count(slug) -> int:
-    movie_page_url = f"https://aniworld.to/anime/stream/{slug}/filme"
+    movie_page_url = f"{ANIWORLD_TO}/anime/stream/{slug}/filme"
     response = requests.get(
         movie_page_url, timeout=DEFAULT_REQUEST_TIMEOUT)
 

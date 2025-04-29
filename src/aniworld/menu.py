@@ -12,7 +12,8 @@ from aniworld.config import (
     DEFAULT_PROVIDER_DOWNLOAD,
     DEFAULT_PROVIDER_WATCH,
     USES_DEFAULT_PROVIDER,
-    IS_NEWEST_VERSION
+    IS_NEWEST_VERSION,
+    ANIWORLD_TO
 )
 from aniworld import parser
 
@@ -70,14 +71,14 @@ class SelectionMenu(npyscreen.NPSApp):
             for episode in range(1, episodes + 1):
                 link_formatted = f"{self.anime.title} - Season {season} - Episode {episode}"
                 link = (
-                    f"https://aniworld.to/anime/stream/{self.anime.slug}/"
+                    f"{ANIWORLD_TO}/anime/stream/{self.anime.slug}/"
                     f"staffel-{season}/episode-{episode}"
                 )
                 self.episode_dict[link] = link_formatted
 
         for episode in range(1, movie_episode_count + 1):
             movie_link_formatted = f"{self.anime.title} - Movie {episode}"
-            movie_link = f"https://aniworld.to/anime/stream/{self.anime.slug}/filme/film-{episode}"
+            movie_link = f"{ANIWORLD_TO}/anime/stream/{self.anime.slug}/filme/film-{episode}"
             self.episode_dict[movie_link] = movie_link_formatted
 
         available_episodes = list(self.episode_dict.values())

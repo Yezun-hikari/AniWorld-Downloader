@@ -7,7 +7,7 @@ import requests.models
 from bs4 import BeautifulSoup
 
 from aniworld.aniskip import get_mal_id_from_title
-from aniworld.config import DEFAULT_REQUEST_TIMEOUT, RANDOM_USER_AGENT
+from aniworld.config import DEFAULT_REQUEST_TIMEOUT, RANDOM_USER_AGENT, ANIWORLD_TO
 from aniworld.parser import arguments
 from aniworld.common import get_season_episode_count, get_movie_episode_count
 
@@ -88,7 +88,7 @@ class Anime:
             raise ValueError("Slug of Anime is None.")
 
         self.html = html or requests.get(
-            f"https://aniworld.to/anime/stream/{self.slug}",
+            f"{ANIWORLD_TO}/anime/stream/{self.slug}",
             timeout=DEFAULT_REQUEST_TIMEOUT
         )
 
@@ -353,7 +353,7 @@ class Episode:
             if provider_name and redirect_link and lang_key:
                 if provider_name not in providers:
                     providers[provider_name] = {}
-                providers[provider_name][lang_key] = f"https://aniworld.to{redirect_link}"
+                providers[provider_name][lang_key] = f"{ANIWORLD_TO}{redirect_link}"
 
         if not providers:
             raise ValueError(
@@ -512,7 +512,7 @@ class Episode:
     def auto_fill_details(self) -> None:
         if self.slug and self.season and self.episode:
             self.link = (
-                f"https://aniworld.to/anime/stream/{self.slug}/"
+                f"{ANIWORLD_TO}/anime/stream/{self.slug}/"
                 f"staffel-{self.season}/episode-{self.episode}"
             )
 
