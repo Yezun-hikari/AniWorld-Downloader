@@ -82,6 +82,10 @@ def aniworld() -> None:
             print(f"Error: {e}")
             print("\nFor more detailed information, use --debug and try again.")
 
+        # Detecting Nuitka at run time
+        if "__compiled__" in globals():
+            input("Press Enter to exit...")
+
 
 if __name__ == "__main__":
     aniworld()
