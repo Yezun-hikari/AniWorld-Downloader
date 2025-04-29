@@ -135,9 +135,9 @@ INVALID_PATH_CHARS = ['<', '>', ':', '"', '/', '\\', '|', '?', '*', '&']
 # Executable Path Resolution
 #########################################################################################
 
-DEFAULT_APPDATA_PATH = os.path.join(os.getenv(
-    "APPDATA"), "aniworld"
-) or os.path.expanduser("~/.aniworld")
+DEFAULT_APPDATA_PATH = os.path.join(
+    os.getenv("APPDATA") or os.path.expanduser("~"), "aniworld"
+)
 
 if os.name == 'nt':
     MPV_DIRECTORY = os.path.join(os.environ.get('APPDATA', ''), 'mpv')
