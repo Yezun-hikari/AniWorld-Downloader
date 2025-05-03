@@ -95,7 +95,11 @@ def get_direct_link_from_voe(embeded_voe_link: str) -> str:
     if hls:
         return base64.b64decode(hls.group("hls")).decode()
 
-    raise ValueError("No source link found.")
+    raise ValueError(
+        "Unable to process this VOE link.\n\n"
+        "Try using a different provider for now.\n"
+        "If this issue persists and hasn't been reported yet, please consider creating a new issue."
+    )
 
 
 if __name__ == '__main__':
