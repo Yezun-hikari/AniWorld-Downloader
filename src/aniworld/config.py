@@ -89,7 +89,12 @@ def is_newest_version():
     return False
 
 
-LATEST_VERSION, IS_NEWEST_VERSION = is_newest_version()
+try:
+    LATEST_VERSION, IS_NEWEST_VERSION = is_newest_version()
+except TypeError:  # GitHub API Rate Limit (60/h) #52
+    LATEST_VERSION = VERSION
+    IS_NEWEST_VERSION = True
+
 PLATFORM_SYSTEM = platform.system()
 
 SUPPORTED_PROVIDERS = [

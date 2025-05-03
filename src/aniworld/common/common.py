@@ -60,7 +60,7 @@ def download_7z(zip_tool: str) -> None:
         download_file('https://7-zip.org/a/7zr.exe', zip_tool)
 
 
-def download_mpv(dep_path: str = None, appdata_path: str = None, update: bool = False): # pylint: disable=too-many-branches, too-many-locals, too-many-branches
+def download_mpv(dep_path: str = None, appdata_path: str = None, update: bool = False):  # pylint: disable=too-many-branches, too-many-locals, too-many-branches
     if update:
         print("Updating MPV...")
 
