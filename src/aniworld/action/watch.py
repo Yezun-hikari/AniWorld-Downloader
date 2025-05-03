@@ -47,10 +47,16 @@ def _process_local_files():
 
 def _process_anime_episodes(anime):
     for episode in anime:
+        episode_title = f"{anime.title} - S{episode.season}E{episode.episode} - ({anime.language}):"
+        direct_link = episode.get_direct_link()
+
+        if not direct_link:
+            logging.warning(f"Something went wrong with \"{episode_title}\".")
+            continue
+
         if arguments.only_direct_link:
-            print(
-                f"{anime.title} - S{episode.season}E{episode.episode} - ({anime.language}):")
-            print(f"{episode.get_direct_link()}\n")
+            print(episode_title)
+            print(f"{direct_link}\n")
             continue
 
         sanitized_anime_title = ''.join(
@@ -72,7 +78,7 @@ def _process_anime_episodes(anime):
 
         title = _generate_episode_title(anime, episode)
         command = _build_watch_command(
-            episode.get_direct_link(),
+            direct_link,
             media_title,
             PROVIDER_HEADERS.get(anime.provider),
             aniskip(anime.title, episode.episode,

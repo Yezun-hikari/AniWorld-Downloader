@@ -1,6 +1,7 @@
 import os
 import re
 import subprocess
+import logging
 
 from aniworld.models import Anime
 from aniworld.config import PROVIDER_HEADERS, INVALID_PATH_CHARS
@@ -9,10 +10,16 @@ from aniworld.parser import arguments
 
 def download(anime: Anime):  # pylint: disable=too-many-branches
     for episode in anime:
+        episode_title = f"{anime.title} - S{episode.season}E{episode.episode} - ({anime.language}):"
+        direct_link = episode.get_direct_link()
+
+        if not direct_link:
+            logging.warning(f"Something went wrong with \"{episode_title}\".")
+            continue
+
         if arguments.only_direct_link:
-            msg = f"{anime.title} - S{episode.season}E{episode.episode} - ({anime.language}):"
-            print(msg)
-            print(f"{episode.get_direct_link()}\n")
+            print(episode_title)
+            print(f"{direct_link}\n")
             continue
 
         sanitized_anime_title = ''.join(
@@ -40,7 +47,7 @@ def download(anime: Anime):  # pylint: disable=too-many-branches
 
         command = [
             "yt-dlp",
-            episode.get_direct_link(),
+            direct_link,
             "--fragment-retries", "infinite",
             "--concurrent-fragments", "4",
             "-o", output_path,

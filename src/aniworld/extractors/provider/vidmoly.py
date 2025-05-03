@@ -24,7 +24,8 @@ def get_direct_link_from_vidmoly(embeded_vidmoly_link: str):
             if match:
                 file_link = match.group(1)
                 return file_link
-    return None
+
+    raise ValueError("No direct link found.")
 
 
 if __name__ == '__main__':
