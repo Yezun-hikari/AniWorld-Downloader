@@ -44,14 +44,8 @@ def decode_voe_string(encoded):
 
 def extract_voe_from_script(html):
     soup = BeautifulSoup(html, "html.parser")
-    scripts = soup.find_all("script")
-    for script in scripts:
-        text = str(script)
-        if "KGMAaM=" in text:
-            encoded_part = text.split('MKGMa="')[1].split('"')[0]
-            return decode_voe_string(encoded_part)["source"]
-
-    return None
+    script = soup.find("script", type="application/json")
+    return decode_voe_string(script.text[2:-2])["source"]
 
 
 def get_direct_link_from_voe(embeded_voe_link: str) -> str:
