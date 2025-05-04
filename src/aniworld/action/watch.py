@@ -14,6 +14,9 @@ def _build_watch_command(source, media_title=None, headers=None, aniskip_data=No
         command.append(f'--force-media-title="{media_title}"')
     if headers:
         if anime.provider != "Luluvdo":
+            if anime.provider == "Loadx":
+                command.append("--demuxer=lavf")
+                command.append("--demuxer-lavf-format=hls")
             for header in headers:
                 command.append(f"--http-header-fields={header}")
         else:

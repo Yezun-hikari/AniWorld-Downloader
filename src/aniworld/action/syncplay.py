@@ -84,6 +84,9 @@ def _build_syncplay_command(source, title=None, headers=None, aniskip_data=None,
 
     if headers:
         if anime.provider != "Luluvdo":
+            if anime.provider == "Loadx":
+                command.append("--demuxer=lavf")
+                command.append("--demuxer-lavf-format=hls")
             for header in headers:
                 command.append(f"--http-header-fields={header}")
         else:
