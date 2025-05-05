@@ -67,12 +67,6 @@ pip install --upgrade git+https://github.com/phoenixthrush/AniWorld-Downloader.g
 
 Re-run this command periodically to update to the latest development build. These builds are from the `next` branch and may include experimental or unstable changes.
 
-If the above command fails, you can install the most recent stable release (v2.4.5) using:
-
-```shell
-python -m pip install aniworld
-```
-
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 #### Local Installation (Requires Git)
@@ -286,7 +280,7 @@ aniworld --anime4k Remove
 
 ### Additional Information
 
-All required files for Anime4K are saved in the **mpv** directory during installation. Ensure these files are placed in the correct directory for your operating system:
+All files for Anime4K are saved in the **mpv** directory during installation. 
 
 - **Windows**: `C:\Users\<YourUsername>\AppData\Roaming\mpv`
 - **macOS**: `/Users/<YourUsername>/.config/mpv`
@@ -307,7 +301,7 @@ AniWorld Downloader depends on the following Python packages:
 - **`tqdm`**: For providing progress bars during downloads.
 - **`fake_useragent`**: For generating random user-agent strings.
 - **`packaging`**: For parsing version numbers and handling package versions.
-- **`py-cpuinfo`**: Only required on Windows for gathering CPU information.
+- **`py-cpuinfo`**: Only required on Windows for gathering CPU information (AVX2 support for MPV).
 - **`windows-curses`**: Required on Windows systems to enable terminal-based UI functionality.
 
 These dependencies are automatically installed when you set up AniWorld Downloader using `pip`.
@@ -320,14 +314,12 @@ These dependencies are automatically installed when you set up AniWorld Download
 - **[yt-dlp](https://github.com/yt-dlp/yt-dlp.git)**: A powerful tool for downloading videos from various providers.
 - **[Syncplay](https://github.com/Syncplay/syncplay.git)**: Enables synchronized playback sessions with friends.
 - **[Anime4K](https://github.com/bloc97/Anime4K)**: A cutting-edge real-time upscaler for enhancing anime video quality.
-- **[Logo](https://github.com/phoenixthrush/AniWorld-Downloader/blob/next/src/aniworld/icon.webp?raw=true)**: The binary logo located at `src/aniworld/icon.webp`.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Still Left Todo
 
 - [ ] Implement a provider fallback mechanism
-- [ ] Implement --uninstall argument
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
