@@ -24,7 +24,7 @@ AniWorld Downloader is a versatile command-line tool designed for downloading an
 
 ## Supported Providers
 
-To see the list of supported providers, check the [SUPPORTED_PROVIDERS](https://github.com/phoenixthrush/AniWorld-Downloader/blob/next/src/aniworld/config.py) variable.
+To see the list of supported providers, check the [SUPPORTED_PROVIDERS](https://github.com/phoenixthrush/AniWorld-Downloader/blob/dfbe431cb9bfbb315e22185b5cb63e06e7cd6277/src/aniworld/config.py#L100C11-L102C) variable.
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Installation
