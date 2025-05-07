@@ -49,51 +49,52 @@ def extract_voe_from_script(html):
 
 
 def get_direct_link_from_voe(embeded_voe_link: str) -> str:
-    response = requests.get(
-        embeded_voe_link,
-        headers={'User-Agent': config.RANDOM_USER_AGENT},
-        timeout=config.DEFAULT_REQUEST_TIMEOUT
-    )
-
-    redirect = re.search(r"https?://[^'\"<>]+", response.text)
-    if not redirect:
-        raise ValueError("No redirect found.")
-
-    redirect_url = redirect.group(0)
-    parts = redirect_url.strip().split("/")
-    config.PROVIDER_HEADERS["VOE"].append(
-        f'Referer: "{parts[0]}//{parts[2]}/"')
-
     try:
-        with urlopen(
-            Request(
-                redirect_url,
-                headers={'User-Agent': config.RANDOM_USER_AGENT}
-            ),
+        response = requests.get(
+            embeded_voe_link,
+            headers={'User-Agent': config.RANDOM_USER_AGENT},
             timeout=config.DEFAULT_REQUEST_TIMEOUT
-        ) as resp:
-            html = resp.read().decode()
-    except (HTTPError, URLError, TimeoutError) as err:
-        raise ValueError(f"Redirect failed: {err}") from err
+        )
 
-    extracted = extract_voe_from_script(html)
-    if extracted:
-        return extracted
+        redirect = re.search(r"https?://[^'\"<>]+", response.text)
+        if not redirect:
+            raise ValueError("No redirect found.")
 
-    b64match = re.search(r"var a168c='([^']+)'", html)
-    if b64match:
-        decoded = base64.b64decode(b64match.group(1)).decode()[::-1]
-        return json.loads(decoded)["source"]
+        redirect_url = redirect.group(0)
+        parts = redirect_url.strip().split("/")
+        config.PROVIDER_HEADERS["VOE"].append(
+            f'Referer: "{parts[0]}//{parts[2]}/"')
 
-    hls = re.search(r"'hls': '(?P<hls>[^']+)'", html)
-    if hls:
-        return base64.b64decode(hls.group("hls")).decode()
+        try:
+            with urlopen(
+                Request(
+                    redirect_url,
+                    headers={'User-Agent': config.RANDOM_USER_AGENT}
+                ),
+                timeout=config.DEFAULT_REQUEST_TIMEOUT
+            ) as resp:
+                html = resp.read().decode()
+        except (HTTPError, URLError, TimeoutError) as err:
+            raise ValueError(f"Redirect failed: {err}") from err
 
-    raise ValueError(
-        "Unable to process this VOE link.\n\n"
-        "Try using a different provider for now.\n"
-        "If this issue persists and hasn't been reported yet, please consider creating a new issue."
-    )
+        extracted = extract_voe_from_script(html)
+        if extracted:
+            return extracted
+
+        b64match = re.search(r"var a168c='([^']+)'", html)
+        if b64match:
+            decoded = base64.b64decode(b64match.group(1)).decode()[::-1]
+            return json.loads(decoded)["source"]
+
+        hls = re.search(r"'hls': '(?P<hls>[^']+)'", html)
+        if hls:
+            return base64.b64decode(hls.group("hls")).decode()
+    except Exception:
+        raise ValueError(
+            "Unable to process this VOE link.\n\n"
+            "Try using a different provider for now.\n"
+            "If this issue persists and hasn't been reported yet, please consider creating a new issue."
+        )
 
 
 if __name__ == '__main__':
