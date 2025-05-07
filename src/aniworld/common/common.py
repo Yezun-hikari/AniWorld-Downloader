@@ -152,19 +152,29 @@ def download_syncplay(dep_path: str = None, appdata_path: str = None, update: bo
     if update:
         print("Updating Syncplay...")
 
-    if sys.platform == 'darwin' and update:
+    if sys.platform == 'darwin':
         if shutil.which("brew"):
-            print("Updating Syncplay using Homebrew...")
-            subprocess.run(["brew", "update"], check=True,
-                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            subprocess.run(
-                ["brew", "upgrade", "--cask", "syncplay"],
-                check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-            )
+            if update:
+                print("Updating Syncplay using Homebrew...")
+                subprocess.run(["brew", "update"], check=True,
+                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                subprocess.run(["brew", "upgrade", "--formula", "syncplay"], check=True,
+                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                return
+            if not shutil.which("syncplay"):
+                print("Installing Syncplay using Homebrew...")
+                subprocess.run(["brew", "update"], check=True,
+                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                subprocess.run(["brew", "install", "--formula", "syncplay"], check=True,
+                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                return
         return
 
     if sys.platform == 'linux' and update:
         print("Not implemented.")
+        return
+
+    if sys.platform != 'win32':
         return
 
     appdata_path = appdata_path or os.path.join(
