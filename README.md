@@ -314,6 +314,7 @@ These dependencies are automatically installed when you set up AniWorld Download
 - **[yt-dlp](https://github.com/yt-dlp/yt-dlp.git)**: A powerful tool for downloading videos from various providers.
 - **[Syncplay](https://github.com/Syncplay/syncplay.git)**: Enables synchronized playback sessions with friends.
 - **[Anime4K](https://github.com/bloc97/Anime4K)**: A cutting-edge real-time upscaler for enhancing anime video quality.
+- **[Aniskip](https://api.aniskip.com/api-docs)**: Provides the opening and ending skip times for the Aniskip extension.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
