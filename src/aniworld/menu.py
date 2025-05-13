@@ -264,7 +264,7 @@ class SelectionMenu(npyscreen.NPSApp):
         selected_action = self.action_selection.get_selected_objects()[0]
         selected_language = self.language_selection.get_selected_objects()[0]
         selected_provider = self.provider_selection.get_selected_objects()[0]
-        selected_output_directory = self.folder_selection.value
+        parser.arguments.output_dir = self.folder_selection.value
         selected_aniskip = bool(self.aniskip_selection.value)
         parser.arguments.action = selected_action
 
@@ -283,7 +283,7 @@ class SelectionMenu(npyscreen.NPSApp):
         if selected_action == "Watch":
             log_message += f"Selected Aniskip: {selected_aniskip}\n"
         elif selected_action == "Download":
-            log_message += f"Selected Output Directory: {selected_output_directory}\n"
+            log_message += f"Selected Output Directory: {parser.arguments.output_dir}\n"
 
         log_message += (
             f"Selected Language: {selected_language}\n"
@@ -307,7 +307,6 @@ class SelectionMenu(npyscreen.NPSApp):
                 action=selected_action,
                 language=selected_language,
                 provider=selected_provider,
-                output_directory=selected_output_directory,
                 aniskip=selected_aniskip
             )
         except urllib3.exceptions.ReadTimeoutError:
