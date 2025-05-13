@@ -312,8 +312,8 @@ def generate_links(urls, arguments):  # pylint: disable=too-many-locals, too-man
         movies_info = 0
         parts = base_url.split('/')
 
-        if ("anime" in parts and not "episode" in base_url or
-                "anime" in parts and arguments.keep_watching):
+        if ("anime" in parts and not "episode" in base_url and not "film-" in base_url
+                or "anime" in parts and arguments.keep_watching):
             series_slug_index = parts.index("stream") + 1
             series_slug = parts[series_slug_index]
             seasons_info = get_season_episode_count(
