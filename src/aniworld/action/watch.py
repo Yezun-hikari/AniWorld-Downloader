@@ -54,7 +54,8 @@ def _process_anime_episodes(anime):
         direct_link = episode.get_direct_link()
 
         if not direct_link:
-            logging.warning(f"Something went wrong with \"{episode_title}\".")
+            logging.warning(f"Something went wrong with \"{episode_title}\".\n"
+                            f"Error while trying to find a direct link.")
             continue
 
         if arguments.only_direct_link:

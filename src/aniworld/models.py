@@ -433,7 +433,8 @@ class Episode:
             # if all providers fail, raise an error
             raise ValueError("All providers have failed.")
         """
-
+        if self.embeded_link is None:
+            return None
         if self._selected_provider == "Vidmoly":
             return get_direct_link_from_vidmoly(embeded_vidmoly_link=self.embeded_link)
         if self._selected_provider == "Vidoza":
@@ -462,17 +463,20 @@ class Episode:
                     self.redirect_link = lang_dict[lang_key]
                     break
             else:
-                raise KeyError(
-                    "No provider with the language key '"
-                    f"{lang_key}' found. Checked providers: {list(self.provider.keys())}. "
-                    f"Provider variable: {self.provider}"
-                )
+                self.redirect_link = None
+                # raise KeyError(
+                #    "No provider with the language key '"
+                #    f"{lang_key}' found. Checked providers: {list(self.provider.keys())}. "
+                #    f"Provider variable: {self.provider}"
+                # )
         else:
             self.redirect_link = self.provider[self._selected_provider][lang_key]
 
     def get_embeded_link(self):
         if not self.redirect_link:
             self.get_redirect_link()
+        if not self.redirect_link:
+            return None
 
         self.embeded_link = requests.get(
             self.redirect_link, timeout=DEFAULT_REQUEST_TIMEOUT,
