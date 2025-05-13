@@ -121,7 +121,7 @@ def _process_anime_episodes(anime):
         if episode.season == 0:
             media_title = (
                 f"{sanitized_anime_title} - "
-                f"Movie {episode.episode:02} - "
+                f"Movie {episode.episode:03} - "
                 f"({anime.language})"
             )
         else:

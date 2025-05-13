@@ -29,7 +29,7 @@ def download(anime: Anime):  # pylint: disable=too-many-branches
         if episode.season == 0:
             output_file = (
                 f"{sanitized_anime_title} - "
-                f"Movie {episode.episode:02} - "
+                f"Movie {episode.episode:03} - "
                 f"({anime.language}).mp4"
             )
         else:
