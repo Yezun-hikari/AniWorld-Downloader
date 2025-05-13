@@ -11,8 +11,9 @@ from aniworld.ascii_art import display_ascii_art
 from aniworld.config import DEFAULT_REQUEST_TIMEOUT, ANIWORLD_TO
 
 
-def search_anime(keyword: str = None) -> str:
-    print(display_ascii_art())
+def search_anime(keyword: str = None, only_return: bool = False) -> str:
+    if not only_return:
+        print(display_ascii_art())
     if not keyword:
         logging.debug("Prompting user for search.")
         keyword = input("Search for a series: ").strip()
@@ -21,6 +22,9 @@ def search_anime(keyword: str = None) -> str:
 
     search_url = f"{ANIWORLD_TO}/ajax/seriesSearch?keyword={quote(keyword)}"
     anime_list = fetch_anime_list(search_url)
+
+    if only_return:
+        return anime_list
 
     if len(anime_list) == 1:
         return anime_list[0].get("link", None)
