@@ -3,6 +3,7 @@ import html
 import webbrowser
 from urllib.parse import quote
 import logging
+import re
 
 import curses
 import requests
@@ -36,15 +37,25 @@ def search_anime(keyword: str = None, only_return: bool = False) -> str:
 
 
 def fetch_anime_list(url: str) -> list:
+    response = requests.get(url, timeout=DEFAULT_REQUEST_TIMEOUT)
+    response.raise_for_status()
+
+    clean_text = response.text.strip()
+
     try:
-        response = requests.get(url, timeout=DEFAULT_REQUEST_TIMEOUT)
-        response.raise_for_status()
-        decoded_data = json.loads(html.unescape(response.text))
-        if isinstance(decoded_data, list):
-            return decoded_data
-        return []
-    except (requests.RequestException, json.JSONDecodeError) as exc:
-        raise ValueError("Could not get valid anime: ") from exc
+        decoded_data = json.loads(html.unescape(clean_text))
+        return decoded_data if isinstance(decoded_data, list) else []
+    except json.JSONDecodeError:
+        try:
+            # Remove BOM and problematic characters
+            clean_text = clean_text.encode('utf-8').decode('utf-8-sig')
+            # Remove problematic characters
+            clean_text = re.sub(r'[\x00-\x1F\x7F-\x9F]', '', clean_text)
+            # Parse the new text
+            decoded_data = json.loads(clean_text)
+            return decoded_data if isinstance(decoded_data, list) else []
+        except (requests.RequestException, json.JSONDecodeError) as exc:
+            raise ValueError("Could not get valid anime: ") from exc
 
 
 def show_menu(stdscr: curses.window, options: list) -> str:
