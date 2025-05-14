@@ -32,12 +32,12 @@ def search_anime(keyword: str = None) -> str:
     return curses.wrapper(show_menu, anime_list)
 
 
-def fetch_animes(url):
+def fetch_anime_list(url: str) -> list:
     response = requests.get(url, timeout=DEFAULT_REQUEST_TIMEOUT)
     response.raise_for_status()
-    
+
     clean_text = response.text.strip()
-    
+
     try:
         decoded_data = json.loads(html.unescape(clean_text))
         return decoded_data if isinstance(decoded_data, list) else []
