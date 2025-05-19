@@ -11,7 +11,12 @@ from aniworld.parser import arguments
 def download(anime: Anime):  # pylint: disable=too-many-branches
     for episode in anime:
         episode_title = f"{anime.title} - S{episode.season}E{episode.episode} - ({anime.language}):"
-        direct_link = episode.get_direct_link()
+        try:
+            direct_link = episode.get_direct_link()
+        except Exception as e:
+            logging.warning(f"Something went wrong with \"{episode_title}\".\n"
+                            f"Error while trying to find a direct link: {e}")
+            continue
 
         if not direct_link:
             logging.warning(f"Something went wrong with \"{episode_title}\".\n"
