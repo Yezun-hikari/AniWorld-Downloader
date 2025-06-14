@@ -44,21 +44,29 @@ def aniworld() -> None:  # pylint: disable=too-many-branches, too-many-statement
                 links.extend(arguments.episode)
             links = generate_links(links, arguments)
 
-            # TODO: this needs to pass all links to a function
-            #       that will return Anime objects instead
             anime_list = []
+            episode_list = []
+            current_anime = None
             for link in (links or [None]):
                 if link:
-                    episode = Episode(
-                        link=link
-                    )
+                    parts = link.split('/')
+                    series_slug = parts[parts.index("stream") + 1]
+
+                    if series_slug != current_anime:
+                        if episode_list:
+                            anime_list.append(Anime(episode_list=episode_list))
+                            episode_list = []
+                        current_anime = series_slug
+
+                    episode_list.append(Episode(link=link))
+
                 else:
-                    slug = arguments.slug if arguments.slug else search_anime()
-                    episode = Episode(
-                        slug=slug
-                    )
-                anime = Anime(episode_list=[episode])
-                anime_list.append(anime)
+                    slug = arguments.slug or search_anime()
+                    episode = Episode(slug=slug)
+                    anime_list.append(Anime(episode_list=[episode]))
+
+            if episode_list:
+                anime_list.append(Anime(episode_list=episode_list))
 
             execute(anime_list=anime_list)
         if not arguments.episode and not arguments.local_episodes and not arguments.episode_file:
