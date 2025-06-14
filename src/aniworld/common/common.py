@@ -305,23 +305,21 @@ def generate_links(urls, arguments):  # pylint: disable=too-many-locals, too-man
 
     unique_links = set()
 
-    # TODO: save season data for every anime and use this cached season info in the
-    # for loop instead of generating the season_info each time
+    slug_cache = {}
     for base_url in urls:
-        seasons_info = {}
-        movies_info = 0
         parts = base_url.split('/')
 
         if ("anime" in parts and not "episode" in base_url and not "film-" in base_url
                 or "anime" in parts and arguments.keep_watching):
             series_slug_index = parts.index("stream") + 1
             series_slug = parts[series_slug_index]
-            seasons_info = get_season_episode_count(
-                slug=series_slug
-            )
-            movies_info = get_movie_episode_count(
-                slug=series_slug
-            )
+
+            if series_slug in slug_cache:
+                seasons_info, movies_info = slug_cache[series_slug]
+            else:
+                seasons_info = get_season_episode_count(slug=series_slug)
+                movies_info = get_movie_episode_count(slug=series_slug)
+                slug_cache[series_slug] = (seasons_info, movies_info)
         else:
             unique_links.add(base_url)
             continue
