@@ -83,8 +83,12 @@ def download_mpv(dep_path: str = None, appdata_path: str = None, update: bool = 
                 return
         return
 
-    if sys.platform == 'linux' and update:
-        print("Not implemented.")
+    if sys.platform == 'linux':
+        print("Automatically downloading mpv is not implemented yet on Linux.\n"
+              "You need to install it yourself with your Package-Manager!")
+        return
+
+    if sys.platform != 'win32':
         return
 
     appdata_path = appdata_path or DEFAULT_APPDATA_PATH
@@ -169,8 +173,9 @@ def download_syncplay(dep_path: str = None, appdata_path: str = None, update: bo
                 return
         return
 
-    if sys.platform == 'linux' and update:
-        print("Not implemented.")
+    if sys.platform == 'linux':
+        print("Automatically downloading mpv is not implemented yet on Linux.\n"
+              "You need to install it yourself with your Package-Manager!")
         return
 
     if sys.platform != 'win32':
