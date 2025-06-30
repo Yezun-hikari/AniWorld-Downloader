@@ -15,7 +15,8 @@ from aniworld.config import (
     DEFAULT_REQUEST_TIMEOUT,
     MPV_DIRECTORY,
     ANIWORLD_TO,
-    MPV_SCRIPTS_DIRECTORY
+    MPV_SCRIPTS_DIRECTORY,
+    DEFAULT_APPDATA_PATH
 )
 
 
@@ -86,9 +87,7 @@ def download_mpv(dep_path: str = None, appdata_path: str = None, update: bool = 
         print("Not implemented.")
         return
 
-    appdata_path = appdata_path or os.path.join(
-        os.environ['USERPROFILE'], 'AppData', 'Roaming', 'aniworld'
-    )
+    appdata_path = appdata_path or DEFAULT_APPDATA_PATH
     dep_path = dep_path or os.path.join(appdata_path, "mpv")
     if update is True:
         if os.path.exists(dep_path):
@@ -177,8 +176,7 @@ def download_syncplay(dep_path: str = None, appdata_path: str = None, update: bo
     if sys.platform != 'win32':
         return
 
-    appdata_path = appdata_path or os.path.join(
-        os.environ['USERPROFILE'], 'AppData', 'Roaming', 'aniworld')
+    appdata_path = appdata_path or DEFAULT_APPDATA_PATH
     dep_path = dep_path or os.path.join(appdata_path, "syncplay")
     if update is True:
         if os.path.exists(dep_path):
