@@ -16,7 +16,9 @@ from aniworld.config import (
     MPV_DIRECTORY,
     ANIWORLD_TO,
     MPV_SCRIPTS_DIRECTORY,
-    DEFAULT_APPDATA_PATH
+    DEFAULT_APPDATA_PATH,
+    MPV_PATH,
+    SYNCPLAY_PATH
 )
 
 
@@ -84,8 +86,9 @@ def download_mpv(dep_path: str = None, appdata_path: str = None, update: bool = 
         return
 
     if sys.platform == 'linux':
-        print("Automatically downloading mpv is not implemented yet on Linux.\n"
-              "You need to install it yourself with your Package-Manager!")
+        if not MPV_PATH:
+            print("Automatically downloading mpv is not implemented yet on Linux.\n"
+                  "You need to install it yourself with your Package-Manager!")
         return
 
     if sys.platform != 'win32':
@@ -174,8 +177,9 @@ def download_syncplay(dep_path: str = None, appdata_path: str = None, update: bo
         return
 
     if sys.platform == 'linux':
-        print("Automatically downloading mpv is not implemented yet on Linux.\n"
-              "You need to install it yourself with your Package-Manager!")
+        if not SYNCPLAY_PATH:
+            print("Automatically downloading mpv is not implemented yet on Linux.\n"
+                  "You need to install it yourself with your Package-Manager!")
         return
 
     if sys.platform != 'win32':
