@@ -1,31 +1,32 @@
 import importlib
 
 providers = {
-    'doodstream': 'https://doodstream.com/e/18q92knltur6',  # embeded broken?
-    'filemoon': 'https://filemoon.to/e/eawuwyrd40an',  # embeded broken?
+    'doodstream': 'https://doodstream.com/e/18q92knltur6',
+    'filemoon': 'https://filemoon.to/e/eawuwyrd40an',
     'loadx': 'https://loadx.ws/video/7b7bd53ba5107cf5fb2c2a51dd887c95',
     'luluvdo': 'https://luluvdo.com/embed/g1gaitimtoc1',
     'speedfiles': 'https://speedfiles.net/4f8b2c8d4f3f',
-    'streamtape': '',  # add link
+    'streamtape': '',
     'vidmoly': 'https://vidmoly.to/embed-19xpz8qoujf9.html',
     'vidoza': 'https://vidoza.net/embed-k2wiaenfxn9j.html',
     'voe': 'https://voe.sx/e/ayginbzzb6bi'
 }
 
-for name, url in providers.items():
+import pytest
+
+
+@pytest.mark.parametrize("name,url", providers.items())
+def test_get_direct_link(name, url):
+    if not url:
+        pytest.skip(f"No URL provided for {name}")
+
     func = getattr(
         importlib.import_module(f'aniworld.extractors.provider.{name}'),
         f'get_direct_link_from_{name}'
     )
 
     try:
-        print('*' * 40)
-        print(name.upper())
         direct_link = func(url)
-        if direct_link:
-            print(direct_link)
-        else:
-            print("None")
-    except:
-        print("None")
-        continue
+        assert direct_link is not None and isinstance(direct_link, str)
+    except Exception as e:
+        pytest.fail(f"{name}: Exception occurred - {e}")
