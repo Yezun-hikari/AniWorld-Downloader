@@ -62,7 +62,9 @@ def get_direct_link_from_voe(embeded_voe_link: str) -> str:
 
         redirect_url = redirect.group(0)
         parts = redirect_url.strip().split("/")
-        config.PROVIDER_HEADERS["VOE"].append(
+        config.PROVIDER_HEADERS_D["VOE"].append(
+            f'Referer: "{parts[0]}//{parts[2]}/"')
+        config.PROVIDER_HEADERS_W["VOE"].append(
             f'Referer: "{parts[0]}//{parts[2]}/"')
 
         try:

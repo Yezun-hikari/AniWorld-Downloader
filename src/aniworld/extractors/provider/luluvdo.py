@@ -18,8 +18,9 @@ def get_direct_link_from_luluvdo(embeded_luluvdo_link, arguments=None):
         "User-Agent": config.LULUVDO_USER_AGENT
     }
 
-    if arguments.action == "Download":
-        headers["Accept-Language"] = "de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7"
+    if arguments:
+        if arguments.action == "Download":
+            headers["Accept-Language"] = "de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7"
 
     response = requests.get(filelink, headers=headers,
                             timeout=config.DEFAULT_REQUEST_TIMEOUT)

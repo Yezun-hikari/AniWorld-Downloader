@@ -3,7 +3,7 @@ import logging
 
 from aniworld.aniskip import aniskip
 from aniworld.common import download_mpv
-from aniworld.config import MPV_PATH, PROVIDER_HEADERS, INVALID_PATH_CHARS
+from aniworld.config import MPV_PATH, PROVIDER_HEADERS_W, INVALID_PATH_CHARS
 from aniworld.models import Anime
 from aniworld.parser import arguments
 
@@ -12,15 +12,12 @@ def _build_watch_command(source, media_title=None, headers=None, aniskip_data=No
     command = [MPV_PATH, source, "--fs", "--quiet"]
     if media_title:
         command.append(f'--force-media-title="{media_title}"')
+    if anime.provider == "LoadX":
+        command.append("--demuxer=lavf")
+        command.append("--demuxer-lavf-format=hls")
     if headers:
-        if anime.provider != "Luluvdo":
-            if anime.provider == "Loadx":
-                command.append("--demuxer=lavf")
-                command.append("--demuxer-lavf-format=hls")
-            for header in headers:
-                command.append(f"--http-header-fields={header}")
-        else:
-            command.append(f"--http-header-fields={headers[0]}")
+        for header in headers:
+            command.append(f"--http-header-fields={header}")
     if aniskip_data:
         command.extend(aniskip_data.split()[:2])
     return command
@@ -84,7 +81,7 @@ def _process_anime_episodes(anime):
         command = _build_watch_command(
             direct_link,
             media_title,
-            PROVIDER_HEADERS.get(anime.provider),
+            PROVIDER_HEADERS_W.get(anime.provider),
             aniskip(anime.title, episode.episode,
                     episode.season, episode.season_episode_count[episode.season])
             if anime.aniskip else None,

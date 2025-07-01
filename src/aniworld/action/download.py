@@ -4,7 +4,7 @@ import subprocess
 import logging
 
 from aniworld.models import Anime
-from aniworld.config import PROVIDER_HEADERS, INVALID_PATH_CHARS
+from aniworld.config import PROVIDER_HEADERS_D, INVALID_PATH_CHARS
 from aniworld.parser import arguments
 
 
@@ -62,8 +62,8 @@ def download(anime: Anime):  # pylint: disable=too-many-branches
             "--progress"
         ]
 
-        if anime.provider in PROVIDER_HEADERS:
-            for header in PROVIDER_HEADERS[anime.provider]:
+        if anime.provider in PROVIDER_HEADERS_D:
+            for header in PROVIDER_HEADERS_D[anime.provider]:
                 command.extend(["--add-header", header])
 
         if arguments.only_command:

@@ -4,7 +4,7 @@ import logging
 import hashlib
 
 from aniworld.models import Anime
-from aniworld.config import MPV_PATH, PROVIDER_HEADERS, SYNCPLAY_PATH, INVALID_PATH_CHARS
+from aniworld.config import MPV_PATH, PROVIDER_HEADERS_W, SYNCPLAY_PATH, INVALID_PATH_CHARS
 from aniworld.common import download_mpv, download_syncplay, setup_autostart, setup_autoexit
 from aniworld.aniskip import aniskip
 from aniworld.parser import arguments
@@ -82,15 +82,13 @@ def _build_syncplay_command(source, title=None, headers=None, aniskip_data=None,
 
     command = _append_password(command, title)
 
+    if anime.provider == "Loadx":
+        command.append("--demuxer=lavf")
+        command.append("--demuxer-lavf-format=hls")
+
     if headers:
-        if anime.provider != "Luluvdo":
-            if anime.provider == "Loadx":
-                command.append("--demuxer=lavf")
-                command.append("--demuxer-lavf-format=hls")
-            for header in headers:
-                command.append(f"--http-header-fields={header}")
-        else:
-            command.append(f"--http-header-fields={headers[0]}")
+        for header in headers:
+            command.append(f"--http-header-fields={header}")
 
     if aniskip_data:
         command.extend(aniskip_data.split()[:2])
@@ -135,7 +133,7 @@ def _process_anime_episodes(anime):
         command = _build_syncplay_command(
             direct_link,
             episode.title_german,
-            PROVIDER_HEADERS.get(anime.provider),
+            PROVIDER_HEADERS_W.get(anime.provider),
             aniskip(anime.title, episode.episode,
                     episode.season, episode.season_episode_count[episode.season])
             if anime.aniskip else None,

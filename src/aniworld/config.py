@@ -98,8 +98,8 @@ except TypeError:  # GitHub API Rate Limit (60/h) #52
 PLATFORM_SYSTEM = platform.system()
 
 SUPPORTED_PROVIDERS = [
-    "LoadX", "VOE", "Vidmoly", "Doodstream", "Vidoza", "SpeedFiles", "Streamtape",
-    #, "Luluvdo", "Filemoon"
+    "LoadX", "VOE", "Vidmoly", "Luluvdo", "Doodstream", "Vidoza", "SpeedFiles", "Streamtape"
+    # , "Filemoon"
 ]
 
 #########################################################################################
@@ -110,16 +110,25 @@ RANDOM_USER_AGENT = UserAgent().random
 
 LULUVDO_USER_AGENT = "Mozilla/5.0 (Android 15; Mobile; rv:132.0) Gecko/132.0 Firefox/132.0"
 
-PROVIDER_HEADERS = {
+PROVIDER_HEADERS_D = {
     "Vidmoly": ['Referer: "https://vidmoly.to"'],
     "Doodstream": ['Referer: "https://dood.li/"'],
     "VOE": [f'User-Agent: {RANDOM_USER_AGENT}'],
+    "LoadX": ['Accept: */*'],
     "Luluvdo": [
         f'User-Agent: {LULUVDO_USER_AGENT}',
         'Accept-Language: de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7',
         'Origin: "https://luluvdo.com"',
         'Referer: "https://luluvdo.com/"'
     ]}
+
+PROVIDER_HEADERS_W = {
+    "Vidmoly": ['Referer: "https://vidmoly.to"'],
+    "Doodstream": ['Referer: "https://dood.li/"'],
+    "VOE": [f'User-Agent: {RANDOM_USER_AGENT}'],
+    "Luluvdo": [f'User-Agent: {LULUVDO_USER_AGENT}']
+}
+
 
 USES_DEFAULT_PROVIDER = False
 

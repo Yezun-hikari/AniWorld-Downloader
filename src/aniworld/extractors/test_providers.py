@@ -1,3 +1,4 @@
+import pytest
 import importlib
 
 providers = {
@@ -11,8 +12,6 @@ providers = {
     'vidoza': 'https://vidoza.net/embed-k2wiaenfxn9j.html',
     'voe': 'https://voe.sx/e/ayginbzzb6bi'
 }
-
-import pytest
 
 
 @pytest.mark.parametrize("name,url", providers.items())

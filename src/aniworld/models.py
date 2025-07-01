@@ -17,7 +17,8 @@ from aniworld.extractors import (
     get_direct_link_from_voe,
     get_direct_link_from_doodstream,
     get_direct_link_from_speedfiles,
-    get_direct_link_from_luluvdo
+    get_direct_link_from_luluvdo,
+    get_direct_link_from_loadx
 )
 
 
@@ -448,6 +449,9 @@ class Episode:
         if self._selected_provider == "Luluvdo":
             return get_direct_link_from_luluvdo(embeded_luluvdo_link=self.embeded_link,
                                                 arguments=arguments)
+        if self._selected_provider == "LoadX":
+            return get_direct_link_from_loadx(embeded_loadx_link=self.embeded_link)
+
         raise ValueError(
             f"{self._selected_provider} is currently not supported.")
 

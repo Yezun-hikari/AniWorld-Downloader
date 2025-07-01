@@ -2,8 +2,6 @@ import requests
 import json
 from urllib.parse import urlparse
 
-# TODO Doesn't work on download yet and has to be implemented
-
 
 def get_direct_link_from_loadx(embeded_loadx_link: str):
     response = requests.head(
@@ -22,7 +20,6 @@ def get_direct_link_from_loadx(embeded_loadx_link: str):
     response = requests.post(post_url, headers=headers, verify=False)
 
     data = json.loads(response.text)
-    print(data)
     video_url = data.get("videoSource")
     if not video_url:
         raise ValueError("No Video link found!")
