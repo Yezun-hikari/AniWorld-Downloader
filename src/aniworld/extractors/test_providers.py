@@ -4,7 +4,7 @@ import importlib
 providers = {
     'doodstream': 'https://doodstream.com/e/18q92knltur6',
     'filemoon': 'https://filemoon.to/e/eawuwyrd40an',
-    'loadx': 'https://loadx.ws/video/1acbf888c0941af3700e671d096ba635',
+    'loadx': 'https://loadx.ws/video/f658d0548f56db68fb23c72a3c48d080',
     'luluvdo': 'https://luluvdo.com/embed/g1gaitimtoc1',
     'speedfiles': 'https://speedfiles.net/4f8b2c8d4f3f',
     'streamtape': '',

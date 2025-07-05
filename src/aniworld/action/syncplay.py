@@ -82,7 +82,7 @@ def _build_syncplay_command(source, title=None, headers=None, aniskip_data=None,
 
     command = _append_password(command, title)
 
-    if anime.provider == "Loadx":
+    if anime.provider == "LoadX":
         command.append("--demuxer=lavf")
         command.append("--demuxer-lavf-format=hls")
 
