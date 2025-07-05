@@ -87,8 +87,30 @@ def download_mpv(dep_path: str = None, appdata_path: str = None, update: bool = 
 
     if sys.platform == 'linux':
         if not MPV_PATH:
-            print("Automatically downloading mpv is not implemented yet on Linux.\n"
-                  "You need to install it yourself with your Package-Manager!")
+            PACKAGE_MANAGERS = {
+                "apt": "sudo apt update && sudo apt install mpv",
+                "dnf": "sudo dnf install mpv",
+                "yum": "sudo yum install mpv",
+                "pacman": "sudo pacman -Sy mpv",
+                "zypper": "sudo zypper install mpv",
+                "apk": "sudo apk add mpv",
+                "xbps-install": "sudo xbps-install -S mpv",
+                "nix-env": "nix-env -iA nixpkgs.mpv",
+            }
+
+            def detect_package_manager():
+                for pm in PACKAGE_MANAGERS:
+                    if shutil.which(pm):
+                        return pm
+                return None
+
+            install_cmd = PACKAGE_MANAGERS[detect_package_manager()]
+            try:
+                print("Installing MPV using your Package-Manager...")
+                subprocess.run(install_cmd, shell=True, check=True)
+            except subprocess.CalledProcessError:
+                print("Error while trying to install MPV on linux!")
+                return
         return
 
     if sys.platform != 'win32':
@@ -178,8 +200,30 @@ def download_syncplay(dep_path: str = None, appdata_path: str = None, update: bo
 
     if sys.platform == 'linux':
         if not SYNCPLAY_PATH:
-            print("Automatically downloading mpv is not implemented yet on Linux.\n"
-                  "You need to install it yourself with your Package-Manager!")
+            PACKAGE_MANAGERS = {
+                "apt": "sudo apt update && sudo apt install syncplay",
+                "dnf": "sudo dnf install syncplay",
+                "yum": "sudo yum install syncplay",
+                "pacman": "sudo pacman -Sy syncplay",
+                "zypper": "sudo zypper install syncplay",
+                "apk": "sudo apk add syncplay",
+                "xbps-install": "sudo xbps-install -S syncplay",
+                "nix-env": "nix-env -iA nixpkgs.syncplay",
+            }
+
+            def detect_package_manager():
+                for pm in PACKAGE_MANAGERS:
+                    if shutil.which(pm):
+                        return pm
+                return None
+
+            install_cmd = PACKAGE_MANAGERS[detect_package_manager()]
+            try:
+                print("Installing Syncplay using your Package-Manager...")
+                subprocess.run(install_cmd, shell=True, check=True)
+            except subprocess.CalledProcessError:
+                print("Error while trying to install Syncplay on linux!")
+                return
         return
 
     if sys.platform != 'win32':
