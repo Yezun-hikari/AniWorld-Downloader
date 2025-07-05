@@ -1,61 +1,166 @@
 import re
 import random
 import time
+import logging
+from typing import Optional
+from urllib.parse import urljoin
 
 import requests
 
 from aniworld.config import RANDOM_USER_AGENT, DEFAULT_REQUEST_TIMEOUT
 
+# Constants
+DOODSTREAM_BASE_URL = "https://dood.li"
+RANDOM_STRING_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+PASS_MD5_PATTERN = r"\$\.get\('([^']*\/pass_md5\/[^']*)'"
+TOKEN_PATTERN = r"token=([a-zA-Z0-9]+)"
 
-def get_direct_link_from_doodstream(embeded_doodstream_link):
-    headers = {
+
+def _get_headers() -> dict:
+    """Get request headers for Doodstream."""
+    return {
         'User-Agent': RANDOM_USER_AGENT,
-        'Referer': 'https://dood.li/'
+        'Referer': f'{DOODSTREAM_BASE_URL}/'
     }
 
-    def extract_data(pattern, content):
-        match = re.search(pattern, content)
-        return match.group(1) if match else None
 
-    def generate_random_string(length=10):
-        characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-        return ''.join(random.choice(characters) for _ in range(length))
+def _make_request(url: str, headers: dict) -> requests.Response:
+    """Make HTTP request with error handling."""
+    try:
+        response = requests.get(
+            url,
+            headers=headers,
+            timeout=DEFAULT_REQUEST_TIMEOUT,
+            verify=False
+        )
+        response.raise_for_status()
+        return response
+    except requests.RequestException as e:
+        logging.error(f"Request failed for {url}: {e}")
+        raise
 
-    response = requests.get(
-        embeded_doodstream_link,
-        headers=headers,
-        timeout=DEFAULT_REQUEST_TIMEOUT,
-        verify=False
-    )
-    response.raise_for_status()
 
-    pass_md5_pattern = r"\$\.get\('([^']*\/pass_md5\/[^']*)'"
-    pass_md5_url = extract_data(pass_md5_pattern, response.text)
+def _extract_data(pattern: str, content: str) -> Optional[str]:
+    """Extract data using regex pattern."""
+    match = re.search(pattern, content)
+    return match.group(1) if match else None
+
+
+def _generate_random_string(length: int = 10) -> str:
+    """Generate random alphanumeric string."""
+    return ''.join(random.choice(RANDOM_STRING_CHARS) for _ in range(length))
+
+
+def _extract_pass_md5_url(content: str, embed_url: str) -> str:
+    """Extract pass_md5 URL from page content."""
+    pass_md5_url = _extract_data(PASS_MD5_PATTERN, content)
     if not pass_md5_url:
-        raise ValueError(
-            f'pass_md5 URL not found using {embeded_doodstream_link}.')
+        raise ValueError(f'pass_md5 URL not found in {embed_url}')
 
-    full_md5_url = f"https://dood.li{pass_md5_url}"
+    # Ensure URL is properly formed
+    if not pass_md5_url.startswith('http'):
+        pass_md5_url = urljoin(DOODSTREAM_BASE_URL, pass_md5_url)
 
-    token_pattern = r"token=([a-zA-Z0-9]+)"
-    token = extract_data(token_pattern, response.text)
+    logging.debug(f"Extracted pass_md5 URL: {pass_md5_url}")
+    return pass_md5_url
+
+
+def _extract_token(content: str, embed_url: str) -> str:
+    """Extract token from page content."""
+    token = _extract_data(TOKEN_PATTERN, content)
     if not token:
-        raise ValueError(f'Token not found using {embeded_doodstream_link}.')
+        raise ValueError(f'Token not found in {embed_url}')
 
-    md5_response = requests.get(
-        full_md5_url, headers=headers, timeout=DEFAULT_REQUEST_TIMEOUT, verify=False)
-    md5_response.raise_for_status()
-    video_base_url = md5_response.text.strip()
+    logging.debug(f"Extracted token: {token}")
+    return token
 
-    random_string = generate_random_string(10)
+
+def _get_video_base_url(pass_md5_url: str, headers: dict) -> str:
+    """Get video base URL from pass_md5 endpoint."""
+    try:
+        md5_response = _make_request(pass_md5_url, headers)
+        video_base_url = md5_response.text.strip()
+
+        if not video_base_url:
+            raise ValueError("Empty video base URL received")
+
+        logging.debug(f"Retrieved video base URL: {video_base_url}")
+        return video_base_url
+
+    except Exception as e:
+        logging.error(f"Failed to get video base URL from {pass_md5_url}: {e}")
+        raise
+
+
+def _build_direct_link(video_base_url: str, token: str) -> str:
+    """Build the final direct link."""
+    random_string = _generate_random_string(10)
     expiry = int(time.time())
 
     direct_link = f"{video_base_url}{random_string}?token={token}&expiry={expiry}"
-    # print(direct_link)
-
+    logging.debug(f"Built direct link: {direct_link}")
     return direct_link
 
 
+def get_direct_link_from_doodstream(embeded_doodstream_link: str) -> str:
+    """
+    Extract direct download link from Doodstream embed URL.
+
+    Args:
+        embeded_doodstream_link: Doodstream embed URL
+
+    Returns:
+        Direct download link
+
+    Raises:
+        ValueError: If required data cannot be extracted
+        requests.RequestException: If HTTP requests fail
+    """
+    if not embeded_doodstream_link:
+        raise ValueError("Embed URL cannot be empty")
+
+    logging.info(
+        f"Extracting direct link from Doodstream: {embeded_doodstream_link}")
+
+    try:
+        headers = _get_headers()
+
+        # Get initial page content
+        logging.debug("Fetching embed page content...")
+        response = _make_request(embeded_doodstream_link, headers)
+
+        # Extract pass_md5 URL and token
+        pass_md5_url = _extract_pass_md5_url(
+            response.text, embeded_doodstream_link)
+        token = _extract_token(response.text, embeded_doodstream_link)
+
+        # Get video base URL
+        video_base_url = _get_video_base_url(pass_md5_url, headers)
+
+        # Build final direct link
+        direct_link = _build_direct_link(video_base_url, token)
+
+        logging.info("Successfully extracted Doodstream direct link")
+        return direct_link
+
+    except Exception as e:
+        logging.error(f"Failed to extract direct link from Doodstream: {e}")
+        raise
+
+
 if __name__ == '__main__':
-    link = input("Enter Doodstream Link: ")
-    print(get_direct_link_from_doodstream(embeded_doodstream_link=link))
+    # Setup basic logging for standalone execution
+    logging.basicConfig(level=logging.DEBUG)
+
+    try:
+        link = input("Enter Doodstream Link: ").strip()
+        if not link:
+            print("Error: No link provided")
+            exit(1)
+
+        result = get_direct_link_from_doodstream(link)
+        print(f"Direct Link: {result}")
+
+    except Exception as e:
+        print(f"Error: {e}")
+        exit(1)

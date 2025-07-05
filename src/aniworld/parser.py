@@ -299,8 +299,9 @@ _____________________________
             for provider_episode in args.provider_link:
                 direct_link = f'"{func(provider_episode)}"'
 
-                if args.provider in config.PROVIDER_HEADERS:
-                    if config.PROVIDER_HEADERS.get(args.provider):
+                # TODO: check if PROVIDER_HEADERS_W or PROVIDER_HEADERS_D is needed
+                if args.provider in config.PROVIDER_HEADERS_D:
+                    if config.PROVIDER_HEADERS_D.get(args.provider):
                         action = (
                             config.YTDLP_PATH if args.action == "Download" else
                             config.MPV_PATH if args.action == "Watch" else
@@ -316,7 +317,7 @@ _____________________________
                             )
                             direct_link = (
                                 f"{action} {direct_link} "
-                                f"{header}='{config.PROVIDER_HEADERS[args.provider]}'"
+                                f"{header}='{config.PROVIDER_HEADERS_D[args.provider]}'"
                             )
                         else:
                             raise ValueError("Invalid action.")
