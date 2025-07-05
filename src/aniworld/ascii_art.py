@@ -840,55 +840,20 @@ TRACEBACK2 = R"""
 
 
 def is_windows_legacy() -> bool:
-    platform_version = platform.version()
-    release = platform.release()
-
-    if release != "10":
+    if platform.release() != "10":
         return True
-
-    build_number = int(re.search(r"\d+", platform_version).group())
-
-    if build_number >= 22000:
-        return False
-
-    return True
+    build = int(re.search(r"\d+", platform.version()).group())
+    return build < 22000
 
 
 def display_ascii_art() -> str:
     options = [
-        LUCKY_STAR,
-        CINNAMOROLL,
-        CAT,
-        CODING,
-        FEMALE,
-        CATGIRL,
-        SPY,
-        SPYXFAMILY,
-        NOKO,
-        GOJO,
-        GIRL4,
-        CAT_GIRL_TONGUE,
-        SUGOI,
-        GOJO2,
-        GOJO_CAT,
-        EMU,
-        BANNER,
-        CUTE_GIRL,
-        POCHITA,
-        GIRL,
-        FRIEREN,
-        HU_TAO,
-        SMIRK,
-        ZERO_TWO,
-        K_ON,
-        CINNAMOROLL_MUSIC,
-        KANAO,
-        ZERO_TWO_2,
-        SPIRITED_AWAY,
-        GIRL2,
-        TOMIOKA,
-        MISAKA,
-        GIRL3
+        LUCKY_STAR, CINNAMOROLL, CAT, CODING, FEMALE, CATGIRL,
+        SPY, SPYXFAMILY, NOKO, GOJO, GIRL4, CAT_GIRL_TONGUE,
+        SUGOI, GOJO2, GOJO_CAT, EMU, BANNER, CUTE_GIRL,
+        POCHITA, GIRL, FRIEREN, HU_TAO, SMIRK, ZERO_TWO,
+        K_ON, CINNAMOROLL_MUSIC, KANAO, ZERO_TWO_2,
+        SPIRITED_AWAY, GIRL2, TOMIOKA, MISAKA, GIRL3
     ]
 
     options_legacy = R"""
@@ -907,20 +872,14 @@ ________                      .__                    .___
     """
 
     # TODO - detect if font supports character instead of platform
-    if platform.system() == "Windows":
-        if is_windows_legacy() == "Legacy":
-            return options_legacy
+    if platform.system() == "Windows" and is_windows_legacy():
+        return options_legacy
 
     return random.choice(options)
 
 
 def display_traceback_art() -> str:
-    options = [
-        TRACEBACK1,
-        TRACEBACK2
-    ]
-
-    return random.choice(options)
+    return random.choice([TRACEBACK1, TRACEBACK2])
 
 
 if __name__ == '__main__':

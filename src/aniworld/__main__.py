@@ -1,16 +1,43 @@
+"""
+AniWorld-Downloader main entry point.
+"""
+
+import sys
+import logging
+from typing import NoReturn
+
 from aniworld.entry import aniworld
 from aniworld.config import VERSION, IS_NEWEST_VERSION
 
 
-def main():
-    print(
-        f"\033]0;AniWorld-Downloader v.{VERSION}"
-        f"{' (Update Available)' if not IS_NEWEST_VERSION else ''}\007",
-        end='',
-        flush=True
-    )
+def set_terminal_title() -> None:
+    """Set the terminal window title with version and update status."""
+    title = f"AniWorld-Downloader v.{VERSION}"
+    if not IS_NEWEST_VERSION:
+        title += " (Update Available)"
 
-    aniworld()
+    # ANSI escape sequence to set terminal title
+    print(f"\033]0;{title}\007", end='', flush=True)
+
+
+def main() -> NoReturn:
+    """
+    Main entry point for the AniWorld-Downloader application.
+
+    Sets up the terminal title and launches the main application.
+    Handles graceful shutdown on keyboard interrupt.
+    """
+    try:
+        set_terminal_title()
+        aniworld()
+    except KeyboardInterrupt:
+        print("\n\nOperation cancelled by user.", file=sys.stderr)
+        sys.exit(130)  # Standard exit code for SIGINT
+    except Exception as e:
+        logging.error(f"Unexpected error: {e}", exc_info=True)
+        print(f"\nAn unexpected error occurred: {e}", file=sys.stderr)
+        print("Please check the logs for more details.", file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == "__main__":
