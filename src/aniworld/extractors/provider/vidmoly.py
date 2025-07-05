@@ -1,4 +1,5 @@
 import re
+from typing import Optional
 
 import requests
 from bs4 import BeautifulSoup
@@ -6,26 +7,52 @@ from bs4 import BeautifulSoup
 from aniworld.config import DEFAULT_REQUEST_TIMEOUT, RANDOM_USER_AGENT
 
 
-def get_direct_link_from_vidmoly(embeded_vidmoly_link: str):
-    response = requests.get(
-        embeded_vidmoly_link,
-        headers={'User-Agent': RANDOM_USER_AGENT},
-        timeout=DEFAULT_REQUEST_TIMEOUT
-    )
-    html_content = response.text
-    soup = BeautifulSoup(html_content, 'html.parser')
-    scripts = soup.find_all('script')
+# Compile regex pattern once for better performance
+FILE_LINK_PATTERN = re.compile(r'file:\s*"(https?://[^"]+)"')
 
-    file_link_pattern = r'file:\s*"(https?://.*?)"'
 
-    for script in scripts:
-        if script.string:
-            match = re.search(file_link_pattern, script.string)
+def get_direct_link_from_vidmoly(embeded_vidmoly_link: str) -> str:
+    """
+    Extract direct video link from Vidmoly embed page.
+
+    Args:
+        embeded_vidmoly_link: URL of the Vidmoly embed page
+
+    Returns:
+        Direct video URL
+
+    Raises:
+        ValueError: If no direct link is found
+        requests.RequestException: If the request fails
+    """
+    try:
+        response = requests.get(
+            embeded_vidmoly_link,
+            headers={'User-Agent': RANDOM_USER_AGENT},
+            timeout=DEFAULT_REQUEST_TIMEOUT
+        )
+        response.raise_for_status()  # Raise an exception for bad status codes
+
+        # Use compiled regex to search directly in the HTML content
+        match = FILE_LINK_PATTERN.search(response.text)
+        if match:
+            return match.group(1)
+
+        # Fallback to BeautifulSoup parsing if direct search fails
+        soup = BeautifulSoup(response.text, 'html.parser')
+        scripts = soup.find_all('script', string=True)
+
+        for script in scripts:
+            match = FILE_LINK_PATTERN.search(script.string)
             if match:
-                file_link = match.group(1)
-                return file_link
+                return match.group(1)
 
-    raise ValueError("No direct link found.")
+    except requests.RequestException as e:
+        raise ValueError(f"Failed to fetch Vidmoly page: {e}") from e
+    except Exception as e:
+        raise ValueError(f"Error parsing Vidmoly page: {e}") from e
+
+    raise ValueError("No direct link found in Vidmoly page.")
 
 
 if __name__ == '__main__':
