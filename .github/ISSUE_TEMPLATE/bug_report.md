@@ -1,38 +1,58 @@
 ---
-name: Bug report
-about: Create a report to help us improve
+name: Bug Report
+about: Report a bug to help us improve AniWorld-Downloader
 title: ''
-labels: ''
+labels: bug
 assignees: ''
 
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+## Bug Description
+<!-- Provide a clear and concise description of the bug -->
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+## Steps to Reproduce
+<!-- Describe the exact steps to reproduce the issue -->
+1. 
+2. 
+3. 
+4. 
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+## Expected Behavior
+<!-- Describe what you expected to happen -->
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+## Actual Behavior
+<!-- Describe what actually happened -->
 
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
+## Environment Information
+**Operating System:**
+- [ ] Windows (version: )
+- [ ] macOS (version: )
+- [ ] Linux (distribution: )
 
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
+**Python Version:**
+<!-- Run `python --version` -->
 
-**Additional context**
-Add any other context about the problem here.
+**AniWorld-Downloader Version:**
+<!-- Run `pip show aniworld` or check the version in the app -->
+
+**Installation Method:**
+- [ ] pip install
+- [ ] From source
+- [ ] Other (please specify):
+
+## Error Output
+<!-- If there's an error message, please paste it here -->
+```
+Replace this with the actual error message
+```
+
+## Screenshots/Logs
+<!-- If applicable, add screenshots or log files to help explain the problem -->
+
+## Additional Context
+<!-- Add any other relevant information about the problem -->
+
+## Checklist
+- [ ] I have searched for existing issues before creating this one
+- [ ] I have provided all the requested information
+- [ ] I have tested this with the latest version of AniWorld-Downloader
