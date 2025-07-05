@@ -81,7 +81,7 @@ def get_latest_github_version():
 def is_newest_version():
     if not VERSION:
         return None, False
-    
+
     try:
         current = Version(VERSION.lstrip('v').lstrip('.'))
         latest_str = get_latest_github_version().lstrip('v').lstrip('.')
@@ -116,6 +116,7 @@ SUPPORTED_PROVIDERS = (
 # User Agents - Lazy initialization to avoid UserAgent() call on import
 _random_user_agent = None
 
+
 @lru_cache(maxsize=1)
 def get_random_user_agent():
     """Get random user agent with caching to avoid repeated UserAgent() calls"""
@@ -124,12 +125,15 @@ def get_random_user_agent():
         _random_user_agent = UserAgent().random
     return _random_user_agent
 
+
 # Backward compatibility - keep RANDOM_USER_AGENT as a constant
 RANDOM_USER_AGENT = get_random_user_agent()
 
 LULUVDO_USER_AGENT = "Mozilla/5.0 (Android 15; Mobile; rv:132.0) Gecko/132.0 Firefox/132.0"
 
 # Use lazy getter for user agents in headers
+
+
 def _get_provider_headers_d():
     return {
         "Vidmoly": ['Referer: "https://vidmoly.to"'],
@@ -145,6 +149,7 @@ def _get_provider_headers_d():
         ]
     }
 
+
 def _get_provider_headers_w():
     return {
         "Vidmoly": ['Referer: "https://vidmoly.to"'],
@@ -155,11 +160,15 @@ def _get_provider_headers_w():
     }
 
 # Properties for backward compatibility
+
+
 def get_provider_headers_d():
     return _get_provider_headers_d()
 
+
 def get_provider_headers_w():
     return _get_provider_headers_w()
+
 
 # For backward compatibility, keep these as module-level variables
 # but they will be lazily evaluated when accessed
@@ -202,13 +211,16 @@ MPV_DIRECTORY = (
 
 MPV_SCRIPTS_DIRECTORY = os.path.join(MPV_DIRECTORY, 'scripts')
 
+
 @lru_cache(maxsize=1)
 def _get_mpv_path():
     """Get MPV path with caching"""
     mpv_path = shutil.which("mpv")
     if _IS_WINDOWS and not mpv_path:
-        mpv_path = os.path.join(os.getenv('APPDATA', ''), "aniworld", "mpv", "mpv.exe")
+        mpv_path = os.path.join(os.getenv('APPDATA', ''),
+                                "aniworld", "mpv", "mpv.exe")
     return mpv_path
+
 
 @lru_cache(maxsize=1)
 def _get_syncplay_path():
@@ -216,24 +228,30 @@ def _get_syncplay_path():
     syncplay_path = shutil.which("syncplay")
     if _IS_WINDOWS:
         if syncplay_path:
-            syncplay_path = syncplay_path.replace("syncplay.EXE", "SyncplayConsole.exe")
+            syncplay_path = syncplay_path.replace(
+                "syncplay.EXE", "SyncplayConsole.exe")
         else:
             syncplay_path = os.path.join(
-                os.getenv('APPDATA', ''), "aniworld", "syncplay", "SyncplayConsole.exe"
+                os.getenv(
+                    'APPDATA', ''), "aniworld", "syncplay", "SyncplayConsole.exe"
             )
     return syncplay_path
+
 
 # Lazy initialization for paths
 _mpv_path = None
 _syncplay_path = None
 
+
 def get_mpv_path():
     """Get MPV path with lazy initialization"""
     return _get_mpv_path()
 
+
 def get_syncplay_path():
     """Get Syncplay path with lazy initialization"""
     return _get_syncplay_path()
+
 
 # Backward compatibility - Initialize with function calls
 MPV_PATH = get_mpv_path()

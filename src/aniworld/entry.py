@@ -1,6 +1,7 @@
 import traceback
 import logging
 import sys
+from typing import List, Optional
 
 from aniworld.ascii_art import display_traceback_art
 from aniworld.action import watch, syncplay
@@ -12,87 +13,160 @@ from aniworld.menu import menu
 from aniworld.common import generate_links
 
 
-def aniworld() -> None:  # pylint: disable=too-many-branches, too-many-statements
+def _handle_local_episodes() -> None:
+    """Handle local episode playback."""
+    if arguments.action == "Watch":
+        watch(None)
+    elif arguments.action == "Syncplay":
+        syncplay(None)
+
+
+def _read_episode_file(episode_file: str) -> List[str]:
+    """Read episode URLs from a file."""
     try:
+        with open(episode_file, 'r', encoding="UTF-8") as file:
+            # Use list comprehension for better performance
+            urls = [line.strip()
+                    for line in file if line.strip().startswith("http")]
+            return urls
+    except FileNotFoundError:
+        logging.error(
+            "The specified episode file does not exist: %s", episode_file)
+        sys.exit(1)
+    except IOError as e:
+        logging.error("Error reading the episode file: %s", e)
+        sys.exit(1)
+
+
+def _collect_episode_links() -> List[str]:
+    """Collect episode links from arguments and files."""
+    links = []
+
+    if arguments.episode_file:
+        urls = _read_episode_file(arguments.episode_file)
+        links.extend(urls)
+
+    if arguments.episode:
+        links.extend(arguments.episode)
+
+    return generate_links(links, arguments)
+
+
+def _group_episodes_by_series(links: List[str]) -> List[Anime]:
+    """Group episodes by series and create Anime objects."""
+    if not links:
+        return []
+
+    anime_list = []
+    episode_list = []
+    current_anime = None
+
+    for link in links:
+        if link:
+            parts = link.split('/')
+            try:
+                series_slug = parts[parts.index("stream") + 1]
+            except (ValueError, IndexError):
+                logging.warning("Invalid episode link format: %s", link)
+                continue
+
+            if series_slug != current_anime:
+                if episode_list:
+                    anime_list.append(Anime(episode_list=episode_list))
+                    episode_list = []
+                current_anime = series_slug
+
+            episode_list.append(Episode(link=link))
+
+    if episode_list:
+        anime_list.append(Anime(episode_list=episode_list))
+
+    # Handle case when no links are provided but we need to create a default anime
+    if not anime_list and not links:
+        slug = arguments.slug or search_anime()
+        episode = Episode(slug=slug)
+        anime_list.append(Anime(episode_list=[episode]))
+
+    return anime_list
+
+
+def _handle_episode_mode() -> None:
+    """Handle episode/file mode execution."""
+    links = _collect_episode_links()
+
+    # If no links were collected, handle as interactive mode
+    if not links:
+        slug = arguments.slug or search_anime()
+        episode = Episode(slug=slug)
+        anime_list = [Anime(episode_list=[episode])]
+    else:
+        anime_list = _group_episodes_by_series(links)
+
+    execute(anime_list=anime_list)
+
+
+def _handle_interactive_mode() -> None:
+    """Handle interactive menu mode."""
+    slug = arguments.slug
+
+    if not slug:
+        while True:
+            try:
+                slug = search_anime()
+                break
+            except ValueError:
+                continue
+
+    anime = menu(arguments=arguments, slug=slug)
+    execute(anime_list=[anime])
+
+
+def _handle_runtime_error(e: Exception) -> None:
+    """Handle runtime errors with proper formatting."""
+    if arguments.debug:
+        traceback.print_exc()
+    else:
+        # hide traceback only show output
+        print(display_traceback_art())
+        print(f"Error: {e}")
+        print("\nFor more detailed information, use --debug and try again.")
+
+    # Detecting Nuitka at run time
+    if "__compiled__" in globals():
+        input("Press Enter to exit...")
+
+
+def aniworld() -> None:
+    """
+    Main entry point for the AniWorld downloader.
+
+    This function handles three main execution modes:
+    1. Local episodes mode - plays local video files
+    2. Episode/file mode - processes specific episodes or episode files
+    3. Interactive mode - presents a menu for anime selection
+
+    Raises:
+        KeyboardInterrupt: When user interrupts execution with Ctrl+C
+        Exception: Any other runtime errors are caught and handled gracefully
+    """
+    try:
+        # Handle local episodes
         if arguments.local_episodes:
-            if arguments.action == "Watch":
-                watch(None)
-            elif arguments.action == "Syncplay":
-                syncplay(None)
+            _handle_local_episodes()
+            return
+
+        # Handle episode/file mode
         if arguments.episode or arguments.episode_file:
-            links = []
-            if arguments.episode_file:
-                try:
-                    with open(arguments.episode_file, 'r', encoding="UTF-8") as file:
-                        urls = []
-                        for line in file:
-                            line = line.strip()
-                            if line.startswith("http"):
-                                urls.append(line)
+            _handle_episode_mode()
+            return
 
-                        links.extend(urls)
-                except FileNotFoundError:
-                    logging.error(
-                        "The specified episode file does not exist: %s", arguments.episode_file
-                    )
-                    sys.exit(1)
-                except IOError as e:
-                    logging.error("Error reading the episode file: %s", e)
-                    sys.exit(1)
+        # Handle interactive mode (default)
+        _handle_interactive_mode()
 
-            if arguments.episode:
-                links.extend(arguments.episode)
-            links = generate_links(links, arguments)
-
-            anime_list = []
-            episode_list = []
-            current_anime = None
-            for link in (links or [None]):
-                if link:
-                    parts = link.split('/')
-                    series_slug = parts[parts.index("stream") + 1]
-
-                    if series_slug != current_anime:
-                        if episode_list:
-                            anime_list.append(Anime(episode_list=episode_list))
-                            episode_list = []
-                        current_anime = series_slug
-
-                    episode_list.append(Episode(link=link))
-
-                else:
-                    slug = arguments.slug or search_anime()
-                    episode = Episode(slug=slug)
-                    anime_list.append(Anime(episode_list=[episode]))
-
-            if episode_list:
-                anime_list.append(Anime(episode_list=episode_list))
-
-            execute(anime_list=anime_list)
-        if not arguments.episode and not arguments.local_episodes and not arguments.episode_file:
-            while True:
-                try:
-                    slug = arguments.slug if arguments.slug else search_anime()
-                    break
-                except ValueError:
-                    continue
-
-            anime = menu(arguments=arguments, slug=slug)
-            execute(anime_list=[anime])
     except KeyboardInterrupt:
         pass
     except Exception as e:  # pylint: disable=broad-exception-caught
-        if arguments.debug:
-            traceback.print_exc()
-        else:
-            # hide traceback only show output
-            print(display_traceback_art())
-            print(f"Error: {e}")
-            print("\nFor more detailed information, use --debug and try again.")
-
-        # Detecting Nuitka at run time
-        if "__compiled__" in globals():
-            input("Press Enter to exit...")
+        _handle_runtime_error(e)
 
 
 if __name__ == "__main__":
