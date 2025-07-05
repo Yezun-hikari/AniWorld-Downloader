@@ -2,6 +2,7 @@ import getpass
 import subprocess
 import logging
 import hashlib
+from typing import Optional, List
 
 from aniworld.models import Anime
 from aniworld.config import MPV_PATH, PROVIDER_HEADERS_W, SYNCPLAY_PATH, INVALID_PATH_CHARS
@@ -10,66 +11,101 @@ from aniworld.aniskip import aniskip
 from aniworld.parser import arguments
 
 
-def _get_syncplay_username():
+def _get_syncplay_username() -> str:
+    """Get syncplay username from arguments or system user."""
     return arguments.username or getpass.getuser()
 
 
-def _get_syncplay_hostname():
+def _get_syncplay_hostname() -> str:
+    """Get syncplay hostname from arguments or default."""
     return arguments.hostname or "syncplay.pl:8997"
 
 
-def _get_syncplay_room(title):
+def _get_syncplay_room(title: str) -> str:
+    """Generate syncplay room name with optional password hashing."""
     if arguments.room:
         return arguments.room
 
     room = title
-    password = arguments.password
-
-    if password:
-        room += f":{password}"
+    if arguments.password:
+        room += f":{arguments.password}"
 
     room_hash = hashlib.sha256(room.encode('utf-8')).hexdigest()
-
     return f"AniWorld_Downloader.{room_hash}"
 
 
-def _append_password(command, title):
-    password = arguments.password
-
-    if not password:
+def _append_password_to_command(command: List[str], title: str) -> List[str]:
+    """Add password to syncplay command if provided."""
+    if not arguments.password:
         return command
 
     password = f"{arguments.password}:{title}"
     password_hash = hashlib.sha256(password.encode('utf-8')).hexdigest()
-
+    
+    # Insert password at position 9 (after --name argument)
     command.insert(9, "--password")
     command.insert(10, password_hash)
     return command
 
 
-def _execute_command(command):
+def _execute_command(command: List[str]) -> None:
+    """Execute command or print it if in command-only mode."""
     if arguments.only_command:
         print("\n" + " ".join(str(item) for item in command))
         return
+    
     try:
         logging.debug("Running Command:\n%s", command)
         subprocess.run(command, check=True)
     except subprocess.CalledProcessError as e:
-        logging.error(
-            "Error running command: %s\nCommand: %s",
-            e, ' '.join(
-                str(item) if item is not None else '' for item in command)
-        )
+        logging.error("Error running command: %s\nCommand: %s", e, ' '.join(command))
+    except KeyboardInterrupt:
+        logging.info("Syncplay execution interrupted by user")
+        raise
 
 
-def _build_syncplay_command(source, title=None, headers=None, aniskip_data=None,
-                            anime=None, media_title=None):
+def _sanitize_filename(filename: str) -> str:
+    """Sanitize filename by removing invalid characters."""
+    return ''.join(char for char in filename if char not in INVALID_PATH_CHARS)
+
+
+def _format_episode_title(anime: Anime, episode) -> str:
+    """Format episode title for logging."""
+    return f"{anime.title} - S{episode.season}E{episode.episode} - ({anime.language}):"
+
+
+def _get_media_title(anime: Anime, episode, sanitized_title: str) -> str:
+    """Generate media title for episode."""
+    if episode.season == 0:
+        return f"{sanitized_title} - Movie {episode.episode:03} - ({anime.language})"
+    return f"{sanitized_title} - S{episode.season:02}E{episode.episode:03} - ({anime.language})"
+
+
+def _get_direct_link(episode, episode_title: str) -> Optional[str]:
+    """Get direct link for episode with error handling."""
+    try:
+        return episode.get_direct_link()
+    except Exception as e:
+        logging.warning(f"Something went wrong with \"{episode_title}\".\n"
+                       f"Error while trying to find a direct link: {e}")
+        return None
+
+
+def _build_syncplay_command(
+    source: str, 
+    title: Optional[str] = None, 
+    headers: Optional[List[str]] = None, 
+    aniskip_data: Optional[str] = None,
+    anime: Optional[Anime] = None, 
+    media_title: Optional[str] = None
+) -> List[str]:
+    """Build syncplay command with all necessary parameters."""
     command = [
         SYNCPLAY_PATH,
         "--no-gui",
         "--no-store",
         "--host", _get_syncplay_hostname(),
-        "--room", _get_syncplay_room(title=title),
+        "--room", _get_syncplay_room(title=title or "default"),
         "--name", _get_syncplay_username(),
         "--player-path", MPV_PATH,
         source,
@@ -80,86 +116,108 @@ def _build_syncplay_command(source, title=None, headers=None, aniskip_data=None,
     if media_title:
         command.append(f'--force-media-title="{media_title}"')
 
-    command = _append_password(command, title)
+    if title:
+        command = _append_password_to_command(command, title)
 
-    if anime.provider == "LoadX":
-        command.append("--demuxer=lavf")
-        command.append("--demuxer-lavf-format=hls")
+    # Add provider-specific configurations
+    if anime and anime.provider == "LoadX":
+        command.extend(["--demuxer=lavf", "--demuxer-lavf-format=hls"])
 
+    # Add headers
     if headers:
         for header in headers:
             command.append(f"--http-header-fields={header}")
 
+    # Add aniskip data
     if aniskip_data:
         command.extend(aniskip_data.split()[:2])
 
     return command
 
 
-def _process_anime_episodes(anime):
-    for episode in anime:
-        episode_title = f"{anime.title} - S{episode.season}E{episode.episode} - ({anime.language}):"
-        direct_link = episode.get_direct_link()
+def _get_aniskip_data(anime: Anime, episode) -> Optional[str]:
+    """Get aniskip data for episode if enabled."""
+    if not anime.aniskip:
+        return None
+    
+    try:
+        return aniskip(
+            anime.title, 
+            episode.episode,
+            episode.season, 
+            episode.season_episode_count[episode.season]
+        )
+    except Exception as e:
+        logging.warning(f"Failed to get aniskip data for {anime.title}: {e}")
+        return None
 
+
+def _process_anime_episodes(anime: Anime) -> None:
+    """Process and play all episodes of an anime through syncplay."""
+    sanitized_anime_title = _sanitize_filename(anime.title)
+    
+    for episode in anime:
+        episode_title = _format_episode_title(anime, episode)
+        
+        # Get direct link
+        direct_link = _get_direct_link(episode, episode_title)
         if not direct_link:
             logging.warning(f"Something went wrong with \"{episode_title}\".\n"
-                            f"Error while trying to find a direct link.")
+                           f"No direct link found.")
             continue
 
+        # Handle direct link only mode
         if arguments.only_direct_link:
-            print(
-                episode_title
-            )
+            print(episode_title)
             print(f"{direct_link}\n")
             continue
 
-        sanitized_anime_title = ''.join(
-            char for char in anime.title if char not in INVALID_PATH_CHARS
-        )
-
-        if episode.season == 0:
-            media_title = (
-                f"{sanitized_anime_title} - "
-                f"Movie {episode.episode:03} - "
-                f"({anime.language})"
-            )
-        else:
-            media_title = (
-                f"{sanitized_anime_title} - "
-                f"S{episode.season:02}E{episode.episode:03} - "
-                f"({anime.language})"
-            )
-
+        # Generate media title
+        media_title = _get_media_title(anime, episode, sanitized_anime_title)
+        
+        # Get aniskip data
+        aniskip_data = _get_aniskip_data(anime, episode)
+        
+        # Build and execute command
         command = _build_syncplay_command(
-            direct_link,
-            episode.title_german,
-            PROVIDER_HEADERS_W.get(anime.provider),
-            aniskip(anime.title, episode.episode,
-                    episode.season, episode.season_episode_count[episode.season])
-            if anime.aniskip else None,
-            anime,
-            media_title
+            source=direct_link,
+            title=episode.title_german,
+            headers=PROVIDER_HEADERS_W.get(anime.provider),
+            aniskip_data=aniskip_data,
+            anime=anime,
+            media_title=media_title
         )
+        
         _execute_command(command)
 
 
-def _process_local_files():
+def _process_local_files() -> None:
+    """Process local files through syncplay."""
     for file in arguments.local_episodes:
-        command = _build_syncplay_command(file)
+        command = _build_syncplay_command(source=file)
         _execute_command(command)
 
 
-def syncplay(anime: Anime = None):
-    download_mpv()
-    download_syncplay()
+def syncplay(anime: Optional[Anime] = None) -> None:
+    """Main syncplay function to setup and play anime or local files."""
+    try:
+        # Download and setup required components
+        download_mpv()
+        download_syncplay()
+        setup_autostart()
+        setup_autoexit()
 
-    setup_autostart()
-    setup_autoexit()
-
-    if anime is None:
-        _process_local_files()
-    else:
-        _process_anime_episodes(anime)
+        # Process files
+        if anime is None:
+            _process_local_files()
+        else:
+            _process_anime_episodes(anime)
+            
+    except KeyboardInterrupt:
+        logging.info("Syncplay session interrupted by user")
+    except Exception as e:
+        logging.error(f"Error in syncplay session: {e}")
+        raise
 
 
 if __name__ == '__main__':
