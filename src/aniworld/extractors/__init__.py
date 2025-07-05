@@ -6,3 +6,4 @@ from .provider.speedfiles import get_direct_link_from_speedfiles
 from .provider.luluvdo import get_direct_link_from_luluvdo
 from .provider.hanime import get_direct_link_from_hanime
 from .provider.loadx import get_direct_link_from_loadx
+from .provider.filemoon import get_direct_link_from_filemoon

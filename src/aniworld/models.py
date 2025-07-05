@@ -18,7 +18,8 @@ from aniworld.extractors import (
     get_direct_link_from_doodstream,
     get_direct_link_from_speedfiles,
     get_direct_link_from_luluvdo,
-    get_direct_link_from_loadx
+    get_direct_link_from_loadx,
+    get_direct_link_from_filemoon
 )
 
 
@@ -451,6 +452,8 @@ class Episode:
                                                 arguments=arguments)
         if self._selected_provider == "LoadX":
             return get_direct_link_from_loadx(embeded_loadx_link=self.embeded_link)
+        if self._selected_provider == "Filemoon":
+            return get_direct_link_from_filemoon(embeded_filemoon_link=self.embeded_link)
 
         raise ValueError(
             f"{self._selected_provider} is currently not supported.")
@@ -459,8 +462,8 @@ class Episode:
         lang_key = self._get_key_from_language(self._selected_language)
 
         if (self._selected_provider not in self.provider or
-                lang_key not in self.provider[self._selected_provider]
-            ):
+                    lang_key not in self.provider[self._selected_provider]
+                ):
             for provider_name, lang_dict in self.provider.items():
                 if lang_key in lang_dict:
                     self._selected_provider = provider_name

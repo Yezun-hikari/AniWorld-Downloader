@@ -98,8 +98,7 @@ except TypeError:  # GitHub API Rate Limit (60/h) #52
 PLATFORM_SYSTEM = platform.system()
 
 SUPPORTED_PROVIDERS = [
-    "LoadX", "VOE", "Vidmoly", "Luluvdo", "Doodstream", "Vidoza", "SpeedFiles", "Streamtape"
-    # , "Filemoon"
+    "LoadX", "VOE", "Vidmoly", "Filemoon", "Luluvdo", "Doodstream", "Vidoza", "SpeedFiles", "Streamtape",
 ]
 
 #########################################################################################
@@ -115,6 +114,7 @@ PROVIDER_HEADERS_D = {
     "Doodstream": ['Referer: "https://dood.li/"'],
     "VOE": [f'User-Agent: {RANDOM_USER_AGENT}'],
     "LoadX": ['Accept: */*'],
+    "Filemoon": [f'User-Agent: {RANDOM_USER_AGENT}', 'Referer: "https://filemoon.to"'],
     "Luluvdo": [
         f'User-Agent: {LULUVDO_USER_AGENT}',
         'Accept-Language: de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7',
@@ -126,7 +126,8 @@ PROVIDER_HEADERS_W = {
     "Vidmoly": ['Referer: "https://vidmoly.to"'],
     "Doodstream": ['Referer: "https://dood.li/"'],
     "VOE": [f'User-Agent: {RANDOM_USER_AGENT}'],
-    "Luluvdo": [f'User-Agent: {LULUVDO_USER_AGENT}']
+    "Luluvdo": [f'User-Agent: {LULUVDO_USER_AGENT}'],
+    "Filemoon": [f'User-Agent: {RANDOM_USER_AGENT}', 'Referer: "https://filemoon.to"']
 }
 
 

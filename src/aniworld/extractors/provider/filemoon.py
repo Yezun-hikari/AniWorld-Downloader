@@ -1,49 +1,36 @@
 import re
 import requests
-# import jsbeautifier.unpackers.packer as packer
+import jsbeautifier
+from bs4 import BeautifulSoup
 
 from aniworld import config
 
-REDIRECT_REGEX = re.compile(
-    r'<iframe *(?:[^>]+ )?src=(?:\'([^\']+)\'|"([^"]+)")[^>]*>')
-SCRIPT_REGEX = re.compile(
-    r'(?s)<script\s+[^>]*?data-cfasync=["\']?false["\']?[^>]*>(.+?)</script>')
-VIDEO_URL_REGEX = re.compile(r'file:\s*"([^"]+\.m3u8[^"]*)"')
 
-# TODO Implement this script fully
+def get_direct_link_from_filemoon(embeded_filemoon_link):
+    url = embeded_filemoon_link.replace("/e/", "/d/")
+    response = requests.get(url)
+    html = response.text
+    soup = BeautifulSoup(html, 'html.parser')
 
-
-def get_direct_link_from_filemoon(embeded_filemoon_link: str):
-    session = requests.Session()
-    session.verify = False
+    iframe = soup.find('iframe')
+    link = None
+    if iframe and iframe.has_attr('src'):
+        link = iframe['src']
 
     headers = {
-        "User-Agent": config.RANDOM_USER_AGENT,
-        "Referer": embeded_filemoon_link,
+        "referer": "https://filemoon.to/",
+        "user-agent": config.RANDOM_USER_AGENT
     }
 
-    response = session.get(embeded_filemoon_link, headers=headers)
-    source = response.text
+    response = requests.get(link, headers=headers)
+    html = response.text
+    unpacked = jsbeautifier.beautify(html)
 
-    match = REDIRECT_REGEX.search(source)
-    if match:
-        redirect_url = match.group(1) or match.group(2)
-        response = session.get(redirect_url, headers=headers)
-        source = response.text
-
-    for script_match in SCRIPT_REGEX.finditer(source):
-        script_content = script_match.group(1).strip()
-
-        if not script_content.startswith("eval("):
-            continue
-
-        if packer.detect(script_content):
-            unpacked = packer.unpack(script_content)
-            video_match = VIDEO_URL_REGEX.search(unpacked)
-            if video_match:
-                return video_match.group(1)
-
-    raise Exception("No Video link found!")
+    pattern = r'file:\s*"([^"]+)"'
+    matches = re.findall(pattern, unpacked)
+    if matches:
+        return matches[0]
+    raise ValueError("No match found")
 
 
 if __name__ == '__main__':
