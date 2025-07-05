@@ -1,19 +1,74 @@
-name: Build with Nuitka, Upload to PyPI and Releases
+name: Build and Release
 
 on:
   release:
-    types: [created]
+    types: [published]
   workflow_dispatch:
 
 permissions:
   contents: write
-  actions: write
+  id-token: write  # For trusted publishing to PyPI
 
 jobs:
-  build:
+  extract-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      year: ${{ steps.version.outputs.year }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+          cache: 'pip'
+          
+      - name: Extract version and year
+        id: version
+        run: |
+          VERSION=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
+          YEAR=$(date +%Y)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "year=$YEAR" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION, Year: $YEAR"
+
+  pypi-release:
+    needs: extract-version
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release'
+    environment: pypi
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+          cache: 'pip'
+          
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install build
+          
+      - name: Build distribution
+        run: python -m build
+        
+      - name: Upload to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          # Uses trusted publishing, no need for tokens
+          verbose: true
+          
+      - name: Upload dist files to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+
+  build-binaries:
+    needs: extract-version
     strategy:
+      fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
         include:
           - os: windows-latest
             icon: --windows-icon-from-ico=src/aniworld/icon.webp
@@ -26,76 +81,58 @@ jobs:
           - os: macos-latest
             ext: ""
             filename: macos_x64
-            icon: --macos-app-icon=src/aniworld/icon.webp --macos-signed-app-name=com.phoenixthrush.aniworld 
-
+            icon: --macos-app-icon=src/aniworld/icon.webp --macos-signed-app-name=com.phoenixthrush.aniworld
+            
     runs-on: ${{ matrix.os }}
-
+    
     steps:
       - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v4
+      
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.x'
-
+          cache: 'pip'
+          
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install toml imageio nuitka
+          pip install nuitka imageio
           pip install .
-
-      - name: Extract version from pyproject.toml
-        shell: bash
-        id: extract_version
-        run: |
-          VERSION=$(python -c "import toml; print(toml.load('pyproject.toml')['project']['version'])")
-          echo "VERSION=${VERSION}" >> $GITHUB_ENV
-          echo "Version extracted: ${VERSION}"
-
-      - name: Build distribution
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          pip install build twine
-          python -m build
-
-      - name: Upload to PyPI
-        if: matrix.os == 'ubuntu-latest'
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
-        run: |
-          twine upload dist/* -u __token__ -p ${{ secrets.PYPI_TOKEN }} || true
-
-      - name: Upload dist files to GitHub Release
-        if: matrix.os == 'ubuntu-latest'
-        uses: softprops/action-gh-release@v2
-        with:
-          files: dist/*
-          token: ${{ github.token }}
-
+          
       - name: Build with Nuitka
         shell: bash
         run: |
+          # Get fake_useragent data path
           JSON_PATH=$(python -c "import fake_useragent, os; print(os.path.join(os.path.dirname(fake_useragent.__file__), 'data', 'browsers.jsonl'))")
-          V=$VERSION
-          Y=$(python -c "import datetime; print(datetime.datetime.now().year)")
-          python -m nuitka --onefile --assume-yes-for-downloads --include-package=aniworld \
-          --include-data-file=$JSON_PATH=fake_useragent/data/browsers.jsonl \
-          --output-filename=aniworld-${V}-${{ matrix.filename }}${{ matrix.ext }} \
-          --company-name="Phoenixthrush UwU" \
-          --product-name="AniWorld Downloader" \
-          --file-version=$V \
-          --product-version=$V \
-          --file-description="AniWorld Downloader is a command-line tool built to download and stream anime content from aniworld.to" \
-          --copyright="Copyright (c) 2024-$Y phoenixthrush, Tmaster055" \
-          ${{ matrix.icon }} \
-          src/aniworld/entry.py
-
-      - uses: actions/upload-artifact@v4
+          
+          # Set variables
+          VERSION="${{ needs.extract-version.outputs.version }}"
+          YEAR="${{ needs.extract-version.outputs.year }}"
+          
+          # Build with Nuitka
+          python -m nuitka \
+            --onefile \
+            --assume-yes-for-downloads \
+            --include-package=aniworld \
+            --include-data-file="$JSON_PATH=fake_useragent/data/browsers.jsonl" \
+            --output-filename="aniworld-${VERSION}-${{ matrix.filename }}${{ matrix.ext }}" \
+            --company-name="Phoenixthrush UwU" \
+            --product-name="AniWorld Downloader" \
+            --file-version="$VERSION" \
+            --product-version="$VERSION" \
+            --file-description="AniWorld Downloader is a command-line tool built to download and stream anime content from aniworld.to" \
+            --copyright="Copyright (c) 2024-${YEAR} phoenixthrush, Tmaster055" \
+            ${{ matrix.icon }} \
+            src/aniworld/entry.py
+            
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
         with:
           name: aniworld-${{ matrix.filename }}
-          path: aniworld-${{ env.VERSION }}-${{ matrix.filename }}${{ matrix.ext }}
-
-      - name: Upload Nuitka build to GitHub Release
+          path: aniworld-${{ needs.extract-version.outputs.version }}-${{ matrix.filename }}${{ matrix.ext }}
+          
+      - name: Upload binary to GitHub Release
+        if: github.event_name == 'release'
         uses: softprops/action-gh-release@v2
         with:
-          files: aniworld-${{ env.VERSION }}-${{ matrix.filename }}${{ matrix.ext }}
+          files: aniworld-${{ needs.extract-version.outputs.version }}-${{ matrix.filename }}${{ matrix.ext }}
