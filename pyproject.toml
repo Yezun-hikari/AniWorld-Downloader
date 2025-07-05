@@ -19,6 +19,7 @@ dependencies = [
     'tqdm',
     'fake_useragent',
     'packaging',
+    'jsbeautifier',
     'py-cpuinfo; platform_system == "Windows"',
     'windows-curses; platform_system == "Windows"'
 ]

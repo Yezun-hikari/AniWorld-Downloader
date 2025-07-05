@@ -1,9 +1,8 @@
-from .provider.voe import get_direct_link_from_voe
-from .provider.vidoza import get_direct_link_from_vidoza
-from .provider.vidmoly import get_direct_link_from_vidmoly
-from .provider.doodstream import get_direct_link_from_doodstream
-from .provider.speedfiles import get_direct_link_from_speedfiles
-from .provider.luluvdo import get_direct_link_from_luluvdo
-from .provider.hanime import get_direct_link_from_hanime
-from .provider.loadx import get_direct_link_from_loadx
-from .provider.filemoon import get_direct_link_from_filemoon
+import importlib
+import pkgutil
+
+for _, module_name, _ in pkgutil.iter_modules([__path__[0] + "/provider"]):
+    mod = importlib.import_module(f".provider.{module_name}", __name__)
+    for attr in dir(mod):
+        if attr.startswith("get_direct_link_from_"):
+            globals()[attr] = getattr(mod, attr)

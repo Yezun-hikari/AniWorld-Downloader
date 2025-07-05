@@ -1,26 +1,16 @@
 import re
 import json
 import logging
+import importlib
 
 import requests
 import requests.models
 from bs4 import BeautifulSoup
 
 from aniworld.aniskip import get_mal_id_from_title
-from aniworld.config import DEFAULT_REQUEST_TIMEOUT, RANDOM_USER_AGENT, ANIWORLD_TO
+from aniworld.config import DEFAULT_REQUEST_TIMEOUT, RANDOM_USER_AGENT, ANIWORLD_TO, SUPPORTED_PROVIDERS
 from aniworld.parser import arguments
 from aniworld.common import get_season_episode_count, get_movie_episode_count
-
-from aniworld.extractors import (
-    get_direct_link_from_vidmoly,
-    get_direct_link_from_vidoza,
-    get_direct_link_from_voe,
-    get_direct_link_from_doodstream,
-    get_direct_link_from_speedfiles,
-    get_direct_link_from_luluvdo,
-    get_direct_link_from_loadx,
-    get_direct_link_from_filemoon
-)
 
 
 # Implement lazy loading for the Anime and Episode class.
@@ -435,35 +425,27 @@ class Episode:
             # if all providers fail, raise an error
             raise ValueError("All providers have failed.")
         """
-        if self.embeded_link is None:
-            return None
-        if self._selected_provider == "Vidmoly":
-            return get_direct_link_from_vidmoly(embeded_vidmoly_link=self.embeded_link)
-        if self._selected_provider == "Vidoza":
-            return get_direct_link_from_vidoza(embeded_vidoza_link=self.embeded_link)
-        if self._selected_provider == "VOE":
-            return get_direct_link_from_voe(embeded_voe_link=self.embeded_link)
-        if self._selected_provider == "Doodstream":
-            return get_direct_link_from_doodstream(embeded_doodstream_link=self.embeded_link)
-        if self._selected_provider == "SpeedFiles":
-            return get_direct_link_from_speedfiles(embeded_speedfiles_link=self.embeded_link)
-        if self._selected_provider == "Luluvdo":
-            return get_direct_link_from_luluvdo(embeded_luluvdo_link=self.embeded_link,
-                                                arguments=arguments)
-        if self._selected_provider == "LoadX":
-            return get_direct_link_from_loadx(embeded_loadx_link=self.embeded_link)
-        if self._selected_provider == "Filemoon":
-            return get_direct_link_from_filemoon(embeded_filemoon_link=self.embeded_link)
 
-        raise ValueError(
-            f"{self._selected_provider} is currently not supported.")
+        provider = self._selected_provider
+
+        if provider in SUPPORTED_PROVIDERS:
+            module = importlib.import_module("aniworld.extractors")
+            func = getattr(module, f"get_direct_link_from_{provider.lower()}")
+
+            kwargs = {f"embeded_{provider.lower()}_link": self.embeded_link}
+            if provider == "Luluvdo":
+                kwargs["arguments"] = arguments
+
+            return func(**kwargs)
+
+        raise ValueError(f"{provider} is currently not supported.")
 
     def get_redirect_link(self):
         lang_key = self._get_key_from_language(self._selected_language)
 
         if (self._selected_provider not in self.provider or
-                    lang_key not in self.provider[self._selected_provider]
-                ):
+            lang_key not in self.provider[self._selected_provider]
+            ):
             for provider_name, lang_dict in self.provider.items():
                 if lang_key in lang_dict:
                     self._selected_provider = provider_name

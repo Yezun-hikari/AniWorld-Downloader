@@ -312,6 +312,7 @@ AniWorld Downloader depends on the following Python packages:
 - **`tqdm`**: For providing progress bars during downloads.
 - **`fake_useragent`**: For generating random user-agent strings.
 - **`packaging`**: For parsing version numbers and handling package versions.
+- **`jsbeautifier`**: Used for the Filemoon extractor.
 - **`py-cpuinfo`**: Only required on Windows for gathering CPU information (AVX2 support for MPV).
 - **`windows-curses`**: Required on Windows systems to enable terminal-based UI functionality.
 
