@@ -39,12 +39,12 @@ def _build_ytdl_command(direct_link: str, output_path: str, anime: Anime) -> lis
         "--no-warnings",
         "--progress"
     ]
-    
+
     # Add provider-specific headers
     if anime.provider in PROVIDER_HEADERS_D:
         for header in PROVIDER_HEADERS_D[anime.provider]:
             command.extend(["--add-header", header])
-    
+
     return command
 
 
@@ -52,25 +52,27 @@ def _cleanup_partial_files(output_dir: Path) -> None:
     """Clean up partial download files and empty directories."""
     if not output_dir.exists():
         return
-        
+
     is_empty = True
     partial_pattern = re.compile(r'\.(part|ytdl|part-Frag\d+)$')
-    
+
     for file_path in output_dir.iterdir():
         if partial_pattern.search(file_path.name):
             try:
                 file_path.unlink()
             except OSError as e:
-                logging.warning(f"Failed to remove partial file {file_path}: {e}")
+                logging.warning(
+                    f"Failed to remove partial file {file_path}: {e}")
         else:
             is_empty = False
-    
+
     # Remove empty directory
     if is_empty:
         try:
             output_dir.rmdir()
         except OSError as e:
-            logging.warning(f"Failed to remove empty directory {output_dir}: {e}")
+            logging.warning(
+                f"Failed to remove empty directory {output_dir}: {e}")
 
 
 def _get_direct_link(episode, episode_title: str) -> Optional[str]:
@@ -79,7 +81,7 @@ def _get_direct_link(episode, episode_title: str) -> Optional[str]:
         return episode.get_direct_link()
     except Exception as e:
         logging.warning(f"Something went wrong with \"{episode_title}\".\n"
-                       f"Error while trying to find a direct link: {e}")
+                        f"Error while trying to find a direct link: {e}")
         return None
 
 
@@ -101,15 +103,15 @@ def _execute_download(command: list[str], output_path: Path) -> bool:
 def download(anime: Anime) -> None:
     """Download all episodes of an anime."""
     sanitized_anime_title = _sanitize_filename(anime.title)
-    
+
     for episode in anime:
         episode_title = _format_episode_title(anime, episode)
-        
+
         # Get direct link
         direct_link = _get_direct_link(episode, episode_title)
         if not direct_link:
             logging.warning(f"Something went wrong with \"{episode_title}\".\n"
-                           f"No direct link found.")
+                            f"No direct link found.")
             continue
 
         # Handle direct link only mode
@@ -119,9 +121,11 @@ def download(anime: Anime) -> None:
             continue
 
         # Generate output path
-        output_file = _get_output_filename(anime, episode, sanitized_anime_title)
-        output_path = Path(arguments.output_dir) / sanitized_anime_title / output_file
-        
+        output_file = _get_output_filename(
+            anime, episode, sanitized_anime_title)
+        output_path = Path(arguments.output_dir) / \
+            sanitized_anime_title / output_file
+
         # Ensure output directory exists
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -130,7 +134,8 @@ def download(anime: Anime) -> None:
 
         # Handle command only mode
         if arguments.only_command:
-            print(f"\n{anime.title} - S{episode.season}E{episode.episode} - ({anime.language}):")
+            print(
+                f"\n{anime.title} - S{episode.season}E{episode.episode} - ({anime.language}):")
             print(' '.join(command))
             continue
 

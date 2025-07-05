@@ -39,7 +39,7 @@ def _get_direct_link(episode, episode_title: str) -> Optional[str]:
         return episode.get_direct_link()
     except Exception as e:
         logging.warning(f"Something went wrong with \"{episode_title}\".\n"
-                       f"Error while trying to find a direct link: {e}")
+                        f"Error while trying to find a direct link: {e}")
         return None
 
 
@@ -47,12 +47,12 @@ def _get_aniskip_data(anime: Anime, episode) -> Optional[str]:
     """Get aniskip data for episode if enabled."""
     if not anime.aniskip:
         return None
-    
+
     try:
         return aniskip(
-            anime.title, 
+            anime.title,
             episode.episode,
-            episode.season, 
+            episode.season,
             episode.season_episode_count[episode.season]
         )
     except Exception as e:
@@ -61,31 +61,31 @@ def _get_aniskip_data(anime: Anime, episode) -> Optional[str]:
 
 
 def _build_watch_command(
-    source: str, 
-    media_title: Optional[str] = None, 
-    headers: Optional[List[str]] = None, 
-    aniskip_data: Optional[str] = None, 
+    source: str,
+    media_title: Optional[str] = None,
+    headers: Optional[List[str]] = None,
+    aniskip_data: Optional[str] = None,
     anime: Optional[Anime] = None
 ) -> List[str]:
     """Build MPV watch command with all necessary parameters."""
     command = [MPV_PATH, source, "--fs", "--quiet"]
-    
+
     if media_title:
         command.append(f'--force-media-title="{media_title}"')
-    
+
     # Add provider-specific configurations
     if anime and anime.provider == "LoadX":
         command.extend(["--demuxer=lavf", "--demuxer-lavf-format=hls"])
-    
+
     # Add headers
     if headers:
         for header in headers:
             command.append(f"--http-header-fields={header}")
-    
+
     # Add aniskip data
     if aniskip_data:
         command.extend(aniskip_data.split()[:2])
-    
+
     return command
 
 
@@ -95,12 +95,13 @@ def _execute_command(title: str, command: List[str]) -> None:
         print(f"\n{title}:")
         print(" ".join(str(item) for item in command))
         return
-    
+
     try:
         logging.debug("Running Command:\n%s", command)
         subprocess.run(command, check=True)
     except subprocess.CalledProcessError as e:
-        logging.error("Error running command: %s\nCommand: %s", e, ' '.join(command))
+        logging.error("Error running command: %s\nCommand: %s",
+                      e, ' '.join(command))
     except KeyboardInterrupt:
         logging.info("Watch session interrupted by user")
         raise
@@ -116,15 +117,15 @@ def _process_local_files() -> None:
 def _process_anime_episodes(anime: Anime) -> None:
     """Process and watch all episodes of an anime through MPV."""
     sanitized_anime_title = _sanitize_filename(anime.title)
-    
+
     for episode in anime:
         episode_title = _format_episode_title(anime, episode)
-        
+
         # Get direct link
         direct_link = _get_direct_link(episode, episode_title)
         if not direct_link:
             logging.warning(f"Something went wrong with \"{episode_title}\".\n"
-                           f"No direct link found.")
+                            f"No direct link found.")
             continue
 
         # Handle direct link only mode
@@ -136,10 +137,10 @@ def _process_anime_episodes(anime: Anime) -> None:
         # Generate titles
         media_title = _get_media_title(anime, episode, sanitized_anime_title)
         display_title = _generate_episode_title(anime, episode)
-        
+
         # Get aniskip data
         aniskip_data = _get_aniskip_data(anime, episode)
-        
+
         # Build and execute command
         command = _build_watch_command(
             source=direct_link,
@@ -148,7 +149,7 @@ def _process_anime_episodes(anime: Anime) -> None:
             aniskip_data=aniskip_data,
             anime=anime
         )
-        
+
         _execute_command(title=display_title, command=command)
 
 
@@ -163,7 +164,7 @@ def watch(anime: Optional[Anime] = None) -> None:
             _process_local_files()
         else:
             _process_anime_episodes(anime)
-            
+
     except KeyboardInterrupt:
         logging.info("Watch session interrupted by user")
     except Exception as e:

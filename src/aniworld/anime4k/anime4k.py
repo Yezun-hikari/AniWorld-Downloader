@@ -28,11 +28,11 @@ def _build_download_url(mode: str) -> str:
     """Build download URL for Anime4K based on mode and OS."""
     os_type = _get_os_type()
     latest_release = _get_latest_release_info()
-    
+
     # Get download path from first release asset
     download_path = os.path.dirname(list(latest_release.values())[0])
     download_link = f"{download_path}/GLSL_{os_type}_{mode}-end.zip"
-    
+
     return download_link
 
 
@@ -60,7 +60,8 @@ def _extract_with_tar(zip_path: Path, dest_path: Path) -> bool:
         logging.debug("Successfully extracted %s to %s", zip_path, dest_path)
         return True
     except subprocess.CalledProcessError as e:
-        logging.error("Failed to extract with tar: %s", e.stderr if e.stderr else e)
+        logging.error("Failed to extract with tar: %s",
+                      e.stderr if e.stderr else e)
         return False
     except FileNotFoundError:
         logging.error("tar command not found")
@@ -73,7 +74,8 @@ def _extract_with_python(zip_path: Path, dest_path: Path) -> bool:
         import zipfile
         with zipfile.ZipFile(zip_path, 'r') as zip_ref:
             zip_ref.extractall(dest_path)
-        logging.debug("Successfully extracted %s to %s using Python zipfile", zip_path, dest_path)
+        logging.debug(
+            "Successfully extracted %s to %s using Python zipfile", zip_path, dest_path)
         return True
     except Exception as e:
         logging.error("Failed to extract with Python zipfile: %s", e)
@@ -92,49 +94,49 @@ def _remove_archive(archive_path: Path) -> None:
 def get_anime4k_download_link(mode: str = "High") -> str:
     """
     Get download link for Anime4K based on mode and platform.
-    
+
     Args:
         mode: Quality mode ("High", "Medium", "Low", etc.)
-        
+
     Returns:
         Download URL for the appropriate Anime4K package
-        
+
     Raises:
         Exception: If unable to get release information
     """
     if mode not in ["High", "Medium", "Low", "Ultra"]:
         logging.warning(f"Unknown mode '{mode}', defaulting to 'High'")
         mode = "High"
-    
+
     return _build_download_url(mode)
 
 
 def extract_anime4k(zip_path: str, dep_path: str) -> bool:
     """
     Extract Anime4K archive to specified directory.
-    
+
     Args:
         zip_path: Path to the zip archive
         dep_path: Destination path for extraction
-        
+
     Returns:
         True if extraction was successful, False otherwise
     """
     zip_path_obj = Path(zip_path)
     dep_path_obj = Path(dep_path)
-    
+
     if not zip_path_obj.exists():
         logging.error(f"Archive file not found: {zip_path}")
         return False
-    
+
     logging.debug("Extracting Anime4K from %s to %s", zip_path, dep_path)
-    
+
     # Try tar first (faster and more reliable), then fallback to Python zipfile
     success = _extract_with_tar(zip_path_obj, dep_path_obj)
     if not success:
         logging.info("Falling back to Python zipfile extraction")
         success = _extract_with_python(zip_path_obj, dep_path_obj)
-    
+
     if success:
         # Clean up archive and macOS artifacts
         _remove_archive(zip_path_obj)
@@ -149,10 +151,10 @@ def extract_anime4k(zip_path: str, dep_path: str) -> bool:
 def download_anime4k(mode: str) -> bool:
     """
     Download and extract Anime4K shaders.
-    
+
     Args:
         mode: Quality mode ("High", "Medium", "Low", "Remove")
-        
+
     Returns:
         True if download/extraction was successful, False otherwise
     """
@@ -168,7 +170,7 @@ def download_anime4k(mode: str) -> bool:
     # Ensure MPV directory exists
     mpv_path = Path(MPV_DIRECTORY)
     mpv_path.mkdir(parents=True, exist_ok=True)
-    
+
     archive_path = mpv_path / "anime4k.zip"
 
     if archive_path.exists():
@@ -180,17 +182,18 @@ def download_anime4k(mode: str) -> bool:
         download_link = get_anime4k_download_link(mode)
         logging.info("Downloading Anime4K (%s mode)...", mode)
         download_file(download_link, str(archive_path))
-        
+
         # Extract the archive
         success = extract_anime4k(str(archive_path), str(mpv_path))
-        
+
         if success:
-            logging.info("Anime4K download and extraction completed successfully")
+            logging.info(
+                "Anime4K download and extraction completed successfully")
         else:
             logging.error("Anime4K extraction failed")
-            
+
         return success
-        
+
     except Exception as e:
         logging.error(f"Failed to download Anime4K: {e}")
         # Clean up partial download

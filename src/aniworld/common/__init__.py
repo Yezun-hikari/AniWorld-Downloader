@@ -1,14 +1,14 @@
 from .common import (
-    get_github_release,
+    copy_file_if_different,
+    download_file,
     download_mpv,
     download_syncplay,
-    download_file,
-    get_season_episode_count,
-    get_movie_episode_count,
     generate_links,
+    get_github_release,
+    get_movie_episode_count,
+    get_season_episode_count,
     remove_anime4k,
     remove_mpv_scripts,
-    copy_file_if_different,
-    setup_autostart,
-    setup_autoexit
+    setup_autoexit,
+    setup_autostart
 )
