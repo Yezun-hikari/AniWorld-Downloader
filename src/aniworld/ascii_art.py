@@ -840,10 +840,25 @@ TRACEBACK2 = R"""
 
 
 def is_windows_legacy() -> bool:
-    if platform.release() != "10":
+    """
+    Check if Windows version is legacy (anything before Windows 11).
+    Returns False for non-Windows systems.
+    """
+    # Only check for Windows systems
+    if platform.system() != "Windows":
+        return False
+        
+    try:
+        release = platform.release()
+
+        if release == "11":
+            return False
+            
+        # Everything else (Windows 10, 8, 7, etc.) is legacy
         return True
-    build = int(re.search(r"\d+", platform.version()).group())
-    return build < 22000
+    except Exception:
+        # If we can't determine the version, assume it's legacy to be safe
+        return True
 
 
 def display_ascii_art() -> str:
