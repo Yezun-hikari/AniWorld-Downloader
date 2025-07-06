@@ -95,7 +95,8 @@ def _group_episodes_by_series(links: List[str]) -> List[Anime]:
                 if episode_list:
                     # Get the site from the first episode in the list
                     episode_site = episode_list[0].site if episode_list else "aniworld.to"
-                    anime_list.append(Anime(episode_list=episode_list, site=episode_site))
+                    anime_list.append(
+                        Anime(episode_list=episode_list, site=episode_site))
                     episode_list = []
                 current_anime = series_slug
 

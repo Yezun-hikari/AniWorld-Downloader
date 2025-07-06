@@ -143,8 +143,9 @@ class Anime:
 
         # Validate site
         if site not in SUPPORTED_SITES:
-            raise ValueError(f"Unsupported site: {site}. Supported sites: {list(SUPPORTED_SITES.keys())}")
-        
+            raise ValueError(
+                f"Unsupported site: {site}. Supported sites: {list(SUPPORTED_SITES.keys())}")
+
         self.site = site
         self.site_config = SUPPORTED_SITES[site]
         self.base_url = self.site_config["base_url"]
@@ -208,7 +209,7 @@ class Anime:
                 self._html_cache.raise_for_status()
             except requests.RequestException as e:
                 logging.error(
-                    "Failed to fetch anime HTML for slug '%s' on site '%s': %s", 
+                    "Failed to fetch anime HTML for slug '%s' on site '%s': %s",
                     self.slug, self.site, e)
                 raise
 
@@ -224,7 +225,8 @@ class Anime:
         """
         if self._title_cache is None:
             try:
-                self._title_cache = get_anime_title_from_html(self.html, self.site)
+                self._title_cache = get_anime_title_from_html(
+                    self.html, self.site)
                 if not self._title_cache:
                     self._title_cache = f"Unknown Anime ({self.slug})"
                     logging.warning(
@@ -331,7 +333,7 @@ class Anime:
 
         if not self.slug:
             issues.append("No slug provided")
-        
+
         if self.site not in SUPPORTED_SITES:
             issues.append(f"Unsupported site: {self.site}")
 
@@ -339,7 +341,8 @@ class Anime:
             issues.append(f"Invalid action: {self.action}")
 
         # Use site-specific language codes for validation
-        site_language_codes = SITE_LANGUAGE_CODES.get(self.site, LANGUAGE_CODES)
+        site_language_codes = SITE_LANGUAGE_CODES.get(
+            self.site, LANGUAGE_CODES)
         if self.language not in site_language_codes:
             issues.append(f"Invalid language: {self.language}")
 
@@ -529,8 +532,9 @@ class Episode:
 
         # Validate site
         if site not in SUPPORTED_SITES:
-            raise ValueError(f"Unsupported site: {site}. Supported sites: {list(SUPPORTED_SITES.keys())}")
-        
+            raise ValueError(
+                f"Unsupported site: {site}. Supported sites: {list(SUPPORTED_SITES.keys())}")
+
         self.site = site
         self.site_config = SUPPORTED_SITES[site]
         self.base_url = self.site_config["base_url"]
@@ -839,7 +843,8 @@ class Episode:
             ValueError: If language name is invalid
         """
         # Use site-specific language codes
-        site_language_codes = SITE_LANGUAGE_CODES.get(self.site, LANGUAGE_CODES)
+        site_language_codes = SITE_LANGUAGE_CODES.get(
+            self.site, LANGUAGE_CODES)
         language_key = site_language_codes.get(language_name)
 
         if language_key is None:
@@ -863,13 +868,15 @@ class Episode:
             ValueError: If any language key is invalid
         """
         # Use site-specific language names
-        site_language_names = SITE_LANGUAGE_NAMES.get(self.site, LANGUAGE_NAMES)
+        site_language_names = SITE_LANGUAGE_NAMES.get(
+            self.site, LANGUAGE_NAMES)
         language_names = []
 
         for key in language_keys:
             name = site_language_names.get(key)
             if name is None:
-                raise ValueError(f"Invalid language key: {key} for site: {self.site}")
+                raise ValueError(
+                    f"Invalid language key: {key} for site: {self.site}")
             language_names.append(name)
 
         return language_names
@@ -956,7 +963,8 @@ class Episode:
                 available_langs.update(lang_dict.keys())
 
             # Use site-specific language names for error message
-            site_language_names = SITE_LANGUAGE_NAMES.get(self.site, LANGUAGE_NAMES)
+            site_language_names = SITE_LANGUAGE_NAMES.get(
+                self.site, LANGUAGE_NAMES)
             available_lang_names = [site_language_names.get(key, f"Unknown({key})")
                                     for key in available_langs]
 
@@ -1090,7 +1098,8 @@ class Episode:
                 try:
                     # Get anime title if missing
                     if not self.anime_title:
-                        self.anime_title = get_anime_title_from_html(self.html, self.site)
+                        self.anime_title = get_anime_title_from_html(
+                            self.html, self.site)
 
                     # Get episode titles if missing
                     if not self.title_german and not self.title_english:
@@ -1150,12 +1159,13 @@ class Episode:
         if not self.link and (not self.slug or self.season is None or self.episode is None):
             issues.append(
                 "Either 'link' or 'slug + season + episode' must be provided")
-        
+
         if self.site not in SUPPORTED_SITES:
             issues.append(f"Unsupported site: {self.site}")
 
         # Use site-specific language codes for validation
-        site_language_codes = SITE_LANGUAGE_CODES.get(self.site, LANGUAGE_CODES)
+        site_language_codes = SITE_LANGUAGE_CODES.get(
+            self.site, LANGUAGE_CODES)
         if self._selected_language not in site_language_codes:
             issues.append(
                 f"Invalid selected language: {self._selected_language} for site: {self.site}")
@@ -1220,17 +1230,17 @@ class Episode:
 def get_anime_title_from_html(html: requests.models.Response, site: str = "aniworld.to") -> str:
     """
     Extract anime title from HTML response with site-specific parsing.
-    
+
     Args:
         html: HTTP response object containing the page HTML
         site: The streaming site being used for parsing adjustments
-        
+
     Returns:
         Anime title string or empty string if not found
     """
     try:
         soup = BeautifulSoup(html.content, 'html.parser')
-        
+
         # Site-specific title extraction
         if site == "s.to":
             # s.to uses: <div class="series-title"><h1><span>Title</span></h1>...</div>
@@ -1254,12 +1264,12 @@ def get_anime_title_from_html(html: requests.models.Response, site: str = "aniwo
                 if span_element:
                     return span_element.get_text(strip=True)
                 return title_span.get_text(strip=True)
-            
+
             # Fallback to div text
             return title_div.get_text(strip=True)
 
         return ""
-        
+
     except Exception as e:
         logging.error("Error extracting anime title from %s: %s", site, e)
         return ""
