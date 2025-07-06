@@ -5,12 +5,31 @@ from typing import List, Optional
 
 from aniworld.ascii_art import display_traceback_art
 from aniworld.action import watch, syncplay
-from aniworld.models import Anime, Episode
+from aniworld.models import Anime, Episode, SUPPORTED_SITES
 from aniworld.parser import arguments
 from aniworld.search import search_anime
 from aniworld.execute import execute
 from aniworld.menu import menu
 from aniworld.common import generate_links
+
+
+def _detect_site_from_url(url: str) -> str:
+    """
+    Detect the streaming site from a URL.
+
+    Args:
+        url: The episode URL
+
+    Returns:
+        Site identifier ("aniworld.to", "s.to", etc.)
+    """
+    for site, config in SUPPORTED_SITES.items():
+        base_url = config["base_url"]
+        if url.startswith(base_url):
+            return site
+
+    # Default to aniworld.to for backward compatibility
+    return "aniworld.to"
 
 
 def _handle_local_episodes() -> None:
@@ -70,16 +89,22 @@ def _group_episodes_by_series(links: List[str]) -> List[Anime]:
                 logging.warning("Invalid episode link format: %s", link)
                 continue
 
+            site = _detect_site_from_url(link)
+
             if series_slug != current_anime:
                 if episode_list:
-                    anime_list.append(Anime(episode_list=episode_list))
+                    # Get the site from the first episode in the list
+                    episode_site = episode_list[0].site if episode_list else "aniworld.to"
+                    anime_list.append(Anime(episode_list=episode_list, site=episode_site))
                     episode_list = []
                 current_anime = series_slug
 
-            episode_list.append(Episode(link=link))
+            episode_list.append(Episode(link=link, site=site))
 
     if episode_list:
-        anime_list.append(Anime(episode_list=episode_list))
+        # Get the site from the first episode in the list
+        episode_site = episode_list[0].site if episode_list else "aniworld.to"
+        anime_list.append(Anime(episode_list=episode_list, site=episode_site))
 
     # Handle case when no links are provided but we need to create a default anime
     if not anime_list and not links:

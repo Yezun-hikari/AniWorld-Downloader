@@ -14,11 +14,24 @@ from aniworld.config import (
     DEFAULT_REQUEST_TIMEOUT,
     RANDOM_USER_AGENT,
     ANIWORLD_TO,
+    S_TO,
     SUPPORTED_PROVIDERS
 )
 from aniworld.parser import arguments
 from aniworld.common import get_season_episode_count, get_movie_episode_count
 
+
+# Supported streaming sites with their URL patterns
+SUPPORTED_SITES = {
+    "aniworld.to": {
+        "base_url": ANIWORLD_TO,
+        "stream_path": "anime/stream"
+    },
+    "s.to": {
+        "base_url": S_TO,
+        "stream_path": "serie/stream"
+    }
+}
 
 # Language code mappings for consistent handling
 LANGUAGE_CODES = {
@@ -33,6 +46,17 @@ LANGUAGE_NAMES = {
     3: "German Sub"
 }
 
+# Site-specific language mappings (s.to might have different language codes)
+SITE_LANGUAGE_CODES = {
+    "aniworld.to": LANGUAGE_CODES,
+    "s.to": LANGUAGE_CODES  # Same as aniworld.to for now, can be customized
+}
+
+SITE_LANGUAGE_NAMES = {
+    "aniworld.to": LANGUAGE_NAMES,
+    "s.to": LANGUAGE_NAMES  # Same as aniworld.to for now, can be customized
+}
+
 
 class Anime:
     """
@@ -42,13 +66,18 @@ class Anime:
     episode management, and provider/language configuration with lazy loading
     and caching for optimal performance.
 
+    Supports multiple streaming sites:
+    - aniworld.to (default)
+    - s.to
+
     Example:
         anime = Anime(
             episode_list=[
                 Episode(
                     slug="loner-life-in-another-world",
                     season=1,
-                    episode=1
+                    episode=1,
+                    site="aniworld.to"  # Optional, defaults to aniworld.to
                 )
             ]
         )
@@ -59,6 +88,7 @@ class Anime:
     Attributes:
         title (str): The title of the anime.
         slug (str): A URL-friendly version of the title used for web requests.
+        site (str): The streaming site to use ("aniworld.to" or "s.to").
         action (str): The default action to be performed ("Download", "Watch", "Syncplay").
         provider (str): The provider of the anime content.
         language (str): The language code for the anime.
@@ -74,6 +104,7 @@ class Anime:
         self,
         title: Optional[str] = None,
         slug: Optional[str] = None,
+        site: str = "aniworld.to",
         action: Optional[str] = None,
         provider: Optional[str] = None,
         language: Optional[str] = None,
@@ -90,6 +121,7 @@ class Anime:
         Args:
             title: The anime title
             slug: URL-friendly anime identifier
+            site: Streaming site to use ("aniworld.to" or "s.to")
             action: Action to perform (Watch/Download/Syncplay)
             provider: Streaming provider
             language: Language preference
@@ -108,6 +140,15 @@ class Anime:
         if not episode_list:
             raise ValueError(
                 "Provide 'episode_list' with at least one episode.")
+
+        # Validate site
+        if site not in SUPPORTED_SITES:
+            raise ValueError(f"Unsupported site: {site}. Supported sites: {list(SUPPORTED_SITES.keys())}")
+        
+        self.site = site
+        self.site_config = SUPPORTED_SITES[site]
+        self.base_url = self.site_config["base_url"]
+        self.stream_path = self.site_config["stream_path"]
 
         # Extract slug from episode list if not provided
         self.slug = slug or self._extract_slug_from_episodes(episode_list)
@@ -160,14 +201,15 @@ class Anime:
         if self._html_cache is None:
             try:
                 self._html_cache = requests.get(
-                    f"{ANIWORLD_TO}/anime/stream/{self.slug}",
+                    f"{self.base_url}/{self.stream_path}/{self.slug}",
                     timeout=DEFAULT_REQUEST_TIMEOUT,
                     headers={'User-Agent': RANDOM_USER_AGENT}
                 )
                 self._html_cache.raise_for_status()
             except requests.RequestException as e:
                 logging.error(
-                    "Failed to fetch anime HTML for slug '%s': %s", self.slug, e)
+                    "Failed to fetch anime HTML for slug '%s' on site '%s': %s", 
+                    self.slug, self.site, e)
                 raise
 
         return self._html_cache
@@ -182,7 +224,7 @@ class Anime:
         """
         if self._title_cache is None:
             try:
-                self._title_cache = get_anime_title_from_html(self.html)
+                self._title_cache = get_anime_title_from_html(self.html, self.site)
                 if not self._title_cache:
                     self._title_cache = f"Unknown Anime ({self.slug})"
                     logging.warning(
@@ -289,11 +331,16 @@ class Anime:
 
         if not self.slug:
             issues.append("No slug provided")
+        
+        if self.site not in SUPPORTED_SITES:
+            issues.append(f"Unsupported site: {self.site}")
 
         if self.action not in ['Watch', 'Download', 'Syncplay']:
             issues.append(f"Invalid action: {self.action}")
 
-        if self.language not in LANGUAGE_CODES:
+        # Use site-specific language codes for validation
+        site_language_codes = SITE_LANGUAGE_CODES.get(self.site, LANGUAGE_CODES)
+        if self.language not in site_language_codes:
             issues.append(f"Invalid language: {self.language}")
 
         return issues
@@ -320,6 +367,7 @@ class Anime:
         return {
             "title": self.title,
             "slug": self.slug,
+            "site": self.site,
             "action": self.action,
             "provider": self.provider,
             "language": self.language,
@@ -378,11 +426,16 @@ class Episode:
     provider/language management, and streaming link generation with lazy loading
     and caching for optimal performance.
 
+    Supports multiple streaming sites:
+    - aniworld.to (default)
+    - s.to
+
     Example:
         Episode(
             slug="loner-life-in-another-world",
             season=1,
-            episode=1
+            episode=1,
+            site="aniworld.to"  # Optional, defaults to aniworld.to
         )
 
     Required Attributes:
@@ -396,6 +449,7 @@ class Episode:
         season (int): The season number (0 for movies).
         episode (int): The episode number within the season.
         slug (str): URL-friendly anime identifier.
+        site (str): The streaming site ("aniworld.to" or "s.to").
         link (str): The direct link to the episode page.
         mal_id (int): The MyAnimeList ID for the episode.
         redirect_link (str): The redirect link for streaming.
@@ -420,6 +474,7 @@ class Episode:
         season: Optional[int] = None,
         episode: Optional[int] = None,
         slug: Optional[str] = None,
+        site: str = "aniworld.to",
         link: Optional[str] = None,
         mal_id: Optional[int] = None,
         redirect_link: Optional[str] = None,
@@ -446,6 +501,7 @@ class Episode:
             season: Season number (0 for movies)
             episode: Episode number
             slug: Anime slug identifier
+            site: Streaming site to use ("aniworld.to" or "s.to")
             link: Direct episode link
             mal_id: MyAnimeList ID
             redirect_link: Redirect streaming link
@@ -470,6 +526,15 @@ class Episode:
             raise ValueError(
                 "Provide either 'link' or 'slug' with 'season' and 'episode'."
             )
+
+        # Validate site
+        if site not in SUPPORTED_SITES:
+            raise ValueError(f"Unsupported site: {site}. Supported sites: {list(SUPPORTED_SITES.keys())}")
+        
+        self.site = site
+        self.site_config = SUPPORTED_SITES[site]
+        self.base_url = self.site_config["base_url"]
+        self.stream_path = self.site_config["stream_path"]
 
         # Initialize core attributes
         self.anime_title = anime_title
@@ -750,7 +815,7 @@ class Episode:
 
             # Validate all required data is present
             if provider_name and redirect_path and lang_key:
-                redirect_url = f"{ANIWORLD_TO}{redirect_path}"
+                redirect_url = f"{self.base_url}{redirect_path}"
                 return provider_name, lang_key, redirect_url
 
             return None
@@ -762,7 +827,7 @@ class Episode:
 
     def _get_language_key_from_name(self, language_name: str) -> int:
         """
-        Convert language name to language key.
+        Convert language name to language key using site-specific mappings.
 
         Args:
             language_name: Language name (e.g., "German Dub")
@@ -773,18 +838,20 @@ class Episode:
         Raises:
             ValueError: If language name is invalid
         """
-        language_key = LANGUAGE_CODES.get(language_name)
+        # Use site-specific language codes
+        site_language_codes = SITE_LANGUAGE_CODES.get(self.site, LANGUAGE_CODES)
+        language_key = site_language_codes.get(language_name)
 
         if language_key is None:
-            valid_languages = list(LANGUAGE_CODES.keys())
+            valid_languages = list(site_language_codes.keys())
             raise ValueError(
-                f"Invalid language: {language_name}. Valid options: {valid_languages}")
+                f"Invalid language: {language_name}. Valid options for {self.site}: {valid_languages}")
 
         return language_key
 
     def _get_language_names_from_keys(self, language_keys: List[int]) -> List[str]:
         """
-        Convert language keys to language names.
+        Convert language keys to language names using site-specific mappings.
 
         Args:
             language_keys: List of language key integers
@@ -795,12 +862,14 @@ class Episode:
         Raises:
             ValueError: If any language key is invalid
         """
+        # Use site-specific language names
+        site_language_names = SITE_LANGUAGE_NAMES.get(self.site, LANGUAGE_NAMES)
         language_names = []
 
         for key in language_keys:
-            name = LANGUAGE_NAMES.get(key)
+            name = site_language_names.get(key)
             if name is None:
-                raise ValueError(f"Invalid language key: {key}")
+                raise ValueError(f"Invalid language key: {key} for site: {self.site}")
             language_names.append(name)
 
         return language_names
@@ -875,8 +944,8 @@ class Episode:
             # Fallback: find any provider with the selected language
             for provider_name, lang_dict in self.provider.items():
                 if lang_key in lang_dict:
-                    logging.info("Switching provider from '%s' to '%s' for language '%s'",
-                                 self._selected_provider, provider_name, self._selected_language)
+                    logging.info("Switching provider from '%s' to '%s' for language '%s' on site '%s'",
+                                 self._selected_provider, provider_name, self._selected_language, self.site)
                     self._selected_provider = provider_name
                     self.redirect_link = lang_dict[lang_key]
                     return self.redirect_link
@@ -886,11 +955,13 @@ class Episode:
             for lang_dict in self.provider.values():
                 available_langs.update(lang_dict.keys())
 
-            available_lang_names = [LANGUAGE_NAMES.get(key, f"Unknown({key})")
+            # Use site-specific language names for error message
+            site_language_names = SITE_LANGUAGE_NAMES.get(self.site, LANGUAGE_NAMES)
+            available_lang_names = [site_language_names.get(key, f"Unknown({key})")
                                     for key in available_langs]
 
-            logging.warning("No provider found for language '%s'. Available languages: %s",
-                            self._selected_language, available_lang_names)
+            logging.warning("No provider found for language '%s' on site '%s'. Available languages: %s",
+                            self._selected_language, self.site, available_lang_names)
 
             self.redirect_link = None
             return None
@@ -988,9 +1059,9 @@ class Episode:
             # Construct link if missing but have components
             if not self.link and self.slug and self.season is not None and self.episode is not None:
                 if self.season == 0:  # Movie
-                    self.link = f"{ANIWORLD_TO}/anime/stream/{self.slug}/filme/film-{self.episode}"
+                    self.link = f"{self.base_url}/{self.stream_path}/{self.slug}/filme/film-{self.episode}"
                 else:  # Regular episode
-                    self.link = (f"{ANIWORLD_TO}/anime/stream/{self.slug}/"
+                    self.link = (f"{self.base_url}/{self.stream_path}/{self.slug}/"
                                  f"staffel-{self.season}/episode-{self.episode}")
 
             # Extract components from link if missing
@@ -1019,7 +1090,7 @@ class Episode:
                 try:
                     # Get anime title if missing
                     if not self.anime_title:
-                        self.anime_title = get_anime_title_from_html(self.html)
+                        self.anime_title = get_anime_title_from_html(self.html, self.site)
 
                     # Get episode titles if missing
                     if not self.title_german and not self.title_english:
@@ -1079,10 +1150,15 @@ class Episode:
         if not self.link and (not self.slug or self.season is None or self.episode is None):
             issues.append(
                 "Either 'link' or 'slug + season + episode' must be provided")
+        
+        if self.site not in SUPPORTED_SITES:
+            issues.append(f"Unsupported site: {self.site}")
 
-        if self._selected_language not in LANGUAGE_CODES:
+        # Use site-specific language codes for validation
+        site_language_codes = SITE_LANGUAGE_CODES.get(self.site, LANGUAGE_CODES)
+        if self._selected_language not in site_language_codes:
             issues.append(
-                f"Invalid selected language: {self._selected_language}")
+                f"Invalid selected language: {self._selected_language} for site: {self.site}")
 
         if self._selected_provider and self._selected_provider not in SUPPORTED_PROVIDERS:
             issues.append(f"Unsupported provider: {self._selected_provider}")
@@ -1103,6 +1179,7 @@ class Episode:
             "season": self.season,
             "episode": self.episode,
             "slug": self.slug,
+            "site": self.site,
             "link": self.link,
             "mal_id": self.mal_id,
             "redirect_link": self.redirect_link,
@@ -1140,14 +1217,52 @@ class Episode:
                 f"selected_language='{self._selected_language}')")
 
 
-def get_anime_title_from_html(html: requests.models.Response):
-    soup = BeautifulSoup(html.content, 'html.parser')
-    title_div = soup.find('div', class_='series-title')
+def get_anime_title_from_html(html: requests.models.Response, site: str = "aniworld.to") -> str:
+    """
+    Extract anime title from HTML response with site-specific parsing.
+    
+    Args:
+        html: HTTP response object containing the page HTML
+        site: The streaming site being used for parsing adjustments
+        
+    Returns:
+        Anime title string or empty string if not found
+    """
+    try:
+        soup = BeautifulSoup(html.content, 'html.parser')
+        
+        # Site-specific title extraction
+        if site == "s.to":
+            # s.to uses: <div class="series-title"><h1><span>Title</span></h1>...</div>
+            title_div = soup.find('div', class_='series-title')
+            if title_div:
+                title_span = title_div.find('h1')
+                if title_span:
+                    span_element = title_span.find('span')
+                    if span_element:
+                        return span_element.get_text(strip=True)
+                    return title_span.get_text(strip=True)
+                return title_div.get_text(strip=True)
+        else:  # aniworld.to (default)
+            title_div = soup.find('div', class_='series-title')
 
-    if title_div:
-        return title_div.find('h1').find('span').text
+        if title_div:
+            # Try different title extraction methods
+            title_span = title_div.find('h1')
+            if title_span:
+                span_element = title_span.find('span')
+                if span_element:
+                    return span_element.get_text(strip=True)
+                return title_span.get_text(strip=True)
+            
+            # Fallback to div text
+            return title_div.get_text(strip=True)
 
-    return ""
+        return ""
+        
+    except Exception as e:
+        logging.error("Error extracting anime title from %s: %s", site, e)
+        return ""
 
 
 if __name__ == "__main__":
