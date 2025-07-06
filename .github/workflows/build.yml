@@ -61,7 +61,9 @@ jobs:
       - name: Upload dist files to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/*
+          files: |
+            dist/*.tar.gz
+            dist/*.whl
 
   build-binaries:
     needs: extract-version
