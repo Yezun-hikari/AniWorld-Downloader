@@ -14,7 +14,7 @@ from typing import Dict, List, Optional, Callable
 import requests
 
 from aniworld.common import download_mpv, download_syncplay, remove_anime4k, remove_mpv_scripts
-from aniworld.extractors import get_direct_link_from_hanime
+from aniworld.extractors.provider.hanime import get_direct_link_from_hanime
 from aniworld.anime4k import download_anime4k
 from aniworld import config
 
@@ -332,20 +332,30 @@ def _handle_provider_links(args: argparse.Namespace) -> None:
                       ", ".join(invalid_links))
         sys.exit(1)
 
-    # Handle hanime.tv links
+    # Handle hanime.tv links specially
     hanime_links = [link for link in args.provider_link if link.startswith(
         "https://hanime.tv/videos/")]
-    for link in hanime_links:
-        try:
-            get_direct_link_from_hanime(link)
-        except Exception as e:
-            logging.error("Error processing hanime link '%s': %s", link, e)
 
-    # Remove processed hanime links
-    args.provider_link = [
-        link for link in args.provider_link
-        if not link.startswith("https://hanime.tv/videos/")
-    ]
+    if hanime_links:
+        # Process hanime.tv links
+        for link in hanime_links:
+            try:
+                direct_link = get_direct_link_from_hanime(link)
+                if direct_link:
+                    print(f"-> {link}")
+                    print(f'"{direct_link}"')
+                    print("-" * 40)
+                else:
+                    logging.error(
+                        "Could not extract direct link from hanime URL: %s", link)
+            except Exception as e:
+                logging.error("Error processing hanime link '%s': %s", link, e)
+
+        # Remove processed hanime links from provider_link list
+        args.provider_link = [
+            link for link in args.provider_link
+            if not link.startswith("https://hanime.tv/videos/")
+        ]
 
     if not args.provider_link:
         sys.exit(0)
@@ -523,6 +533,31 @@ def _setup_default_provider(args: argparse.Namespace) -> None:
         )
 
 
+def _handle_hanime_episodes(args: argparse.Namespace) -> None:
+    """Handle hanime.tv URLs in episode arguments by moving them to provider links."""
+    if not args.episode:
+        return
+
+    # Find hanime.tv URLs in episode arguments
+    hanime_episodes = [ep for ep in args.episode if ep.startswith(
+        "https://hanime.tv/videos/")]
+
+    if not hanime_episodes:
+        return
+
+    # Remove hanime.tv URLs from episode list
+    args.episode = [ep for ep in args.episode if not ep.startswith(
+        "https://hanime.tv/videos/")]
+
+    # Add them to provider_link list
+    if not args.provider_link:
+        args.provider_link = []
+    args.provider_link.extend(hanime_episodes)
+
+    logging.info(
+        "Moved %d hanime.tv URL(s) to provider link processing", len(hanime_episodes))
+
+
 def parse_arguments() -> argparse.Namespace:
     """
     Parse command-line arguments for the AniWorld-Downloader.
@@ -555,6 +590,9 @@ def parse_arguments() -> argparse.Namespace:
 
     if args.anime4k:
         download_anime4k(args.anime4k)
+
+    # Handle hanime.tv URLs in episode arguments (move them to provider links)
+    _handle_hanime_episodes(args)
 
     # Handle provider links
     _handle_provider_links(args)
