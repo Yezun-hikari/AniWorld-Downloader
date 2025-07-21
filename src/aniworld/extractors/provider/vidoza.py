@@ -27,24 +27,24 @@ def get_direct_link_from_vidoza(embeded_vidoza_link: str) -> str:
     try:
         response = requests.get(
             embeded_vidoza_link,
-            headers={'User-Agent': RANDOM_USER_AGENT},
-            timeout=DEFAULT_REQUEST_TIMEOUT
+            headers={"User-Agent": RANDOM_USER_AGENT},
+            timeout=DEFAULT_REQUEST_TIMEOUT,
         )
         response.raise_for_status()  # Raise an exception for bad status codes
 
         # Direct text search for better performance
         html_content = response.text
-        if 'sourcesCode:' in html_content:
+        if "sourcesCode:" in html_content:
             match = SOURCE_LINK_PATTERN.search(html_content)
             if match:
                 return match.group(1)
 
         # Fallback to BeautifulSoup parsing if direct search fails
         soup = BeautifulSoup(response.content, "html.parser")
-        scripts = soup.find_all('script', string=True)
+        scripts = soup.find_all("script", string=True)
 
         for script in scripts:
-            if 'sourcesCode:' in script.string:
+            if "sourcesCode:" in script.string:
                 match = SOURCE_LINK_PATTERN.search(script.string)
                 if match:
                     return match.group(1)
@@ -57,6 +57,6 @@ def get_direct_link_from_vidoza(embeded_vidoza_link: str) -> str:
     raise ValueError("No direct link found in Vidoza page.")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     link = input("Enter Vidoza Link: ")
     print(get_direct_link_from_vidoza(embeded_vidoza_link=link))

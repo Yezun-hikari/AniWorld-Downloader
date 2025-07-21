@@ -15,26 +15,20 @@ from aniworld.config import DEFAULT_REQUEST_TIMEOUT, ANIWORLD_TO
 
 
 # Constants for better maintainability
-KONAMI_CODE = ['UP', 'UP', 'DOWN', 'DOWN',
-               'LEFT', 'RIGHT', 'LEFT', 'RIGHT', 'b', 'a']
-EASTER_EGG_URL = 'https://www.youtube.com/watch?v=PDJLvF1dUek'
+KONAMI_CODE = ["UP", "UP", "DOWN", "DOWN", "LEFT", "RIGHT", "LEFT", "RIGHT", "b", "a"]
+EASTER_EGG_URL = "https://www.youtube.com/watch?v=PDJLvF1dUek"
 
 # Forbidden search patterns (case-insensitive)
-FORBIDDEN_SEARCHES = [
-    "boku no piko",
-    "boku no pico",
-    "pico boku",
-    "piko boku"
-]
+FORBIDDEN_SEARCHES = ["boku no piko", "boku no pico", "pico boku", "piko boku"]
 
 # Key mapping for menu navigation
 KEY_MAP = {
-    curses.KEY_UP: 'UP',
-    curses.KEY_DOWN: 'DOWN',
-    curses.KEY_LEFT: 'LEFT',
-    curses.KEY_RIGHT: 'RIGHT',
-    ord('b'): 'b',
-    ord('a'): 'a'
+    curses.KEY_UP: "UP",
+    curses.KEY_DOWN: "DOWN",
+    curses.KEY_LEFT: "LEFT",
+    curses.KEY_RIGHT: "RIGHT",
+    ord("b"): "b",
+    ord("a"): "a",
 }
 
 
@@ -87,7 +81,9 @@ def _cached_search_request(search_url: str) -> str:
     return response.text.strip()
 
 
-def search_anime(keyword: Optional[str] = None, only_return: bool = False) -> Union[str, List[Dict]]:
+def search_anime(
+    keyword: Optional[str] = None, only_return: bool = False
+) -> Union[str, List[Dict]]:
     """
     Search for anime series on AniWorld.
 
@@ -135,9 +131,9 @@ def _clean_json_text(text: str) -> str:
         str: Cleaned JSON text
     """
     # Remove BOM and problematic characters
-    clean_text = text.encode('utf-8').decode('utf-8-sig')
+    clean_text = text.encode("utf-8").decode("utf-8-sig")
     # Remove control characters that can break JSON parsing
-    clean_text = re.sub(r'[\x00-\x1F\x7F-\x9F]', '', clean_text)
+    clean_text = re.sub(r"[\x00-\x1F\x7F-\x9F]", "", clean_text)
     return clean_text
 
 
@@ -221,13 +217,13 @@ def _render_menu(stdscr: curses.window, options: List[Dict], current_row: int) -
         if idx >= max_y - 1:  # Prevent drawing beyond screen
             break
 
-        name = anime.get('name', 'No Name')
-        year = anime.get('productionYear', 'Unknown Year')
+        name = anime.get("name", "No Name")
+        year = anime.get("productionYear", "Unknown Year")
         display_text = f"{name} {year}"
 
         # Truncate text if it's too long for the screen
         if len(display_text) >= max_x:
-            display_text = display_text[:max_x-4] + "..."
+            display_text = display_text[: max_x - 4] + "..."
 
         highlight = curses.A_REVERSE if idx == current_row else 0
 
@@ -275,9 +271,9 @@ def show_menu(stdscr: curses.window, options: List[Dict]) -> Optional[str]:
                 current_row = (current_row + 1) % len(options)
             elif key == curses.KEY_UP:
                 current_row = (current_row - 1 + len(options)) % len(options)
-            elif key == ord('\n'):
-                return options[current_row].get('link', 'No Link')
-            elif key == ord('q') or key == 27:  # 'q' or ESC
+            elif key == ord("\n"):
+                return options[current_row].get("link", "No Link")
+            elif key == ord("q") or key == 27:  # 'q' or ESC
                 break
 
     except curses.error as e:
@@ -288,5 +284,5 @@ def show_menu(stdscr: curses.window, options: List[Dict]) -> Optional[str]:
     return None
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print(search_anime())

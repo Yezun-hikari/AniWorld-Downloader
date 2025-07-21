@@ -9,15 +9,15 @@ logger = logging.getLogger(__name__)
 
 # Provider test URLs - mark broken ones with None
 PROVIDERS: Dict[str, Optional[str]] = {
-    'doodstream': None,  # needs link
-    'filemoon': 'https://filemoon.to/e/eawuwyrd40an',
-    'loadx': 'https://loadx.ws/video/f658d0548f56db68fb23c72a3c48d080',
-    'luluvdo': 'https://luluvdo.com/embed/g1gaitimtoc1',
-    'speedfiles':  None,  # needs link
-    'streamtape': None,  # needs link
-    'vidmoly': 'https://vidmoly.to/embed-19xpz8qoujf9.html',
-    'vidoza': None,  # needs link
-    'voe': 'https://voe.sx/e/ayginbzzb6bi'
+    "doodstream": None,  # needs link
+    "filemoon": "https://filemoon.to/e/eawuwyrd40an",
+    "loadx": "https://loadx.ws/video/f658d0548f56db68fb23c72a3c48d080",
+    "luluvdo": "https://luluvdo.com/embed/g1gaitimtoc1",
+    "speedfiles": None,  # needs link
+    "streamtape": None,  # needs link
+    "vidmoly": "https://vidmoly.to/embed-19xpz8qoujf9.html",
+    "vidoza": None,  # needs link
+    "voe": "https://voe.sx/e/ayginbzzb6bi",
 }
 
 
@@ -37,15 +37,18 @@ def get_provider_function(provider_name: str) -> Callable[[str], str]:
     """
     try:
         module = importlib.import_module(
-            f'aniworld.extractors.provider.{provider_name}')
-        function_name = f'get_direct_link_from_{provider_name}'
+            f"aniworld.extractors.provider.{provider_name}"
+        )
+        function_name = f"get_direct_link_from_{provider_name}"
         return getattr(module, function_name)
     except ImportError as e:
         raise ImportError(
-            f"Failed to import provider module '{provider_name}': {e}") from e
+            f"Failed to import provider module '{provider_name}': {e}"
+        ) from e
     except AttributeError as e:
         raise AttributeError(
-            f"Provider '{provider_name}' missing function '{function_name}': {e}") from e
+            f"Provider '{provider_name}' missing function '{function_name}': {e}"
+        ) from e
 
 
 @pytest.mark.parametrize("provider_name,test_url", PROVIDERS.items())
@@ -58,8 +61,7 @@ def test_get_direct_link(provider_name: str, test_url: Optional[str]):
         test_url: Test URL for the provider (None if broken/unavailable)
     """
     if test_url is None:
-        pytest.skip(
-            f"Provider '{provider_name}' is marked as broken/unavailable")
+        pytest.skip(f"Provider '{provider_name}' is marked as broken/unavailable")
 
     logger.info(f"Testing provider: {provider_name}")
 
@@ -75,19 +77,22 @@ def test_get_direct_link(provider_name: str, test_url: Optional[str]):
 
         # Validate the result
         assert direct_link is not None, f"Provider '{provider_name}' returned None"
-        assert isinstance(
-            direct_link, str), f"Provider '{provider_name}' returned non-string: {type(direct_link)}"
-        assert direct_link.strip(
-        ), f"Provider '{provider_name}' returned empty string"
-        assert direct_link.startswith(
-            ('http://', 'https://')), f"Provider '{provider_name}' returned invalid URL: {direct_link}"
+        assert isinstance(direct_link, str), (
+            f"Provider '{provider_name}' returned non-string: {type(direct_link)}"
+        )
+        assert direct_link.strip(), f"Provider '{provider_name}' returned empty string"
+        assert direct_link.startswith(("http://", "https://")), (
+            f"Provider '{provider_name}' returned invalid URL: {direct_link}"
+        )
 
         logger.info(
-            f"Provider '{provider_name}' successfully extracted: {direct_link[:50]}...")
+            f"Provider '{provider_name}' successfully extracted: {direct_link[:50]}..."
+        )
 
     except Exception as e:
         pytest.fail(
-            f"Provider '{provider_name}' failed with exception: {type(e).__name__}: {e}")
+            f"Provider '{provider_name}' failed with exception: {type(e).__name__}: {e}"
+        )
 
 
 @pytest.mark.parametrize("provider_name", PROVIDERS.keys())
@@ -102,20 +107,22 @@ def test_provider_module_structure(provider_name: str):
         extract_function = get_provider_function(provider_name)
 
         # Check if function is callable
-        assert callable(
-            extract_function), f"Provider '{provider_name}' function is not callable"
+        assert callable(extract_function), (
+            f"Provider '{provider_name}' function is not callable"
+        )
 
         # Check function signature (should accept at least one string parameter)
         import inspect
+
         sig = inspect.signature(extract_function)
-        assert len(
-            sig.parameters) >= 1, f"Provider '{provider_name}' function should accept at least one parameter"
+        assert len(sig.parameters) >= 1, (
+            f"Provider '{provider_name}' function should accept at least one parameter"
+        )
 
         logger.info(f"Provider '{provider_name}' module structure is valid")
 
     except Exception as e:
-        pytest.fail(
-            f"Provider '{provider_name}' module structure test failed: {e}")
+        pytest.fail(f"Provider '{provider_name}' module structure test failed: {e}")
 
 
 def test_all_providers_present():
@@ -129,8 +136,7 @@ def test_all_providers_present():
             missing_providers.append(f"{provider_name}: {e}")
 
     if missing_providers:
-        pytest.fail(f"Missing or broken providers:\n" +
-                    "\n".join(missing_providers))
+        pytest.fail("Missing or broken providers:\n" + "\n".join(missing_providers))
 
     logger.info(f"All {len(PROVIDERS)} providers are present and importable")
 
@@ -162,8 +168,9 @@ if __name__ == "__main__":
 
     # Test actual extraction (only for providers with URLs)
     print("\n3. Testing provider extraction...")
-    available_providers = {name: url for name,
-                           url in PROVIDERS.items() if url is not None}
+    available_providers = {
+        name: url for name, url in PROVIDERS.items() if url is not None
+    }
 
     if not available_providers:
         print("No providers with test URLs available")
@@ -177,7 +184,6 @@ if __name__ == "__main__":
                 print(f"✗ Extraction test failed for {provider_name}: {e}")
                 continue
 
-    print(f"\nAll tests completed successfully!")
+    print("\nAll tests completed successfully!")
     print(f"Providers available: {len(available_providers)}")
-    print(
-        f"Providers needing URLs: {len(PROVIDERS) - len(available_providers)}")
+    print(f"Providers needing URLs: {len(PROVIDERS) - len(available_providers)}")

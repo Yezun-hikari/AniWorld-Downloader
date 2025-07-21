@@ -29,9 +29,8 @@ def _validate_luluvdo_url(url: str) -> str:
         raise ValueError("LuluVDO URL cannot be empty")
 
     url = url.strip()
-    if not url.startswith(('http://', 'https://')):
-        raise ValueError(
-            "Invalid URL format - must start with http:// or https://")
+    if not url.startswith(("http://", "https://")):
+        raise ValueError("Invalid URL format - must start with http:// or https://")
 
     try:
         parsed_url = urlparse(url)
@@ -39,7 +38,7 @@ def _validate_luluvdo_url(url: str) -> str:
             raise ValueError("Invalid URL format - missing domain")
 
         # Basic domain validation for LuluVDO
-        if 'luluvdo.com' not in parsed_url.netloc.lower():
+        if "luluvdo.com" not in parsed_url.netloc.lower():
             raise ValueError("URL must be from luluvdo.com domain")
 
     except Exception as e:
@@ -62,7 +61,7 @@ def _extract_luluvdo_id(url: str) -> str:
         ValueError: If ID cannot be extracted
     """
     try:
-        url_parts = url.split('/')
+        url_parts = url.split("/")
         if not url_parts:
             raise ValueError("Invalid URL structure")
 
@@ -71,8 +70,8 @@ def _extract_luluvdo_id(url: str) -> str:
             raise ValueError("No ID found in URL")
 
         # Remove query parameters if present
-        if '?' in luluvdo_id:
-            luluvdo_id = luluvdo_id.split('?')[0]
+        if "?" in luluvdo_id:
+            luluvdo_id = luluvdo_id.split("?")[0]
 
         if not luluvdo_id:
             raise ValueError("Empty ID after processing")
@@ -110,11 +109,11 @@ def _build_headers(arguments: Optional[Any] = None) -> Dict[str, str]:
     headers = {
         "Origin": "https://luluvdo.com",
         "Referer": "https://luluvdo.com/",
-        "User-Agent": config.LULUVDO_USER_AGENT
+        "User-Agent": config.LULUVDO_USER_AGENT,
     }
 
     # Add language header for downloads
-    if arguments and hasattr(arguments, 'action') and arguments.action == "Download":
+    if arguments and hasattr(arguments, "action") and arguments.action == "Download":
         headers["Accept-Language"] = "de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7"
 
     return headers
@@ -137,9 +136,7 @@ def _make_request(url: str, headers: Dict[str, str]) -> requests.Response:
     try:
         logger.debug(f"Making request to: {url}")
         response = requests.get(
-            url,
-            headers=headers,
-            timeout=config.DEFAULT_REQUEST_TIMEOUT
+            url, headers=headers, timeout=config.DEFAULT_REQUEST_TIMEOUT
         )
         response.raise_for_status()
         return response
@@ -184,7 +181,9 @@ def _extract_video_url(response_text: str) -> str:
         raise ValueError(f"Failed to extract video URL: {e}") from e
 
 
-def get_direct_link_from_luluvdo(embeded_luluvdo_link: str, arguments: Optional[Any] = None) -> str:
+def get_direct_link_from_luluvdo(
+    embeded_luluvdo_link: str, arguments: Optional[Any] = None
+) -> str:
     """
     Extract direct video link from LuluVDO embedded URL.
 
@@ -218,8 +217,7 @@ def get_direct_link_from_luluvdo(embeded_luluvdo_link: str, arguments: Optional[
 
         # Check response status
         if response.status_code != 200:
-            raise ValueError(
-                f"Server returned status code: {response.status_code}")
+            raise ValueError(f"Server returned status code: {response.status_code}")
 
         # Extract video URL
         video_url = _extract_video_url(response.text)
@@ -260,7 +258,7 @@ def main() -> None:
     # Setup logging for standalone execution
     logging.basicConfig(
         level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
 
     try:
@@ -291,5 +289,5 @@ def main() -> None:
         sys.exit(1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

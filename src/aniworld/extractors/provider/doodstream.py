@@ -11,27 +11,21 @@ from aniworld.config import RANDOM_USER_AGENT, DEFAULT_REQUEST_TIMEOUT
 
 # Constants
 DOODSTREAM_BASE_URL = "https://dood.li"
-RANDOM_STRING_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+RANDOM_STRING_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 PASS_MD5_PATTERN = r"\$\.get\('([^']*\/pass_md5\/[^']*)'"
 TOKEN_PATTERN = r"token=([a-zA-Z0-9]+)"
 
 
 def _get_headers() -> dict:
     """Get request headers for Doodstream."""
-    return {
-        'User-Agent': RANDOM_USER_AGENT,
-        'Referer': f'{DOODSTREAM_BASE_URL}/'
-    }
+    return {"User-Agent": RANDOM_USER_AGENT, "Referer": f"{DOODSTREAM_BASE_URL}/"}
 
 
 def _make_request(url: str, headers: dict) -> requests.Response:
     """Make HTTP request with error handling."""
     try:
         response = requests.get(
-            url,
-            headers=headers,
-            timeout=DEFAULT_REQUEST_TIMEOUT,
-            verify=False
+            url, headers=headers, timeout=DEFAULT_REQUEST_TIMEOUT, verify=False
         )
         response.raise_for_status()
         return response
@@ -48,17 +42,17 @@ def _extract_data(pattern: str, content: str) -> Optional[str]:
 
 def _generate_random_string(length: int = 10) -> str:
     """Generate random alphanumeric string."""
-    return ''.join(random.choice(RANDOM_STRING_CHARS) for _ in range(length))
+    return "".join(random.choice(RANDOM_STRING_CHARS) for _ in range(length))
 
 
 def _extract_pass_md5_url(content: str, embed_url: str) -> str:
     """Extract pass_md5 URL from page content."""
     pass_md5_url = _extract_data(PASS_MD5_PATTERN, content)
     if not pass_md5_url:
-        raise ValueError(f'pass_md5 URL not found in {embed_url}')
+        raise ValueError(f"pass_md5 URL not found in {embed_url}")
 
     # Ensure URL is properly formed
-    if not pass_md5_url.startswith('http'):
+    if not pass_md5_url.startswith("http"):
         pass_md5_url = urljoin(DOODSTREAM_BASE_URL, pass_md5_url)
 
     logging.debug(f"Extracted pass_md5 URL: {pass_md5_url}")
@@ -69,7 +63,7 @@ def _extract_token(content: str, embed_url: str) -> str:
     """Extract token from page content."""
     token = _extract_data(TOKEN_PATTERN, content)
     if not token:
-        raise ValueError(f'Token not found in {embed_url}')
+        raise ValueError(f"Token not found in {embed_url}")
 
     logging.debug(f"Extracted token: {token}")
     return token
@@ -119,8 +113,7 @@ def get_direct_link_from_doodstream(embeded_doodstream_link: str) -> str:
     if not embeded_doodstream_link:
         raise ValueError("Embed URL cannot be empty")
 
-    logging.info(
-        f"Extracting direct link from Doodstream: {embeded_doodstream_link}")
+    logging.info(f"Extracting direct link from Doodstream: {embeded_doodstream_link}")
 
     try:
         headers = _get_headers()
@@ -130,8 +123,7 @@ def get_direct_link_from_doodstream(embeded_doodstream_link: str) -> str:
         response = _make_request(embeded_doodstream_link, headers)
 
         # Extract pass_md5 URL and token
-        pass_md5_url = _extract_pass_md5_url(
-            response.text, embeded_doodstream_link)
+        pass_md5_url = _extract_pass_md5_url(response.text, embeded_doodstream_link)
         token = _extract_token(response.text, embeded_doodstream_link)
 
         # Get video base URL
@@ -148,7 +140,7 @@ def get_direct_link_from_doodstream(embeded_doodstream_link: str) -> str:
         raise
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Setup basic logging for standalone execution
     logging.basicConfig(level=logging.DEBUG)
 

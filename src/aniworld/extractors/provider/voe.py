@@ -18,7 +18,7 @@ B64_PATTERN = re.compile(r"var a168c='([^']+)'")
 HLS_PATTERN = re.compile(r"'hls': '(?P<hls>[^']+)'")
 
 # Pre-compiled junk parts for replacement
-JUNK_PARTS = ['@$', '^^', '~@', '%?', '*~', '!!', '#&']
+JUNK_PARTS = ["@$", "^^", "~@", "%?", "*~", "!!", "#&"]
 
 
 def shift_letters(input_str: str) -> str:
@@ -31,19 +31,19 @@ def shift_letters(input_str: str) -> str:
         elif 97 <= code <= 122:  # Lowercase a-z
             code = (code - 97 + 13) % 26 + 97
         result.append(chr(code))
-    return ''.join(result)
+    return "".join(result)
 
 
 def replace_junk(input_str: str) -> str:
     """Replace junk patterns with underscores."""
     for part in JUNK_PARTS:
-        input_str = input_str.replace(part, '_')
+        input_str = input_str.replace(part, "_")
     return input_str
 
 
 def shift_back(s: str, n: int) -> str:
     """Shift characters back by n positions."""
-    return ''.join(chr(ord(c) - n) for c in s)
+    return "".join(chr(ord(c) - n) for c in s)
 
 
 def decode_voe_string(encoded: str) -> Dict[str, Any]:
@@ -61,7 +61,7 @@ def decode_voe_string(encoded: str) -> Dict[str, Any]:
     """
     try:
         step1 = shift_letters(encoded)
-        step2 = replace_junk(step1).replace('_', '')
+        step2 = replace_junk(step1).replace("_", "")
         step3 = base64.b64decode(step2).decode()
         step4 = shift_back(step3, 3)
         step5 = base64.b64decode(step4[::-1]).decode()
@@ -109,8 +109,8 @@ def get_direct_link_from_voe(embeded_voe_link: str) -> str:
         # Initial request to get redirect URL
         response = requests.get(
             embeded_voe_link,
-            headers={'User-Agent': config.RANDOM_USER_AGENT},
-            timeout=config.DEFAULT_REQUEST_TIMEOUT
+            headers={"User-Agent": config.RANDOM_USER_AGENT},
+            timeout=config.DEFAULT_REQUEST_TIMEOUT,
         )
         response.raise_for_status()
 
@@ -131,11 +131,8 @@ def get_direct_link_from_voe(embeded_voe_link: str) -> str:
         # Follow redirect and get final HTML
         try:
             with urlopen(
-                Request(
-                    redirect_url,
-                    headers={'User-Agent': config.RANDOM_USER_AGENT}
-                ),
-                timeout=config.DEFAULT_REQUEST_TIMEOUT
+                Request(redirect_url, headers={"User-Agent": config.RANDOM_USER_AGENT}),
+                timeout=config.DEFAULT_REQUEST_TIMEOUT,
             ) as resp:
                 html = resp.read().decode()
         except (HTTPError, URLError, TimeoutError) as err:
@@ -179,6 +176,6 @@ def get_direct_link_from_voe(embeded_voe_link: str) -> str:
         ) from e
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     link = input("Enter VOE Link: ")
     print(get_direct_link_from_voe(link))

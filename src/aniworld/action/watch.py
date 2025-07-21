@@ -11,7 +11,7 @@ from aniworld.parser import arguments
 
 def _sanitize_filename(filename: str) -> str:
     """Sanitize filename by removing invalid characters."""
-    return ''.join(char for char in filename if char not in INVALID_PATH_CHARS)
+    return "".join(char for char in filename if char not in INVALID_PATH_CHARS)
 
 
 def _format_episode_title(anime: Anime, episode) -> str:
@@ -30,7 +30,9 @@ def _generate_episode_title(anime: Anime, episode) -> str:
     """Generate display title for episode."""
     if episode.has_movies and episode.season not in episode.season_episode_count:
         return f"{anime.title} - Movie {episode.episode} - {episode.title_german}"
-    return f"{anime.title} - S{episode.season}E{episode.episode} - {episode.title_german}"
+    return (
+        f"{anime.title} - S{episode.season}E{episode.episode} - {episode.title_german}"
+    )
 
 
 def _get_direct_link(episode, episode_title: str) -> Optional[str]:
@@ -38,8 +40,10 @@ def _get_direct_link(episode, episode_title: str) -> Optional[str]:
     try:
         return episode.get_direct_link()
     except Exception as e:
-        logging.warning(f"Something went wrong with \"{episode_title}\".\n"
-                        f"Error while trying to find a direct link: {e}")
+        logging.warning(
+            f'Something went wrong with "{episode_title}".\n'
+            f"Error while trying to find a direct link: {e}"
+        )
         return None
 
 
@@ -53,7 +57,7 @@ def _get_aniskip_data(anime: Anime, episode) -> Optional[str]:
             anime.title,
             episode.episode,
             episode.season,
-            episode.season_episode_count[episode.season]
+            episode.season_episode_count[episode.season],
         )
     except Exception as e:
         logging.warning(f"Failed to get aniskip data for {anime.title}: {e}")
@@ -65,7 +69,7 @@ def _build_watch_command(
     media_title: Optional[str] = None,
     headers: Optional[List[str]] = None,
     aniskip_data: Optional[str] = None,
-    anime: Optional[Anime] = None
+    anime: Optional[Anime] = None,
 ) -> List[str]:
     """Build MPV watch command with all necessary parameters."""
     command = [MPV_PATH, source, "--fs", "--quiet"]
@@ -100,8 +104,7 @@ def _execute_command(title: str, command: List[str]) -> None:
         logging.debug("Running Command:\n%s", command)
         subprocess.run(command, check=True)
     except subprocess.CalledProcessError as e:
-        logging.error("Error running command: %s\nCommand: %s",
-                      e, ' '.join(command))
+        logging.error("Error running command: %s\nCommand: %s", e, " ".join(command))
     except KeyboardInterrupt:
         logging.info("Watch session interrupted by user")
         raise
@@ -124,8 +127,9 @@ def _process_anime_episodes(anime: Anime) -> None:
         # Get direct link
         direct_link = _get_direct_link(episode, episode_title)
         if not direct_link:
-            logging.warning(f"Something went wrong with \"{episode_title}\".\n"
-                            f"No direct link found.")
+            logging.warning(
+                f'Something went wrong with "{episode_title}".\nNo direct link found.'
+            )
             continue
 
         # Handle direct link only mode
@@ -147,7 +151,7 @@ def _process_anime_episodes(anime: Anime) -> None:
             media_title=media_title,
             headers=PROVIDER_HEADERS_W.get(anime.provider),
             aniskip_data=aniskip_data,
-            anime=anime
+            anime=anime,
         )
 
         _execute_command(title=display_title, command=command)

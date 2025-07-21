@@ -15,7 +15,7 @@ from aniworld.config import (
     DEFAULT_PROVIDER_WATCH,
     USES_DEFAULT_PROVIDER,
     IS_NEWEST_VERSION,
-    ANIWORLD_TO
+    ANIWORLD_TO,
 )
 from aniworld import parser
 
@@ -24,25 +24,25 @@ class CustomTheme(npyscreen.ThemeManager):
     """Custom theme for the npyscreen interface with improved color scheme."""
 
     default_colors = {
-        'DEFAULT': 'WHITE_BLACK',
-        'FORMDEFAULT': 'MAGENTA_BLACK',
-        'NO_EDIT': 'BLUE_BLACK',
-        'STANDOUT': 'CYAN_BLACK',
-        'CURSOR': 'WHITE_BLACK',
-        'CURSOR_INVERSE': 'BLACK_WHITE',
-        'LABEL': 'CYAN_BLACK',
-        'LABELBOLD': 'CYAN_BLACK',
-        'CONTROL': 'GREEN_BLACK',
-        'IMPORTANT': 'GREEN_BLACK',
-        'SAFE': 'GREEN_BLACK',
-        'WARNING': 'YELLOW_BLACK',
-        'DANGER': 'RED_BLACK',
-        'CRITICAL': 'BLACK_RED',
-        'GOOD': 'GREEN_BLACK',
-        'GOODHL': 'GREEN_BLACK',
-        'VERYGOOD': 'BLACK_GREEN',
-        'CAUTION': 'YELLOW_BLACK',
-        'CAUTIONHL': 'BLACK_YELLOW',
+        "DEFAULT": "WHITE_BLACK",
+        "FORMDEFAULT": "MAGENTA_BLACK",
+        "NO_EDIT": "BLUE_BLACK",
+        "STANDOUT": "CYAN_BLACK",
+        "CURSOR": "WHITE_BLACK",
+        "CURSOR_INVERSE": "BLACK_WHITE",
+        "LABEL": "CYAN_BLACK",
+        "LABELBOLD": "CYAN_BLACK",
+        "CONTROL": "GREEN_BLACK",
+        "IMPORTANT": "GREEN_BLACK",
+        "SAFE": "GREEN_BLACK",
+        "WARNING": "YELLOW_BLACK",
+        "DANGER": "RED_BLACK",
+        "CRITICAL": "BLACK_RED",
+        "GOOD": "GREEN_BLACK",
+        "GOODHL": "GREEN_BLACK",
+        "VERYGOOD": "BLACK_GREEN",
+        "CAUTION": "YELLOW_BLACK",
+        "CAUTIONHL": "BLACK_YELLOW",
     }
 
 
@@ -69,12 +69,11 @@ class SelectionMenu(npyscreen.NPSApp):
 
         # Initialize anime data
         try:
-            self.anime = Anime(slug=slug, episode_list=[
-                Episode(slug=slug, season=1, episode=1)
-            ])
+            self.anime = Anime(
+                slug=slug, episode_list=[Episode(slug=slug, season=1, episode=1)]
+            )
         except Exception as e:
-            logging.error(
-                "Failed to initialize anime data for slug '%s': %s", slug, e)
+            logging.error("Failed to initialize anime data for slug '%s': %s", slug, e)
             raise
 
         # UI state
@@ -108,7 +107,12 @@ class SelectionMenu(npyscreen.NPSApp):
             movie_episode_count = anime_data.movie_episode_count
             available_providers = anime_data.provider_name
 
-            return available_languages, season_episode_count, movie_episode_count, available_providers
+            return (
+                available_languages,
+                season_episode_count,
+                movie_episode_count,
+                available_providers,
+            )
         except (IndexError, AttributeError) as e:
             logging.error("Failed to extract anime data: %s", e)
             raise ValueError("Invalid anime data structure") from e
@@ -124,19 +128,23 @@ class SelectionMenu(npyscreen.NPSApp):
             List of supported providers
         """
         supported_providers = [
-            provider for provider in available_providers
+            provider
+            for provider in available_providers
             if provider in SUPPORTED_PROVIDERS
         ]
 
         if not supported_providers:
             logging.warning(
-                "No supported providers found for anime: %s", self.anime.title)
+                "No supported providers found for anime: %s", self.anime.title
+            )
             # Fallback to first supported provider
             supported_providers = list(SUPPORTED_PROVIDERS)[:1]
 
         return supported_providers
 
-    def _build_episode_dict(self, season_episode_count: Dict[int, int], movie_episode_count: int) -> Dict[str, str]:
+    def _build_episode_dict(
+        self, season_episode_count: Dict[int, int], movie_episode_count: int
+    ) -> Dict[str, str]:
         """
         Build episode dictionary mapping URLs to formatted names.
 
@@ -152,7 +160,9 @@ class SelectionMenu(npyscreen.NPSApp):
         # Add season episodes
         for season, episodes in season_episode_count.items():
             for episode in range(1, episodes + 1):
-                link_formatted = f"{self.anime.title} - Season {season} - Episode {episode}"
+                link_formatted = (
+                    f"{self.anime.title} - Season {season} - Episode {episode}"
+                )
                 link = (
                     f"{ANIWORLD_TO}/anime/stream/{self.anime.slug}/"
                     f"staffel-{season}/episode-{episode}"
@@ -162,13 +172,16 @@ class SelectionMenu(npyscreen.NPSApp):
         # Add movie episodes
         for episode in range(1, movie_episode_count + 1):
             movie_link_formatted = f"{self.anime.title} - Movie {episode}"
-            movie_link = f"{ANIWORLD_TO}/anime/stream/{self.anime.slug}/filme/film-{episode}"
+            movie_link = (
+                f"{ANIWORLD_TO}/anime/stream/{self.anime.slug}/filme/film-{episode}"
+            )
             episode_dict[movie_link] = movie_link_formatted
 
         return episode_dict
 
-    def _calculate_layout(self, available_languages: List[str],
-                          supported_providers: List[str]) -> Tuple[int, int]:
+    def _calculate_layout(
+        self, available_languages: List[str], supported_providers: List[str]
+    ) -> Tuple[int, int]:
         """
         Calculate optimal layout dimensions for the UI.
 
@@ -186,8 +199,13 @@ class SelectionMenu(npyscreen.NPSApp):
 
         # Calculate reserved height for all widgets
         total_reserved_height = (
-            3 + 2 + 2 + 2 + max(2, len(available_languages)) +
-            max(2, len(supported_providers)) + 5
+            3
+            + 2
+            + 2
+            + 2
+            + max(2, len(available_languages))
+            + max(2, len(supported_providers))
+            + 5
         )
 
         max_episode_height = max(3, terminal_height - total_reserved_height)
@@ -225,11 +243,12 @@ class SelectionMenu(npyscreen.NPSApp):
             value=[default_index],
             name="Action",
             values=actions,
-            scroll_exit=True
+            scroll_exit=True,
         )
 
-    def _create_aniskip_widget(self, form: npyscreen.Form,
-                               rely: int) -> npyscreen.TitleMultiSelect:
+    def _create_aniskip_widget(
+        self, form: npyscreen.Form, rely: int
+    ) -> npyscreen.TitleMultiSelect:
         """Create the aniskip selection widget."""
         return form.add(
             npyscreen.TitleMultiSelect,
@@ -237,31 +256,32 @@ class SelectionMenu(npyscreen.NPSApp):
             name="Aniskip",
             values=["Enabled"],
             scroll_exit=True,
-            rely=rely
+            rely=rely,
         )
 
-    def _create_folder_widget(self, form: npyscreen.Form,
-                              rely: int) -> npyscreen.TitleFilenameCombo:
+    def _create_folder_widget(
+        self, form: npyscreen.Form, rely: int
+    ) -> npyscreen.TitleFilenameCombo:
         """Create the folder selection widget."""
-        default_path = getattr(self.arguments, 'output_dir', '')
+        default_path = getattr(self.arguments, "output_dir", "")
 
         return form.add(
             npyscreen.TitleFilenameCombo,
             max_height=2,
             name="Save Location",
             rely=rely,
-            value=default_path
+            value=default_path,
         )
 
-    def _create_language_widget(self, form: npyscreen.Form, available_languages: List[str],
-                                rely: int) -> npyscreen.TitleSelectOne:
+    def _create_language_widget(
+        self, form: npyscreen.Form, available_languages: List[str], rely: int
+    ) -> npyscreen.TitleSelectOne:
         """Create the language selection widget."""
         default_index = 0
 
         try:
             if self.arguments.language in available_languages:
-                default_index = available_languages.index(
-                    self.arguments.language)
+                default_index = available_languages.index(self.arguments.language)
         except (AttributeError, ValueError):
             logging.debug("Using default language index")
 
@@ -272,18 +292,18 @@ class SelectionMenu(npyscreen.NPSApp):
             name="Language",
             values=available_languages,
             scroll_exit=True,
-            rely=rely
+            rely=rely,
         )
 
-    def _create_provider_widget(self, form: npyscreen.Form, supported_providers: List[str],
-                                rely: int) -> npyscreen.TitleSelectOne:
+    def _create_provider_widget(
+        self, form: npyscreen.Form, supported_providers: List[str], rely: int
+    ) -> npyscreen.TitleSelectOne:
         """Create the provider selection widget."""
         default_index = 0
 
         try:
             if self.arguments.provider in supported_providers:
-                default_index = supported_providers.index(
-                    self.arguments.provider)
+                default_index = supported_providers.index(self.arguments.provider)
         except (AttributeError, ValueError):
             logging.debug("Using default provider index")
 
@@ -294,11 +314,16 @@ class SelectionMenu(npyscreen.NPSApp):
             name="Provider",
             values=supported_providers,
             scroll_exit=True,
-            rely=rely
+            rely=rely,
         )
 
-    def _create_episode_widget(self, form: npyscreen.Form, available_episodes: List[str],
-                               max_episode_height: int, rely: int) -> npyscreen.TitleMultiSelect:
+    def _create_episode_widget(
+        self,
+        form: npyscreen.Form,
+        available_episodes: List[str],
+        max_episode_height: int,
+        rely: int,
+    ) -> npyscreen.TitleMultiSelect:
         """Create the episode selection widget."""
         return form.add(
             npyscreen.TitleMultiSelect,
@@ -306,21 +331,20 @@ class SelectionMenu(npyscreen.NPSApp):
             name="Episode",
             values=available_episodes,
             scroll_exit=True,
-            rely=rely
+            rely=rely,
         )
 
-    def _create_select_all_button(self, form: npyscreen.Form,
-                                  rely: int) -> npyscreen.ButtonPress:
+    def _create_select_all_button(
+        self, form: npyscreen.Form, rely: int
+    ) -> npyscreen.ButtonPress:
         """Create the select all button."""
-        return form.add(
-            npyscreen.ButtonPress,
-            name="Select All",
-            rely=rely
-        )
+        return form.add(npyscreen.ButtonPress, name="Select All", rely=rely)
 
-    def _create_toggle_select_all_handler(self, available_episodes: List[str],
-                                          form: npyscreen.Form) -> callable:
+    def _create_toggle_select_all_handler(
+        self, available_episodes: List[str], form: npyscreen.Form
+    ) -> callable:
         """Create the toggle select all handler function."""
+
         def toggle_select_all():
             try:
                 if len(self.episode_selection.value) == len(available_episodes):
@@ -328,8 +352,7 @@ class SelectionMenu(npyscreen.NPSApp):
                     self.selected_episodes = []
                     self.select_all_button.name = "Select All"
                 else:
-                    self.episode_selection.value = list(
-                        range(len(available_episodes)))
+                    self.episode_selection.value = list(range(len(available_episodes)))
                     self.selected_episodes = list(self.episode_dict.keys())
                     self.select_all_button.name = "Deselect All"
                 form.display()
@@ -338,9 +361,11 @@ class SelectionMenu(npyscreen.NPSApp):
 
         return toggle_select_all
 
-    def _create_update_visibility_handler(self, supported_providers: List[str],
-                                          form: npyscreen.Form) -> callable:
+    def _create_update_visibility_handler(
+        self, supported_providers: List[str], form: npyscreen.Form
+    ) -> callable:
         """Create the update visibility handler function."""
+
         def update_visibility():
             try:
                 selected_objects = self.action_selection.get_selected_objects()
@@ -376,8 +401,9 @@ class SelectionMenu(npyscreen.NPSApp):
 
         return update_visibility
 
-    def _get_provider_index(self, supported_providers: List[str],
-                            default_provider: str) -> int:
+    def _get_provider_index(
+        self, supported_providers: List[str], default_provider: str
+    ) -> int:
         """Get the index of the default provider in the supported providers list."""
         try:
             return supported_providers.index(default_provider)
@@ -393,20 +419,26 @@ class SelectionMenu(npyscreen.NPSApp):
         """
         try:
             # Extract anime data
-            available_languages, season_episode_count, movie_episode_count, available_providers = self._get_anime_data()
+            (
+                available_languages,
+                season_episode_count,
+                movie_episode_count,
+                available_providers,
+            ) = self._get_anime_data()
 
             # Filter supported providers
-            supported_providers = self._filter_supported_providers(
-                available_providers)
+            supported_providers = self._filter_supported_providers(available_providers)
 
             # Build episode dictionary
             self.episode_dict = self._build_episode_dict(
-                season_episode_count, movie_episode_count)
+                season_episode_count, movie_episode_count
+            )
             available_episodes = list(self.episode_dict.values())
 
             # Calculate layout
             max_episode_height, terminal_height = self._calculate_layout(
-                available_languages, supported_providers)
+                available_languages, supported_providers
+            )
 
             # Create form
             form = self._create_form()
@@ -416,34 +448,42 @@ class SelectionMenu(npyscreen.NPSApp):
             self.action_selection = self._create_action_widget(form)
 
             action_rely = self.action_selection.rely + self.action_selection.height + 1
-            self.aniskip_selection = self._create_aniskip_widget(
-                form, action_rely)
-            self.folder_selection = self._create_folder_widget(
-                form, action_rely)
+            self.aniskip_selection = self._create_aniskip_widget(form, action_rely)
+            self.folder_selection = self._create_folder_widget(form, action_rely)
 
             language_rely = self.aniskip_selection.rely + self.aniskip_selection.height
             self.language_selection = self._create_language_widget(
-                form, available_languages, language_rely)
+                form, available_languages, language_rely
+            )
 
-            provider_rely = self.language_selection.rely + self.language_selection.height + 1
+            provider_rely = (
+                self.language_selection.rely + self.language_selection.height + 1
+            )
             self.provider_selection = self._create_provider_widget(
-                form, supported_providers, provider_rely)
+                form, supported_providers, provider_rely
+            )
 
-            episode_rely = self.provider_selection.rely + self.provider_selection.height + 1
+            episode_rely = (
+                self.provider_selection.rely + self.provider_selection.height + 1
+            )
             self.episode_selection = self._create_episode_widget(
-                form, available_episodes, max_episode_height, episode_rely)
+                form, available_episodes, max_episode_height, episode_rely
+            )
 
-            button_rely = self.episode_selection.rely + self.episode_selection.height + 1
-            self.select_all_button = self._create_select_all_button(
-                form, button_rely)
+            button_rely = (
+                self.episode_selection.rely + self.episode_selection.height + 1
+            )
+            self.select_all_button = self._create_select_all_button(form, button_rely)
 
             # Set up event handlers
             toggle_handler = self._create_toggle_select_all_handler(
-                available_episodes, form)
+                available_episodes, form
+            )
             self.select_all_button.whenPressed = toggle_handler
 
             update_handler = self._create_update_visibility_handler(
-                supported_providers, form)
+                supported_providers, form
+            )
             self.action_selection.when_value_edited = update_handler
 
             self.episode_selection.when_value_edited = self.on_ok
@@ -466,15 +506,19 @@ class SelectionMenu(npyscreen.NPSApp):
         and updates the internal list of selected episodes.
         """
         try:
-            selected_link_formatted = self.episode_selection.get_selected_objects() or []
+            selected_link_formatted = (
+                self.episode_selection.get_selected_objects() or []
+            )
 
             self.selected_episodes = [
-                link for link, name in self.episode_dict.items()
+                link
+                for link, name in self.episode_dict.items()
                 if name in selected_link_formatted
             ]
 
-            logging.debug("Updated selected episodes: %d items",
-                          len(self.selected_episodes))
+            logging.debug(
+                "Updated selected episodes: %d items", len(self.selected_episodes)
+            )
 
         except Exception as e:
             logging.error("Error updating selected episodes: %s", e)
@@ -493,14 +537,12 @@ class SelectionMenu(npyscreen.NPSApp):
             selected_action = "Watch"
 
         try:
-            selected_language = self.language_selection.get_selected_objects()[
-                0]
+            selected_language = self.language_selection.get_selected_objects()[0]
         except (IndexError, AttributeError):
             selected_language = "German Sub"
 
         try:
-            selected_provider = self.provider_selection.get_selected_objects()[
-                0]
+            selected_provider = self.provider_selection.get_selected_objects()[0]
         except (IndexError, AttributeError):
             selected_provider = "VOE"
 
@@ -514,9 +556,17 @@ class SelectionMenu(npyscreen.NPSApp):
         except AttributeError:
             selected_aniskip = False
 
-        return selected_action, selected_language, selected_provider, output_dir, selected_aniskip
+        return (
+            selected_action,
+            selected_language,
+            selected_provider,
+            output_dir,
+            selected_aniskip,
+        )
 
-    def _create_episode_list(self, selected_language: str, selected_provider: str) -> List[Episode]:
+    def _create_episode_list(
+        self, selected_language: str, selected_provider: str
+    ) -> List[Episode]:
         """
         Create episode list from selected episodes.
 
@@ -532,12 +582,19 @@ class SelectionMenu(npyscreen.NPSApp):
                 slug=self.anime.slug,
                 link=link,
                 _selected_language=selected_language,
-                _selected_provider=selected_provider
-            ) for link in self.selected_episodes
+                _selected_provider=selected_provider,
+            )
+            for link in self.selected_episodes
         ]
 
-    def _log_selected_values(self, selected_action: str, selected_language: str,
-                             selected_provider: str, output_dir: str, selected_aniskip: bool) -> None:
+    def _log_selected_values(
+        self,
+        selected_action: str,
+        selected_language: str,
+        selected_provider: str,
+        output_dir: str,
+        selected_aniskip: bool,
+    ) -> None:
         """
         Log the selected values for debugging purposes.
 
@@ -548,10 +605,7 @@ class SelectionMenu(npyscreen.NPSApp):
             output_dir: Output directory for downloads
             selected_aniskip: Whether aniskip is enabled
         """
-        log_message = (
-            "Selected Values:\n"
-            f"Selected Action: {selected_action}\n"
-        )
+        log_message = f"Selected Values:\nSelected Action: {selected_action}\n"
 
         if selected_action == "Watch":
             log_message += f"Selected Aniskip: {selected_aniskip}\n"
@@ -578,20 +632,32 @@ class SelectionMenu(npyscreen.NPSApp):
         """
         try:
             # Extract selected values safely
-            selected_action, selected_language, selected_provider, output_dir, selected_aniskip = self._get_selected_values_safely()
+            (
+                selected_action,
+                selected_language,
+                selected_provider,
+                output_dir,
+                selected_aniskip,
+            ) = self._get_selected_values_safely()
 
             # Update parser arguments
-            if hasattr(parser, 'arguments'):
+            if hasattr(parser, "arguments"):
                 parser.arguments.output_dir = output_dir
                 parser.arguments.action = selected_action
 
             # Log selected values
             self._log_selected_values(
-                selected_action, selected_language, selected_provider, output_dir, selected_aniskip)
+                selected_action,
+                selected_language,
+                selected_provider,
+                output_dir,
+                selected_aniskip,
+            )
 
             # Create episode list
             episode_list = self._create_episode_list(
-                selected_language, selected_provider)
+                selected_language, selected_provider
+            )
 
             # Create and return Anime object
             return Anime(
@@ -600,7 +666,7 @@ class SelectionMenu(npyscreen.NPSApp):
                 action=selected_action,
                 language=selected_language,
                 provider=selected_provider,
-                aniskip=selected_aniskip
+                aniskip=selected_aniskip,
             )
 
         except urllib3.exceptions.ReadTimeoutError as e:

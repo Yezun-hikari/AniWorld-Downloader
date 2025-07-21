@@ -27,8 +27,8 @@ def get_direct_link_from_vidmoly(embeded_vidmoly_link: str) -> str:
     try:
         response = requests.get(
             embeded_vidmoly_link,
-            headers={'User-Agent': RANDOM_USER_AGENT},
-            timeout=DEFAULT_REQUEST_TIMEOUT
+            headers={"User-Agent": RANDOM_USER_AGENT},
+            timeout=DEFAULT_REQUEST_TIMEOUT,
         )
         response.raise_for_status()  # Raise an exception for bad status codes
 
@@ -38,8 +38,8 @@ def get_direct_link_from_vidmoly(embeded_vidmoly_link: str) -> str:
             return match.group(1)
 
         # Fallback to BeautifulSoup parsing if direct search fails
-        soup = BeautifulSoup(response.text, 'html.parser')
-        scripts = soup.find_all('script', string=True)
+        soup = BeautifulSoup(response.text, "html.parser")
+        scripts = soup.find_all("script", string=True)
 
         for script in scripts:
             match = FILE_LINK_PATTERN.search(script.string)
@@ -54,7 +54,7 @@ def get_direct_link_from_vidmoly(embeded_vidmoly_link: str) -> str:
     raise ValueError("No direct link found in Vidmoly page.")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     link = input("Enter Vidmoly Link: ")
     print('Note: --referer "https://vidmoly.to"')
     print(get_direct_link_from_vidmoly(embeded_vidmoly_link=link))

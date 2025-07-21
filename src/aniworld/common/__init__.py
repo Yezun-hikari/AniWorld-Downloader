@@ -10,5 +10,5 @@ from .common import (
     remove_anime4k,
     remove_mpv_scripts,
     setup_autoexit,
-    setup_autostart
+    setup_autostart,
 )

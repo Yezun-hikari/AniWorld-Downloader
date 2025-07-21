@@ -15,20 +15,13 @@ FILE_PATTERN = r'file:\s*"([^"]+)"'
 
 def _get_headers() -> dict:
     """Get request headers for Filemoon."""
-    return {
-        "referer": FILEMOON_BASE_URL,
-        "user-agent": RANDOM_USER_AGENT
-    }
+    return {"referer": FILEMOON_BASE_URL, "user-agent": RANDOM_USER_AGENT}
 
 
 def _make_request(url: str, headers: Optional[dict] = None) -> requests.Response:
     """Make HTTP request with error handling."""
     try:
-        response = requests.get(
-            url,
-            headers=headers,
-            timeout=DEFAULT_REQUEST_TIMEOUT
-        )
+        response = requests.get(url, headers=headers, timeout=DEFAULT_REQUEST_TIMEOUT)
         response.raise_for_status()
         return response
     except requests.RequestException as e:
@@ -50,14 +43,13 @@ def _convert_embed_to_download_url(embed_url: str) -> str:
 def _extract_iframe_src(html_content: str, source_url: str) -> str:
     """Extract iframe src from HTML content."""
     try:
-        soup = BeautifulSoup(html_content, 'html.parser')
-        iframe = soup.find('iframe')
+        soup = BeautifulSoup(html_content, "html.parser")
+        iframe = soup.find("iframe")
 
-        if not iframe or not iframe.has_attr('src'):
-            raise ValueError(
-                f"No iframe with src attribute found in {source_url}")
+        if not iframe or not iframe.has_attr("src"):
+            raise ValueError(f"No iframe with src attribute found in {source_url}")
 
-        iframe_src = iframe['src']
+        iframe_src = iframe["src"]
         logging.debug(f"Extracted iframe src: {iframe_src}")
         return iframe_src
 
@@ -109,8 +101,7 @@ def get_direct_link_from_filemoon(embeded_filemoon_link: str) -> str:
     if not embeded_filemoon_link:
         raise ValueError("Embed URL cannot be empty")
 
-    logging.info(
-        f"Extracting direct link from Filemoon: {embeded_filemoon_link}")
+    logging.info(f"Extracting direct link from Filemoon: {embeded_filemoon_link}")
 
     try:
         # Convert embed URL to download URL
@@ -142,7 +133,7 @@ def get_direct_link_from_filemoon(embeded_filemoon_link: str) -> str:
         raise
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Setup basic logging for standalone execution
     logging.basicConfig(level=logging.DEBUG)
 

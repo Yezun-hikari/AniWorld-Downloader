@@ -43,14 +43,12 @@ def _handle_local_episodes() -> None:
 def _read_episode_file(episode_file: str) -> List[str]:
     """Read episode URLs from a file."""
     try:
-        with open(episode_file, 'r', encoding="UTF-8") as file:
+        with open(episode_file, "r", encoding="UTF-8") as file:
             # Use list comprehension for better performance
-            urls = [line.strip()
-                    for line in file if line.strip().startswith("http")]
+            urls = [line.strip() for line in file if line.strip().startswith("http")]
             return urls
     except FileNotFoundError:
-        logging.error(
-            "The specified episode file does not exist: %s", episode_file)
+        logging.error("The specified episode file does not exist: %s", episode_file)
         sys.exit(1)
     except IOError as e:
         logging.error("Error reading the episode file: %s", e)
@@ -82,7 +80,7 @@ def _group_episodes_by_series(links: List[str]) -> List[Anime]:
 
     for link in links:
         if link:
-            parts = link.split('/')
+            parts = link.split("/")
             try:
                 series_slug = parts[parts.index("stream") + 1]
             except (ValueError, IndexError):
@@ -94,9 +92,12 @@ def _group_episodes_by_series(links: List[str]) -> List[Anime]:
             if series_slug != current_anime:
                 if episode_list:
                     # Get the site from the first episode in the list
-                    episode_site = episode_list[0].site if episode_list else "aniworld.to"
+                    episode_site = (
+                        episode_list[0].site if episode_list else "aniworld.to"
+                    )
                     anime_list.append(
-                        Anime(episode_list=episode_list, site=episode_site))
+                        Anime(episode_list=episode_list, site=episode_site)
+                    )
                     episode_list = []
                 current_anime = series_slug
 

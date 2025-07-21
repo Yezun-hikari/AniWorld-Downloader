@@ -33,9 +33,8 @@ def _validate_speedfiles_url(url: str) -> str:
         raise ValueError("SpeedFiles URL cannot be empty")
 
     url = url.strip()
-    if not url.startswith(('http://', 'https://')):
-        raise ValueError(
-            "Invalid URL format - must start with http:// or https://")
+    if not url.startswith(("http://", "https://")):
+        raise ValueError("Invalid URL format - must start with http:// or https://")
 
     try:
         parsed_url = urlparse(url)
@@ -65,7 +64,7 @@ def _make_request(url: str) -> requests.Response:
         response = requests.get(
             url,
             timeout=DEFAULT_REQUEST_TIMEOUT,
-            headers={'User-Agent': RANDOM_USER_AGENT}
+            headers={"User-Agent": RANDOM_USER_AGENT},
         )
         response.raise_for_status()
         return response
@@ -154,14 +153,13 @@ def _decode_speedfiles_data(encoded_data: str) -> str:
         if len(decoded) % 2 != 0:
             raise ValueError("Invalid hex string length")
 
-        decoded_hex = ''.join(
-            chr(int(decoded[i:i + 2], 16))
-            for i in range(0, len(decoded), 2)
+        decoded_hex = "".join(
+            chr(int(decoded[i : i + 2], 16)) for i in range(0, len(decoded), 2)
         )
         logger.debug("Step 4: Converted hex to characters")
 
         # Step 5: Shift characters by -3
-        shifted = ''.join(chr(ord(char) - 3) for char in decoded_hex)
+        shifted = "".join(chr(ord(char) - 3) for char in decoded_hex)
         logger.debug("Step 5: Shifted characters by -3")
 
         # Step 6: Final base64 decode with swap case and reverse
@@ -219,8 +217,7 @@ def get_direct_link_from_speedfiles(embeded_speedfiles_link: str) -> str:
         raise
     except Exception as e:
         logger.error(f"Unexpected error extracting SpeedFiles video: {e}")
-        raise ValueError(
-            f"Failed to extract video from SpeedFiles: {e}") from e
+        raise ValueError(f"Failed to extract video from SpeedFiles: {e}") from e
 
 
 def validate_video_url(url: str) -> bool:
@@ -249,7 +246,7 @@ def main() -> None:
     # Setup logging for standalone execution
     logging.basicConfig(
         level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
 
     try:
@@ -280,5 +277,5 @@ def main() -> None:
         sys.exit(1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

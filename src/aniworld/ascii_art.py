@@ -862,12 +862,39 @@ def is_windows_legacy() -> bool:
 
 def display_ascii_art() -> str:
     options = [
-        LUCKY_STAR, CINNAMOROLL, CAT, CODING, FEMALE, CATGIRL,
-        SPY, SPYXFAMILY, NOKO, GOJO, GIRL4, CAT_GIRL_TONGUE,
-        SUGOI, GOJO2, GOJO_CAT, EMU, BANNER, CUTE_GIRL,
-        POCHITA, GIRL, FRIEREN, HU_TAO, SMIRK, ZERO_TWO,
-        K_ON, CINNAMOROLL_MUSIC, KANAO, ZERO_TWO_2,
-        SPIRITED_AWAY, GIRL2, TOMIOKA, MISAKA, GIRL3
+        LUCKY_STAR,
+        CINNAMOROLL,
+        CAT,
+        CODING,
+        FEMALE,
+        CATGIRL,
+        SPY,
+        SPYXFAMILY,
+        NOKO,
+        GOJO,
+        GIRL4,
+        CAT_GIRL_TONGUE,
+        SUGOI,
+        GOJO2,
+        GOJO_CAT,
+        EMU,
+        BANNER,
+        CUTE_GIRL,
+        POCHITA,
+        GIRL,
+        FRIEREN,
+        HU_TAO,
+        SMIRK,
+        ZERO_TWO,
+        K_ON,
+        CINNAMOROLL_MUSIC,
+        KANAO,
+        ZERO_TWO_2,
+        SPIRITED_AWAY,
+        GIRL2,
+        TOMIOKA,
+        MISAKA,
+        GIRL3,
     ]
 
     options_legacy = R"""
@@ -896,5 +923,5 @@ def display_traceback_art() -> str:
     return random.choice([TRACEBACK1, TRACEBACK2])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print(display_ascii_art())

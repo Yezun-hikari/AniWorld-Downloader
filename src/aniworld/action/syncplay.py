@@ -5,8 +5,18 @@ import hashlib
 from typing import Optional, List
 
 from aniworld.models import Anime
-from aniworld.config import MPV_PATH, PROVIDER_HEADERS_W, SYNCPLAY_PATH, INVALID_PATH_CHARS
-from aniworld.common import download_mpv, download_syncplay, setup_autostart, setup_autoexit
+from aniworld.config import (
+    MPV_PATH,
+    PROVIDER_HEADERS_W,
+    SYNCPLAY_PATH,
+    INVALID_PATH_CHARS,
+)
+from aniworld.common import (
+    download_mpv,
+    download_syncplay,
+    setup_autostart,
+    setup_autoexit,
+)
 from aniworld.aniskip import aniskip
 from aniworld.parser import arguments
 
@@ -30,7 +40,7 @@ def _get_syncplay_room(title: str) -> str:
     if arguments.password:
         room += f":{arguments.password}"
 
-    room_hash = hashlib.sha256(room.encode('utf-8')).hexdigest()
+    room_hash = hashlib.sha256(room.encode("utf-8")).hexdigest()
     return f"AniWorld_Downloader.{room_hash}"
 
 
@@ -40,7 +50,7 @@ def _append_password_to_command(command: List[str], title: str) -> List[str]:
         return command
 
     password = f"{arguments.password}:{title}"
-    password_hash = hashlib.sha256(password.encode('utf-8')).hexdigest()
+    password_hash = hashlib.sha256(password.encode("utf-8")).hexdigest()
 
     # Insert password at position 9 (after --name argument)
     command.insert(9, "--password")
@@ -58,8 +68,7 @@ def _execute_command(command: List[str]) -> None:
         logging.debug("Running Command:\n%s", command)
         subprocess.run(command, check=True)
     except subprocess.CalledProcessError as e:
-        logging.error("Error running command: %s\nCommand: %s",
-                      e, ' '.join(command))
+        logging.error("Error running command: %s\nCommand: %s", e, " ".join(command))
     except KeyboardInterrupt:
         logging.info("Syncplay execution interrupted by user")
         raise
@@ -67,7 +76,7 @@ def _execute_command(command: List[str]) -> None:
 
 def _sanitize_filename(filename: str) -> str:
     """Sanitize filename by removing invalid characters."""
-    return ''.join(char for char in filename if char not in INVALID_PATH_CHARS)
+    return "".join(char for char in filename if char not in INVALID_PATH_CHARS)
 
 
 def _format_episode_title(anime: Anime, episode) -> str:
@@ -87,8 +96,10 @@ def _get_direct_link(episode, episode_title: str) -> Optional[str]:
     try:
         return episode.get_direct_link()
     except Exception as e:
-        logging.warning(f"Something went wrong with \"{episode_title}\".\n"
-                        f"Error while trying to find a direct link: {e}")
+        logging.warning(
+            f'Something went wrong with "{episode_title}".\n'
+            f"Error while trying to find a direct link: {e}"
+        )
         return None
 
 
@@ -98,20 +109,24 @@ def _build_syncplay_command(
     headers: Optional[List[str]] = None,
     aniskip_data: Optional[str] = None,
     anime: Optional[Anime] = None,
-    media_title: Optional[str] = None
+    media_title: Optional[str] = None,
 ) -> List[str]:
     """Build syncplay command with all necessary parameters."""
     command = [
         SYNCPLAY_PATH,
         "--no-gui",
         "--no-store",
-        "--host", _get_syncplay_hostname(),
-        "--room", _get_syncplay_room(title=title or "default"),
-        "--name", _get_syncplay_username(),
-        "--player-path", MPV_PATH,
+        "--host",
+        _get_syncplay_hostname(),
+        "--room",
+        _get_syncplay_room(title=title or "default"),
+        "--name",
+        _get_syncplay_username(),
+        "--player-path",
+        MPV_PATH,
         source,
         "--",
-        "--fs"
+        "--fs",
     ]
 
     if media_title:
@@ -146,7 +161,7 @@ def _get_aniskip_data(anime: Anime, episode) -> Optional[str]:
             anime.title,
             episode.episode,
             episode.season,
-            episode.season_episode_count[episode.season]
+            episode.season_episode_count[episode.season],
         )
     except Exception as e:
         logging.warning(f"Failed to get aniskip data for {anime.title}: {e}")
@@ -163,8 +178,9 @@ def _process_anime_episodes(anime: Anime) -> None:
         # Get direct link
         direct_link = _get_direct_link(episode, episode_title)
         if not direct_link:
-            logging.warning(f"Something went wrong with \"{episode_title}\".\n"
-                            f"No direct link found.")
+            logging.warning(
+                f'Something went wrong with "{episode_title}".\nNo direct link found.'
+            )
             continue
 
         # Handle direct link only mode
@@ -186,7 +202,7 @@ def _process_anime_episodes(anime: Anime) -> None:
             headers=PROVIDER_HEADERS_W.get(anime.provider),
             aniskip_data=aniskip_data,
             anime=anime,
-            media_title=media_title
+            media_title=media_title,
         )
 
         _execute_command(command)
@@ -221,5 +237,5 @@ def syncplay(anime: Optional[Anime] = None) -> None:
         raise
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     download_syncplay()

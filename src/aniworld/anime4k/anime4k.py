@@ -54,13 +54,12 @@ def _extract_with_tar(zip_path: Path, dest_path: Path) -> bool:
             check=True,
             cwd=str(dest_path),
             capture_output=True,
-            text=True
+            text=True,
         )
         logging.debug("Successfully extracted %s to %s", zip_path, dest_path)
         return True
     except subprocess.CalledProcessError as e:
-        logging.error("Failed to extract with tar: %s",
-                      e.stderr if e.stderr else e)
+        logging.error("Failed to extract with tar: %s", e.stderr if e.stderr else e)
         return False
     except FileNotFoundError:
         logging.error("tar command not found")
@@ -71,10 +70,12 @@ def _extract_with_python(zip_path: Path, dest_path: Path) -> bool:
     """Extract archive using Python's zipfile module as fallback."""
     try:
         import zipfile
-        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+
+        with zipfile.ZipFile(zip_path, "r") as zip_ref:
             zip_ref.extractall(dest_path)
         logging.debug(
-            "Successfully extracted %s to %s using Python zipfile", zip_path, dest_path)
+            "Successfully extracted %s to %s using Python zipfile", zip_path, dest_path
+        )
         return True
     except Exception as e:
         logging.error("Failed to extract with Python zipfile: %s", e)
@@ -186,8 +187,7 @@ def download_anime4k(mode: str) -> bool:
         success = extract_anime4k(str(archive_path), str(mpv_path))
 
         if success:
-            logging.info(
-                "Anime4K download and extraction completed successfully")
+            logging.info("Anime4K download and extraction completed successfully")
         else:
             logging.error("Anime4K extraction failed")
 

@@ -28,9 +28,8 @@ def _validate_loadx_url(url: str) -> str:
         raise ValueError("LoadX URL cannot be empty")
 
     url = url.strip()
-    if not url.startswith(('http://', 'https://')):
-        raise ValueError(
-            "Invalid URL format - must start with http:// or https://")
+    if not url.startswith(("http://", "https://")):
+        raise ValueError("Invalid URL format - must start with http:// or https://")
 
     try:
         parsed_url = urlparse(url)
@@ -42,8 +41,12 @@ def _validate_loadx_url(url: str) -> str:
     return url
 
 
-def _make_request(url: str, method: str = "GET", headers: Optional[Dict[str, str]] = None,
-                  allow_redirects: bool = True) -> requests.Response:
+def _make_request(
+    url: str,
+    method: str = "GET",
+    headers: Optional[Dict[str, str]] = None,
+    allow_redirects: bool = True,
+) -> requests.Response:
     """
     Make HTTP request with error handling.
 
@@ -68,21 +71,21 @@ def _make_request(url: str, method: str = "GET", headers: Optional[Dict[str, str
                 allow_redirects=allow_redirects,
                 verify=False,
                 timeout=DEFAULT_REQUEST_TIMEOUT,
-                headers=headers or {}
+                headers=headers or {},
             )
         elif method.upper() == "POST":
             response = requests.post(
                 url,
                 headers=headers or {},
                 verify=False,
-                timeout=DEFAULT_REQUEST_TIMEOUT
+                timeout=DEFAULT_REQUEST_TIMEOUT,
             )
         else:
             response = requests.get(
                 url,
                 headers=headers or {},
                 verify=False,
-                timeout=DEFAULT_REQUEST_TIMEOUT
+                timeout=DEFAULT_REQUEST_TIMEOUT,
             )
 
         response.raise_for_status()
@@ -112,7 +115,8 @@ def _extract_id_hash_from_url(url: str) -> tuple[str, str]:
 
         if len(path_parts) < 3:
             raise ValueError(
-                "Invalid LoadX URL structure - insufficient path components")
+                "Invalid LoadX URL structure - insufficient path components"
+            )
 
         id_hash = path_parts[2]
         host = parsed_url.netloc
@@ -185,8 +189,7 @@ def get_direct_link_from_loadx(embeded_loadx_link: str) -> str:
         logger.info(f"Extracting video from LoadX URL: {validated_url}")
 
         # Follow redirects to get actual URL
-        response = _make_request(
-            validated_url, method="HEAD", allow_redirects=True)
+        response = _make_request(validated_url, method="HEAD", allow_redirects=True)
 
         # Extract ID hash and host from final URL
         id_hash, host = _extract_id_hash_from_url(response.url)
@@ -238,7 +241,7 @@ def main() -> None:
     # Setup logging for standalone execution
     logging.basicConfig(
         level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
 
     try:
@@ -269,5 +272,5 @@ def main() -> None:
         sys.exit(1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

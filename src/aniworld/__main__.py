@@ -17,7 +17,7 @@ def set_terminal_title() -> None:
         title += " (Update Available)"
 
     # ANSI escape sequence to set terminal title
-    print(f"\033]0;{title}\007", end='', flush=True)
+    print(f"\033]0;{title}\007", end="", flush=True)
 
 
 def main() -> NoReturn:

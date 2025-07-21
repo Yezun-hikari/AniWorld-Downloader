@@ -16,14 +16,14 @@ ACTION_MAP: Dict[str, Callable[[Anime], None]] = {
 
 def _validate_anime(anime: Anime) -> None:
     """Validate anime object and its action."""
-    if not hasattr(anime, 'action') or anime.action is None:
-        raise AttributeError(
-            f"Anime object missing 'action' attribute: {anime}")
+    if not hasattr(anime, "action") or anime.action is None:
+        raise AttributeError(f"Anime object missing 'action' attribute: {anime}")
 
     if anime.action not in ACTION_MAP:
         valid_actions = ", ".join(ACTION_MAP.keys())
         raise ValueError(
-            f"Invalid action '{anime.action}' for anime. Valid actions: {valid_actions}")
+            f"Invalid action '{anime.action}' for anime. Valid actions: {valid_actions}"
+        )
 
 
 def _execute_single_anime(anime: Anime) -> bool:
@@ -41,7 +41,8 @@ def _execute_single_anime(anime: Anime) -> bool:
         action_func = ACTION_MAP[anime.action]
         action_func(anime)
         logging.debug(
-            f"Successfully executed {anime.action} for anime: {getattr(anime, 'title', 'Unknown')}")
+            f"Successfully executed {anime.action} for anime: {getattr(anime, 'title', 'Unknown')}"
+        )
         return True
 
     except AttributeError as e:
@@ -53,8 +54,7 @@ def _execute_single_anime(anime: Anime) -> bool:
         return False
 
     except Exception as e:
-        logging.error(
-            f"Unexpected error executing {anime.action} for anime: {e}")
+        logging.error(f"Unexpected error executing {anime.action} for anime: {e}")
         return False
 
 
@@ -86,6 +86,7 @@ def execute(anime_list: List[Anime]) -> None:
         sys.exit(1)
     elif successful_executions < total_anime:
         logging.warning(
-            f"Successfully executed {successful_executions}/{total_anime} anime actions")
+            f"Successfully executed {successful_executions}/{total_anime} anime actions"
+        )
     else:
         logging.debug(f"Successfully executed all {total_anime} anime actions")

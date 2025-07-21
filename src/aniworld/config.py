@@ -24,7 +24,7 @@ S_TO = "https://s.to"
 # Logging Configuration
 #########################################################################################
 
-log_file_path = os.path.join(tempfile.gettempdir(), 'aniworld.log')
+log_file_path = os.path.join(tempfile.gettempdir(), "aniworld.log")
 
 
 class CriticalErrorHandler(logging.Handler):
@@ -36,20 +36,17 @@ class CriticalErrorHandler(logging.Handler):
 logging.basicConfig(
     level=logging.DEBUG,
     format="%(levelname)s:%(name)s:%(funcName)s: %(message)s",
-    handlers=[
-        logging.FileHandler(log_file_path, mode='w'),
-        CriticalErrorHandler()
-    ]
+    handlers=[logging.FileHandler(log_file_path, mode="w"), CriticalErrorHandler()],
 )
 
 console_handler = logging.StreamHandler()
 console_handler.setLevel(logging.WARNING)
-console_handler.setFormatter(logging.Formatter(
-    "%(levelname)s:%(name)s:%(funcName)s: %(message)s")
+console_handler.setFormatter(
+    logging.Formatter("%(levelname)s:%(name)s:%(funcName)s: %(message)s")
 )
 logging.getLogger().addHandler(console_handler)
 logging.getLogger("urllib3.connectionpool").setLevel(logging.WARNING)
-logging.getLogger('charset_normalizer').setLevel(logging.WARNING)
+logging.getLogger("charset_normalizer").setLevel(logging.WARNING)
 logging.getLogger().setLevel(logging.WARNING)
 
 urllib3.disable_warnings(InsecureRequestWarning)
@@ -61,7 +58,7 @@ urllib3.disable_warnings(InsecureRequestWarning)
 DEFAULT_REQUEST_TIMEOUT = 30
 
 try:
-    VERSION = version('aniworld')
+    VERSION = version("aniworld")
 except PackageNotFoundError:
     VERSION = ""
 
@@ -72,7 +69,9 @@ def get_latest_github_version():
     try:
         url = "https://api.github.com/repos/phoenixthrush/AniWorld-Downloader/releases/latest"
         response = requests.get(url, timeout=DEFAULT_REQUEST_TIMEOUT)
-        return response.json().get('tag_name', '') if response.status_code == 200 else ""
+        return (
+            response.json().get("tag_name", "") if response.status_code == 200 else ""
+        )
     except requests.RequestException as e:
         logging.error("Error fetching latest release: %s", e)
         return ""
@@ -83,8 +82,8 @@ def is_newest_version():
         return None, False
 
     try:
-        current = Version(VERSION.lstrip('v').lstrip('.'))
-        latest_str = get_latest_github_version().lstrip('v').lstrip('.')
+        current = Version(VERSION.lstrip("v").lstrip("."))
+        latest_str = get_latest_github_version().lstrip("v").lstrip(".")
         if not latest_str:
             return None, False
         latest = Version(latest_str)
@@ -109,7 +108,15 @@ PLATFORM_SYSTEM = platform.system()
 _IS_WINDOWS = PLATFORM_SYSTEM == "Windows"
 
 SUPPORTED_PROVIDERS = (
-    "LoadX", "VOE", "Vidmoly", "Filemoon", "Luluvdo", "Doodstream", "Vidoza", "SpeedFiles", "Streamtape",
+    "LoadX",
+    "VOE",
+    "Vidmoly",
+    "Filemoon",
+    "Luluvdo",
+    "Doodstream",
+    "Vidoza",
+    "SpeedFiles",
+    "Streamtape",
 )
 
 #########################################################################################
@@ -129,7 +136,9 @@ def get_random_user_agent():
 # Backward compatibility - keep RANDOM_USER_AGENT as a constant
 RANDOM_USER_AGENT = get_random_user_agent()
 
-LULUVDO_USER_AGENT = "Mozilla/5.0 (Android 15; Mobile; rv:132.0) Gecko/132.0 Firefox/132.0"
+LULUVDO_USER_AGENT = (
+    "Mozilla/5.0 (Android 15; Mobile; rv:132.0) Gecko/132.0 Firefox/132.0"
+)
 
 # Use lazy getter for user agents in headers
 
@@ -138,15 +147,18 @@ def _get_provider_headers_d():
     return {
         "Vidmoly": ['Referer: "https://vidmoly.to"'],
         "Doodstream": ['Referer: "https://dood.li/"'],
-        "VOE": [f'User-Agent: {RANDOM_USER_AGENT}'],
-        "LoadX": ['Accept: */*'],
-        "Filemoon": [f'User-Agent: {RANDOM_USER_AGENT}', 'Referer: "https://filemoon.to"'],
+        "VOE": [f"User-Agent: {RANDOM_USER_AGENT}"],
+        "LoadX": ["Accept: */*"],
+        "Filemoon": [
+            f"User-Agent: {RANDOM_USER_AGENT}",
+            'Referer: "https://filemoon.to"',
+        ],
         "Luluvdo": [
-            f'User-Agent: {LULUVDO_USER_AGENT}',
-            'Accept-Language: de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7',
+            f"User-Agent: {LULUVDO_USER_AGENT}",
+            "Accept-Language: de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7",
             'Origin: "https://luluvdo.com"',
-            'Referer: "https://luluvdo.com/"'
-        ]
+            'Referer: "https://luluvdo.com/"',
+        ],
     }
 
 
@@ -154,10 +166,14 @@ def _get_provider_headers_w():
     return {
         "Vidmoly": ['Referer: "https://vidmoly.to"'],
         "Doodstream": ['Referer: "https://dood.li/"'],
-        "VOE": [f'User-Agent: {RANDOM_USER_AGENT}'],
-        "Luluvdo": [f'User-Agent: {LULUVDO_USER_AGENT}'],
-        "Filemoon": [f'User-Agent: {RANDOM_USER_AGENT}', 'Referer: "https://filemoon.to"']
+        "VOE": [f"User-Agent: {RANDOM_USER_AGENT}"],
+        "Luluvdo": [f"User-Agent: {LULUVDO_USER_AGENT}"],
+        "Filemoon": [
+            f"User-Agent: {RANDOM_USER_AGENT}",
+            'Referer: "https://filemoon.to"',
+        ],
     }
+
 
 # Properties for backward compatibility
 
@@ -193,7 +209,7 @@ DEFAULT_PROVIDER_WATCH = "Vidmoly"
 DEFAULT_TERMINAL_SIZE = (90, 30)
 
 # https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file
-INVALID_PATH_CHARS = ('<', '>', ':', '"', '/', '\\', '|', '?', '*', '&')
+INVALID_PATH_CHARS = ("<", ">", ":", '"', "/", "\\", "|", "?", "*", "&")
 
 #########################################################################################
 # Executable Path Resolution
@@ -205,11 +221,12 @@ DEFAULT_APPDATA_PATH = os.path.join(
 
 # Use cached platform check
 MPV_DIRECTORY = (
-    os.path.join(os.environ.get('APPDATA', ''), 'mpv') if os.name == 'nt'
-    else os.path.expanduser('~/.config/mpv')
+    os.path.join(os.environ.get("APPDATA", ""), "mpv")
+    if os.name == "nt"
+    else os.path.expanduser("~/.config/mpv")
 )
 
-MPV_SCRIPTS_DIRECTORY = os.path.join(MPV_DIRECTORY, 'scripts')
+MPV_SCRIPTS_DIRECTORY = os.path.join(MPV_DIRECTORY, "scripts")
 
 
 @lru_cache(maxsize=1)
@@ -217,8 +234,7 @@ def _get_mpv_path():
     """Get MPV path with caching"""
     mpv_path = shutil.which("mpv")
     if _IS_WINDOWS and not mpv_path:
-        mpv_path = os.path.join(os.getenv('APPDATA', ''),
-                                "aniworld", "mpv", "mpv.exe")
+        mpv_path = os.path.join(os.getenv("APPDATA", ""), "aniworld", "mpv", "mpv.exe")
     return mpv_path
 
 
@@ -228,12 +244,10 @@ def _get_syncplay_path():
     syncplay_path = shutil.which("syncplay")
     if _IS_WINDOWS:
         if syncplay_path:
-            syncplay_path = syncplay_path.replace(
-                "syncplay.EXE", "SyncplayConsole.exe")
+            syncplay_path = syncplay_path.replace("syncplay.EXE", "SyncplayConsole.exe")
         else:
             syncplay_path = os.path.join(
-                os.getenv(
-                    'APPDATA', ''), "aniworld", "syncplay", "SyncplayConsole.exe"
+                os.getenv("APPDATA", ""), "aniworld", "syncplay", "SyncplayConsole.exe"
             )
     return syncplay_path
 
@@ -261,5 +275,5 @@ YTDLP_PATH = shutil.which("yt-dlp")  # already in pip deps
 
 #########################################################################################
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass

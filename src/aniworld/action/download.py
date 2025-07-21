@@ -11,7 +11,7 @@ from aniworld.parser import arguments
 
 def _sanitize_filename(filename: str) -> str:
     """Sanitize filename by removing invalid characters"""
-    return ''.join(char for char in filename if char not in INVALID_PATH_CHARS)
+    return "".join(char for char in filename if char not in INVALID_PATH_CHARS)
 
 
 def _format_episode_title(anime: Anime, episode) -> str:
@@ -22,7 +22,9 @@ def _format_episode_title(anime: Anime, episode) -> str:
 def _get_output_filename(anime: Anime, episode, sanitized_title: str) -> str:
     """Generate output filename based on episode type."""
     if episode.season == 0:
-        return f"{sanitized_title} - Movie {episode.episode:03} - ({anime.language}).mp4"
+        return (
+            f"{sanitized_title} - Movie {episode.episode:03} - ({anime.language}).mp4"
+        )
     return f"{sanitized_title} - S{episode.season:02}E{episode.episode:03} - ({anime.language}).mp4"
 
 
@@ -31,12 +33,15 @@ def _build_ytdl_command(direct_link: str, output_path: str, anime: Anime) -> lis
     command = [
         "yt-dlp",
         direct_link,
-        "--fragment-retries", "infinite",
-        "--concurrent-fragments", "4",
-        "-o", output_path,
+        "--fragment-retries",
+        "infinite",
+        "--concurrent-fragments",
+        "4",
+        "-o",
+        output_path,
         "--quiet",
         "--no-warnings",
-        "--progress"
+        "--progress",
     ]
 
     # Add provider-specific headers
@@ -53,15 +58,14 @@ def _cleanup_partial_files(output_dir: Path) -> None:
         return
 
     is_empty = True
-    partial_pattern = re.compile(r'\.(part|ytdl|part-Frag\d+)$')
+    partial_pattern = re.compile(r"\.(part|ytdl|part-Frag\d+)$")
 
     for file_path in output_dir.iterdir():
         if partial_pattern.search(file_path.name):
             try:
                 file_path.unlink()
             except OSError as e:
-                logging.warning(
-                    f"Failed to remove partial file {file_path}: {e}")
+                logging.warning(f"Failed to remove partial file {file_path}: {e}")
         else:
             is_empty = False
 
@@ -70,8 +74,7 @@ def _cleanup_partial_files(output_dir: Path) -> None:
         try:
             output_dir.rmdir()
         except OSError as e:
-            logging.warning(
-                f"Failed to remove empty directory {output_dir}: {e}")
+            logging.warning(f"Failed to remove empty directory {output_dir}: {e}")
 
 
 def _get_direct_link(episode, episode_title: str) -> Optional[str]:
@@ -79,8 +82,10 @@ def _get_direct_link(episode, episode_title: str) -> Optional[str]:
     try:
         return episode.get_direct_link()
     except Exception as e:
-        logging.warning(f"Something went wrong with \"{episode_title}\".\n"
-                        f"Error while trying to find a direct link: {e}")
+        logging.warning(
+            f'Something went wrong with "{episode_title}".\n'
+            f"Error while trying to find a direct link: {e}"
+        )
         return None
 
 
@@ -109,8 +114,9 @@ def download(anime: Anime) -> None:
         # Get direct link
         direct_link = _get_direct_link(episode, episode_title)
         if not direct_link:
-            logging.warning(f"Something went wrong with \"{episode_title}\".\n"
-                            f"No direct link found.")
+            logging.warning(
+                f'Something went wrong with "{episode_title}".\nNo direct link found.'
+            )
             continue
 
         # Handle direct link only mode
@@ -120,10 +126,8 @@ def download(anime: Anime) -> None:
             continue
 
         # Generate output path
-        output_file = _get_output_filename(
-            anime, episode, sanitized_anime_title)
-        output_path = Path(arguments.output_dir) / \
-            sanitized_anime_title / output_file
+        output_file = _get_output_filename(anime, episode, sanitized_anime_title)
+        output_path = Path(arguments.output_dir) / sanitized_anime_title / output_file
 
         # Ensure output directory exists
         output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -134,8 +138,9 @@ def download(anime: Anime) -> None:
         # Handle command only mode
         if arguments.only_command:
             print(
-                f"\n{anime.title} - S{episode.season}E{episode.episode} - ({anime.language}):")
-            print(' '.join(command))
+                f"\n{anime.title} - S{episode.season}E{episode.episode} - ({anime.language}):"
+            )
+            print(" ".join(command))
             continue
 
         # Execute download

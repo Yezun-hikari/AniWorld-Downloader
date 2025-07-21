@@ -13,7 +13,12 @@ from typing import Dict, List, Optional, Callable
 
 import requests
 
-from aniworld.common import download_mpv, download_syncplay, remove_anime4k, remove_mpv_scripts
+from aniworld.common import (
+    download_mpv,
+    download_syncplay,
+    remove_anime4k,
+    remove_mpv_scripts,
+)
 from aniworld.extractors.provider.hanime import get_direct_link_from_hanime
 from aniworld.anime4k import download_anime4k
 from aniworld import config
@@ -67,13 +72,9 @@ def get_random_anime_slug(genre: str) -> Optional[str]:
     if not genre:
         genre = "all"
 
-    url = f'{config.ANIWORLD_TO}/ajax/randomGeneratorSeries'
-    data = {
-        'productionStart': 'all',
-        'productionEnd': 'all',
-        'genres[]': genre
-    }
-    headers = {'User-Agent': config.RANDOM_USER_AGENT}
+    url = f"{config.ANIWORLD_TO}/ajax/randomGeneratorSeries"
+    data = {"productionStart": "all", "productionEnd": "all", "genres[]": genre}
+    headers = {"User-Agent": config.RANDOM_USER_AGENT}
 
     try:
         response = requests.post(
@@ -89,179 +90,174 @@ def get_random_anime_slug(genre: str) -> Optional[str]:
         random_anime = random.choice(anime_list)
         logging.debug("Selected random anime: %s", random_anime)
 
-        return random_anime.get('link')
+        return random_anime.get("link")
 
     except requests.RequestException as e:
         logging.error("Network request failed for genre '%s': %s", genre, e)
     except (json.JSONDecodeError, KeyError, TypeError) as e:
-        logging.error(
-            "Error processing response data for genre '%s': %s", genre, e)
+        logging.error("Error processing response data for genre '%s': %s", genre, e)
     except Exception as e:
         logging.error(
-            "Unexpected error getting random anime for genre '%s': %s", genre, e)
+            "Unexpected error getting random anime for genre '%s': %s", genre, e
+        )
 
     return None
 
 
 def _add_general_arguments(parser: argparse.ArgumentParser) -> None:
     """Add general command-line arguments to the parser."""
-    general_opts = parser.add_argument_group('General Options')
+    general_opts = parser.add_argument_group("General Options")
     general_opts.add_argument(
-        '-d', '--debug',
-        action='store_true',
-        help='Enable debug mode for detailed logs.'
+        "-d",
+        "--debug",
+        action="store_true",
+        help="Enable debug mode for detailed logs.",
     )
     general_opts.add_argument(
-        '-U', '--update',
+        "-U",
+        "--update",
         type=str,
-        choices=['mpv', 'yt-dlp', 'syncplay', 'all'],
-        help='Update specified tools (mpv, yt-dlp, syncplay, or all).'
+        choices=["mpv", "yt-dlp", "syncplay", "all"],
+        help="Update specified tools (mpv, yt-dlp, syncplay, or all).",
     )
     general_opts.add_argument(
-        '-u', '--uninstall',
-        action='store_true',
-        help='Perform self-uninstallation.'
+        "-u", "--uninstall", action="store_true", help="Perform self-uninstallation."
     )
     general_opts.add_argument(
-        '-v', '--version',
-        action='store_true',
-        help='Display version information.'
+        "-v", "--version", action="store_true", help="Display version information."
     )
 
 
 def _add_search_arguments(parser: argparse.ArgumentParser) -> None:
     """Add search-related command-line arguments to the parser."""
-    search_opts = parser.add_argument_group('Search Options')
+    search_opts = parser.add_argument_group("Search Options")
     search_opts.add_argument(
-        '-s', '--slug',
+        "-s",
+        "--slug",
         type=str,
-        help='Specify a search slug (e.g., demon-slayer-kimetsu-no-yaiba).'
+        help="Specify a search slug (e.g., demon-slayer-kimetsu-no-yaiba).",
     )
 
 
 def _add_episode_arguments(parser: argparse.ArgumentParser) -> None:
     """Add episode-related command-line arguments to the parser."""
-    episode_opts = parser.add_argument_group('Episode Options')
+    episode_opts = parser.add_argument_group("Episode Options")
     episode_opts.add_argument(
-        '-e', '--episode',
-        type=str,
-        nargs='+',
-        help='Specify one or more episode URLs.'
+        "-e", "--episode", type=str, nargs="+", help="Specify one or more episode URLs."
     )
     episode_opts.add_argument(
-        '-f', '--episode-file',
-        type=str,
-        help='Provide a file containing episode URLs.'
+        "-f", "--episode-file", type=str, help="Provide a file containing episode URLs."
     )
     episode_opts.add_argument(
-        '-lf', '--local-episodes',
+        "-lf",
+        "--local-episodes",
         type=str,
-        nargs='+',
-        help='Use local MP4 files for episodes instead of URLs.'
+        nargs="+",
+        help="Use local MP4 files for episodes instead of URLs.",
     )
     episode_opts.add_argument(
-        '-pl', '--provider-link',
+        "-pl",
+        "--provider-link",
         type=str,
-        nargs='+',
-        help='Specify one or more provider episode urls.'
+        nargs="+",
+        help="Specify one or more provider episode urls.",
     )
 
 
 def _add_action_arguments(parser: argparse.ArgumentParser) -> None:
     """Add action-related command-line arguments to the parser."""
-    action_opts = parser.add_argument_group('Action Options')
+    action_opts = parser.add_argument_group("Action Options")
     action_opts.add_argument(
-        '-a', '--action',
-        type=CaseInsensitiveChoices(['Watch', 'Download', 'Syncplay']),
+        "-a",
+        "--action",
+        type=CaseInsensitiveChoices(["Watch", "Download", "Syncplay"]),
         default=config.DEFAULT_ACTION,
-        help='Specify the action to perform.'
+        help="Specify the action to perform.",
     )
     action_opts.add_argument(
-        '-o', '--output-dir',
+        "-o",
+        "--output-dir",
         type=str,
         default=config.DEFAULT_DOWNLOAD_PATH,
-        help='Set the download directory (e.g., /path/to/downloads).'
+        help="Set the download directory (e.g., /path/to/downloads).",
     )
     action_opts.add_argument(
-        '-L', '--language',
-        type=CaseInsensitiveChoices(
-            ['German Dub', 'English Sub', 'German Sub']
-        ),
+        "-L",
+        "--language",
+        type=CaseInsensitiveChoices(["German Dub", "English Sub", "German Sub"]),
         default=config.DEFAULT_LANGUAGE,
-        help='Specify the language for playback or download.'
+        help="Specify the language for playback or download.",
     )
     action_opts.add_argument(
-        '-p', '--provider',
+        "-p",
+        "--provider",
         type=CaseInsensitiveChoices(config.SUPPORTED_PROVIDERS),
-        help='Specify the preferred provider.'
+        help="Specify the preferred provider.",
     )
 
 
 def _add_anime4k_arguments(parser: argparse.ArgumentParser) -> None:
     """Add Anime4K-related command-line arguments to the parser."""
-    anime4k_opts = parser.add_argument_group('Anime4K Options')
+    anime4k_opts = parser.add_argument_group("Anime4K Options")
     anime4k_opts.add_argument(
-        '-A', '--anime4k',
-        type=CaseInsensitiveChoices(['High', 'Low', 'Remove']),
-        help='Set Anime4K mode (High, Low, or Remove for performance tuning).'
+        "-A",
+        "--anime4k",
+        type=CaseInsensitiveChoices(["High", "Low", "Remove"]),
+        help="Set Anime4K mode (High, Low, or Remove for performance tuning).",
     )
 
 
 def _add_syncplay_arguments(parser: argparse.ArgumentParser) -> None:
     """Add Syncplay-related command-line arguments to the parser."""
-    syncplay_opts = parser.add_argument_group('Syncplay Options')
+    syncplay_opts = parser.add_argument_group("Syncplay Options")
     syncplay_opts.add_argument(
-        '-sH', '--hostname',
-        type=str,
-        help='Set the Syncplay server hostname.'
+        "-sH", "--hostname", type=str, help="Set the Syncplay server hostname."
     )
     syncplay_opts.add_argument(
-        '-sU', '--username',
-        type=str,
-        help='Set the Syncplay username.'
+        "-sU", "--username", type=str, help="Set the Syncplay username."
     )
     syncplay_opts.add_argument(
-        '-sR', '--room',
-        type=str,
-        help='Specify the Syncplay room name.'
+        "-sR", "--room", type=str, help="Specify the Syncplay room name."
     )
     syncplay_opts.add_argument(
-        '-sP', '--password',
-        type=str,
-        nargs='+',
-        help='Set the Syncplay room password.'
+        "-sP", "--password", type=str, nargs="+", help="Set the Syncplay room password."
     )
 
 
 def _add_miscellaneous_arguments(parser: argparse.ArgumentParser) -> None:
     """Add miscellaneous command-line arguments to the parser."""
-    misc_opts = parser.add_argument_group('Miscellaneous Options')
+    misc_opts = parser.add_argument_group("Miscellaneous Options")
     misc_opts.add_argument(
-        '-k', '--aniskip',
-        action='store_true',
-        help='Skip anime intros and outros using Aniskip.'
+        "-k",
+        "--aniskip",
+        action="store_true",
+        help="Skip anime intros and outros using Aniskip.",
     )
     misc_opts.add_argument(
-        '-K', '--keep-watching',
-        action='store_true',
-        help='Automatically continue to the next episodes after the selected one.'
+        "-K",
+        "--keep-watching",
+        action="store_true",
+        help="Automatically continue to the next episodes after the selected one.",
     )
     misc_opts.add_argument(
-        '-r', '--random-anime',
+        "-r",
+        "--random-anime",
         type=str,
-        nargs='*',
+        nargs="*",
         help='Play a random anime (default genre is "all", e.g., Drama).\n'
-             f'All genres can be found here: "{config.ANIWORLD_TO}/random"'
+        f'All genres can be found here: "{config.ANIWORLD_TO}/random"',
     )
     misc_opts.add_argument(
-        '-D', '--only-direct-link',
-        action='store_true',
-        help='Output only the direct streaming link.'
+        "-D",
+        "--only-direct-link",
+        action="store_true",
+        help="Output only the direct streaming link.",
     )
     misc_opts.add_argument(
-        '-C', '--only-command',
-        action='store_true',
-        help='Output only the execution command.'
+        "-C",
+        "--only-command",
+        action="store_true",
+        help="Output only the execution command.",
     )
 
 
@@ -275,7 +271,7 @@ def _handle_uninstall() -> None:
         remove_anime4k()
         remove_mpv_scripts()
 
-        if sys.platform.startswith('win'):
+        if sys.platform.startswith("win"):
             command = "timeout 3 >nul & pip uninstall -y aniworld"
         else:
             command = "pip uninstall -y aniworld"
@@ -284,8 +280,9 @@ def _handle_uninstall() -> None:
         subprocess.Popen(
             command,
             shell=True,
-            creationflags=subprocess.CREATE_NEW_CONSOLE if sys.platform.startswith(
-                'win') else 0
+            creationflags=subprocess.CREATE_NEW_CONSOLE
+            if sys.platform.startswith("win")
+            else 0,
         )
     except Exception as e:
         logging.error("Error during uninstallation: %s", e)
@@ -296,7 +293,7 @@ def _handle_uninstall() -> None:
 
 def _handle_version() -> None:
     """Handle version information display."""
-    cowsay = fR"""
+    cowsay = Rf"""
 _____________________________
 < AniWorld-Downloader v.{config.VERSION} >
 -----------------------------
@@ -324,17 +321,17 @@ def _handle_provider_links(args: argparse.Namespace) -> None:
         return
 
     # Validate provider links
-    invalid_links = [
-        link for link in args.provider_link if not link.startswith("http")
-    ]
+    invalid_links = [link for link in args.provider_link if not link.startswith("http")]
     if invalid_links:
-        logging.error("Invalid provider episode URLs: %s",
-                      ", ".join(invalid_links))
+        logging.error("Invalid provider episode URLs: %s", ", ".join(invalid_links))
         sys.exit(1)
 
     # Handle hanime.tv links specially
-    hanime_links = [link for link in args.provider_link if link.startswith(
-        "https://hanime.tv/videos/")]
+    hanime_links = [
+        link
+        for link in args.provider_link
+        if link.startswith("https://hanime.tv/videos/")
+    ]
 
     if hanime_links:
         # Process hanime.tv links
@@ -347,13 +344,15 @@ def _handle_provider_links(args: argparse.Namespace) -> None:
                     print("-" * 40)
                 else:
                     logging.error(
-                        "Could not extract direct link from hanime URL: %s", link)
+                        "Could not extract direct link from hanime URL: %s", link
+                    )
             except Exception as e:
                 logging.error("Error processing hanime link '%s': %s", link, e)
 
         # Remove processed hanime links from provider_link list
         args.provider_link = [
-            link for link in args.provider_link
+            link
+            for link in args.provider_link
             if not link.startswith("https://hanime.tv/videos/")
         ]
 
@@ -371,8 +370,7 @@ def _handle_provider_links(args: argparse.Namespace) -> None:
     if args.provider in config.SUPPORTED_PROVIDERS:
         try:
             module = importlib.import_module("aniworld.extractors")
-            func = getattr(
-                module, f"get_direct_link_from_{args.provider.lower()}")
+            func = getattr(module, f"get_direct_link_from_{args.provider.lower()}")
 
             for provider_episode in args.provider_link:
                 direct_link = f'"{func(provider_episode)}"'
@@ -383,13 +381,14 @@ def _handle_provider_links(args: argparse.Namespace) -> None:
                         action_map = {
                             "Download": config.YTDLP_PATH,
                             "Watch": config.MPV_PATH,
-                            "Syncplay": config.SYNCPLAY_PATH
+                            "Syncplay": config.SYNCPLAY_PATH,
                         }
 
                         action = action_map.get(args.action)
                         if action:
                             header = (
-                                "--add-header" if args.action == "Download"
+                                "--add-header"
+                                if args.action == "Download"
                                 else "--http-header-fields"
                             )
                             direct_link = (
@@ -420,7 +419,7 @@ def _update_yt_dlp() -> None:
             yt_dlp_update_command,
             check=True,
             stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL
+            stderr=subprocess.DEVNULL,
         )
         logging.info("yt-dlp updated successfully")
     except subprocess.CalledProcessError as e:
@@ -447,7 +446,7 @@ def _handle_updates(update_type: str) -> None:
         "mpv": lambda: download_mpv(update=True),
         "yt-dlp": _update_yt_dlp,
         "syncplay": lambda: download_syncplay(update=True),
-        "all": _update_all_tools
+        "all": _update_all_tools,
     }
 
     action = update_actions.get(update_type)
@@ -462,16 +461,20 @@ def _handle_updates(update_type: str) -> None:
 
 def _open_terminal_with_command(command: str) -> None:
     """Open a terminal with the specified command (Linux)."""
-    if not os.environ.get('DISPLAY'):
-        print("It looks like you are on a headless machine! "
-              "For advanced log look in your temp folder!")
+    if not os.environ.get("DISPLAY"):
+        print(
+            "It looks like you are on a headless machine! "
+            "For advanced log look in your temp folder!"
+        )
         return
 
     terminal_emulators = [
-        ('gnome-terminal', ['gnome-terminal', '--',
-         'bash', '-c', f'{command}; exec bash']),
-        ('xterm', ['xterm', '-hold', '-e', command]),
-        ('konsole', ['konsole', '--hold', '-e', command])
+        (
+            "gnome-terminal",
+            ["gnome-terminal", "--", "bash", "-c", f"{command}; exec bash"],
+        ),
+        ("xterm", ["xterm", "-hold", "-e", command]),
+        ("konsole", ["konsole", "--hold", "-e", command]),
     ]
 
     for terminal, cmd in terminal_emulators:
@@ -483,8 +486,10 @@ def _open_terminal_with_command(command: str) -> None:
         except subprocess.SubprocessError as e:
             logging.error("Error opening terminal with %s: %s", terminal, e)
 
-    logging.error("No supported terminal emulator found. "
-                  "Install gnome-terminal, xterm, or konsole.")
+    logging.error(
+        "No supported terminal emulator found. "
+        "Install gnome-terminal, xterm, or konsole."
+    )
 
 
 def _handle_debug_mode() -> None:
@@ -499,23 +504,24 @@ def _handle_debug_mode() -> None:
     try:
         if system == "Darwin":
             darwin_open_debug_log = [
-                "osascript", "-e",
+                "osascript",
+                "-e",
                 'tell application "Terminal" to do script "trap exit SIGINT; '
-                'tail -f -n +1 $TMPDIR/aniworld.log" activate'
+                'tail -f -n +1 $TMPDIR/aniworld.log" activate',
             ]
             logging.debug("Running Command: %s", darwin_open_debug_log)
             subprocess.run(darwin_open_debug_log, check=True)
 
         elif system == "Windows":
             windows_open_debug_log = (
-                "start cmd /c \"powershell -NoExit -c "
-                "Get-Content -Wait \"$env:TEMP\\aniworld.log\"\""
+                'start cmd /c "powershell -NoExit -c '
+                'Get-Content -Wait "$env:TEMP\\aniworld.log""'
             )
             logging.debug("Running Command: %s", windows_open_debug_log)
             subprocess.run(windows_open_debug_log, shell=True, check=True)
 
         elif system == "Linux":
-            _open_terminal_with_command('tail -f -n +1 /tmp/aniworld.log')
+            _open_terminal_with_command("tail -f -n +1 /tmp/aniworld.log")
 
     except subprocess.CalledProcessError as e:
         logging.error("Failed to start tailing the log file: %s", e)
@@ -529,7 +535,8 @@ def _setup_default_provider(args: argparse.Namespace) -> None:
         config.USES_DEFAULT_PROVIDER = True
         args.provider = (
             config.DEFAULT_PROVIDER_DOWNLOAD
-            if args.action == "Download" else config.DEFAULT_PROVIDER_WATCH
+            if args.action == "Download"
+            else config.DEFAULT_PROVIDER_WATCH
         )
 
 
@@ -539,15 +546,17 @@ def _handle_hanime_episodes(args: argparse.Namespace) -> None:
         return
 
     # Find hanime.tv URLs in episode arguments
-    hanime_episodes = [ep for ep in args.episode if ep.startswith(
-        "https://hanime.tv/videos/")]
+    hanime_episodes = [
+        ep for ep in args.episode if ep.startswith("https://hanime.tv/videos/")
+    ]
 
     if not hanime_episodes:
         return
 
     # Remove hanime.tv URLs from episode list
-    args.episode = [ep for ep in args.episode if not ep.startswith(
-        "https://hanime.tv/videos/")]
+    args.episode = [
+        ep for ep in args.episode if not ep.startswith("https://hanime.tv/videos/")
+    ]
 
     # Add them to provider_link list
     if not args.provider_link:
@@ -555,7 +564,8 @@ def _handle_hanime_episodes(args: argparse.Namespace) -> None:
     args.provider_link.extend(hanime_episodes)
 
     logging.info(
-        "Moved %d hanime.tv URL(s) to provider link processing", len(hanime_episodes))
+        "Moved %d hanime.tv URL(s) to provider link processing", len(hanime_episodes)
+    )
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -567,7 +577,7 @@ def parse_arguments() -> argparse.Namespace:
     """
     parser = argparse.ArgumentParser(
         description="Parse command-line arguments for anime streaming, "
-                    "downloading, and playback management."
+        "downloading, and playback management."
     )
 
     # Add all argument groups

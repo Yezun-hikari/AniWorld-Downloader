@@ -10,8 +10,8 @@ import requests
 from aniworld.config import DEFAULT_REQUEST_TIMEOUT
 
 # Constants
-VIDEO_MANIFEST_PATTERN = r'^.*videos_manifest.*$'
-SUPPORTED_DOMAINS = ['hanime.tv']
+VIDEO_MANIFEST_PATTERN = r"^.*videos_manifest.*$"
+SUPPORTED_DOMAINS = ["hanime.tv"]
 MAX_RETRY_ATTEMPTS = 3
 
 # Setup module logger
@@ -38,21 +38,22 @@ def _make_request(url: str, retry_count: int = 0) -> requests.Response:
             url,
             timeout=DEFAULT_REQUEST_TIMEOUT,
             headers={
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+            },
         )
         response.raise_for_status()
         return response
 
     except requests.RequestException as e:
-        logger.error(
-            f"Request failed for {url} (attempt {retry_count + 1}): {e}")
+        logger.error(f"Request failed for {url} (attempt {retry_count + 1}): {e}")
 
         if retry_count < MAX_RETRY_ATTEMPTS - 1:
             logger.info(f"Retrying request to {url}")
             return _make_request(url, retry_count + 1)
 
         raise ValueError(
-            f"Failed to fetch URL after {MAX_RETRY_ATTEMPTS} attempts: {e}") from e
+            f"Failed to fetch URL after {MAX_RETRY_ATTEMPTS} attempts: {e}"
+        ) from e
 
 
 def _extract_json_from_line(line: str) -> Dict[str, Any]:
@@ -69,8 +70,8 @@ def _extract_json_from_line(line: str) -> Dict[str, Any]:
         ValueError: If JSON cannot be extracted or parsed
     """
     try:
-        start_index = line.find('{')
-        end_index = line.rfind('}') + 1
+        start_index = line.find("{")
+        end_index = line.rfind("}") + 1
 
         if start_index == -1 or end_index == 0:
             raise ValueError("No JSON data found in the line")
@@ -100,9 +101,9 @@ def _parse_video_info(data: Dict[str, Any]) -> Dict[str, Any]:
         ValueError: If video data structure is invalid
     """
     try:
-        video_info = data['state']['data']['video']
-        name = video_info['hentai_video']['name']
-        streams = video_info['videos_manifest']['servers'][0]['streams']
+        video_info = data["state"]["data"]["video"]
+        name = video_info["hentai_video"]["name"]
+        streams = video_info["videos_manifest"]["servers"][0]["streams"]
 
         if not isinstance(streams, list):
             raise ValueError("Streams data is not a list")
@@ -134,9 +135,8 @@ def _validate_url(url: str) -> str:
         raise ValueError("URL cannot be empty")
 
     url = url.strip()
-    if not url.startswith(('http://', 'https://')):
-        raise ValueError(
-            "Invalid URL format - must start with http:// or https://")
+    if not url.startswith(("http://", "https://")):
+        raise ValueError("Invalid URL format - must start with http:// or https://")
 
     # Parse URL to validate domain
     try:
@@ -146,7 +146,9 @@ def _validate_url(url: str) -> str:
 
         # Check if domain is supported
         domain = parsed_url.netloc.lower()
-        if not any(supported_domain in domain for supported_domain in SUPPORTED_DOMAINS):
+        if not any(
+            supported_domain in domain for supported_domain in SUPPORTED_DOMAINS
+        ):
             raise ValueError(f"Unsupported domain: {domain}")
 
     except Exception as e:
@@ -185,11 +187,10 @@ def _display_stream_info(stream: Dict[str, Any], index: int) -> None:
         stream: Stream information dictionary
         index: Stream index for display
     """
-    premium_tag = "(Premium)" if not stream.get(
-        'is_guest_allowed', True) else ""
-    width = stream.get('width', 'Unknown')
-    height = stream.get('height', 'Unknown')
-    filesize = stream.get('filesize_mbs', 'Unknown')
+    premium_tag = "(Premium)" if not stream.get("is_guest_allowed", True) else ""
+    width = stream.get("width", "Unknown")
+    height = stream.get("height", "Unknown")
+    filesize = stream.get("filesize_mbs", "Unknown")
 
     print(f"{index}. {width}x{height}\t({filesize}MB) {premium_tag}")
 
@@ -220,8 +221,7 @@ def _get_stream_selection(streams: List[Dict[str, Any]]) -> int:
             if 0 <= selected_index < len(streams):
                 return selected_index
             else:
-                print(
-                    f"Invalid selection. Please choose between 1 and {len(streams)}.")
+                print(f"Invalid selection. Please choose between 1 and {len(streams)}.")
 
         except ValueError:
             print("Invalid input. Please enter a number.")
@@ -301,7 +301,8 @@ def get_streams(url: str) -> Dict[str, Any]:
         video_info = _parse_video_info(data)
 
         logger.info(
-            f"Found {len(video_info['streams'])} streams for video: {video_info['name']}")
+            f"Found {len(video_info['streams'])} streams for video: {video_info['name']}"
+        )
         return video_info
 
     except (ValueError,):
@@ -370,18 +371,18 @@ def get_direct_link_from_hanime(url: Optional[str] = None) -> Optional[str]:
 
         # Display video information
         print(f"Video: {video_data['name']}")
-        print('*' * 40)
-        display_streams(video_data['streams'])
+        print("*" * 40)
+        display_streams(video_data["streams"])
 
         # Get user selection
         try:
-            selected_index = _get_stream_selection(video_data['streams'])
-            selected_stream = video_data['streams'][selected_index]
+            selected_index = _get_stream_selection(video_data["streams"])
+            selected_stream = video_data["streams"][selected_index]
 
-            if 'url' not in selected_stream:
+            if "url" not in selected_stream:
                 raise ValueError("Selected stream has no URL")
 
-            stream_url = selected_stream['url']
+            stream_url = selected_stream["url"]
 
             if not stream_url:
                 raise ValueError("Selected stream URL is empty")
@@ -439,10 +440,9 @@ def get_stream_info(url: str) -> Dict[str, Any]:
         video_data = get_streams(url)
 
         # Add additional metadata
-        video_data['total_streams'] = len(video_data['streams'])
-        video_data['has_premium_streams'] = any(
-            not stream.get('is_guest_allowed', True)
-            for stream in video_data['streams']
+        video_data["total_streams"] = len(video_data["streams"])
+        video_data["has_premium_streams"] = any(
+            not stream.get("is_guest_allowed", True) for stream in video_data["streams"]
         )
 
         return video_data
@@ -461,7 +461,7 @@ def main() -> None:
     # Setup logging for standalone execution
     logging.basicConfig(
         level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
 
     try:

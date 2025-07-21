@@ -20,7 +20,7 @@ from aniworld.config import (
     MPV_SCRIPTS_DIRECTORY,
     DEFAULT_APPDATA_PATH,
     MPV_PATH,
-    SYNCPLAY_PATH
+    SYNCPLAY_PATH,
 )
 
 # Constants
@@ -36,7 +36,9 @@ PACKAGE_MANAGERS = {
 }
 
 
-def _make_request(url: str, timeout: int = DEFAULT_REQUEST_TIMEOUT) -> requests.Response:
+def _make_request(
+    url: str, timeout: int = DEFAULT_REQUEST_TIMEOUT
+) -> requests.Response:
     """Make HTTP request with error handling."""
     try:
         response = requests.get(url, timeout=timeout)
@@ -47,18 +49,23 @@ def _make_request(url: str, timeout: int = DEFAULT_REQUEST_TIMEOUT) -> requests.
         raise
 
 
-def _run_command(command: List[str], cwd: Optional[str] = None,
-                 quiet: bool = True, shell: bool = False) -> bool:
+def _run_command(
+    command: List[str],
+    cwd: Optional[str] = None,
+    quiet: bool = True,
+    shell: bool = False,
+) -> bool:
     """Run shell command with error handling."""
     try:
         stdout = subprocess.DEVNULL if quiet else None
         stderr = subprocess.DEVNULL if quiet else None
 
         if shell and isinstance(command, list):
-            command = ' '.join(command)
+            command = " ".join(command)
 
-        subprocess.run(command, check=True, cwd=cwd,
-                       stdout=stdout, stderr=stderr, shell=shell)
+        subprocess.run(
+            command, check=True, cwd=cwd, stdout=stdout, stderr=stderr, shell=shell
+        )
         return True
     except subprocess.CalledProcessError as e:
         logging.error(f"Command failed: {command} - {e}")
@@ -109,12 +116,12 @@ def check_avx2_support() -> bool:
 
     try:
         import cpuinfo  # type: ignore # pylint: disable=import-outside-toplevel
+
         info = cpuinfo.get_cpu_info()
-        flags = info.get('flags', [])
-        return 'avx2' in flags
+        flags = info.get("flags", [])
+        return "avx2" in flags
     except ImportError:
-        logging.warning(
-            "cpuinfo package not available, assuming no AVX2 support")
+        logging.warning("cpuinfo package not available, assuming no AVX2 support")
         return False
     except Exception as e:
         logging.error(f"Error checking AVX2 support: {e}")
@@ -136,8 +143,8 @@ def get_github_release(repo: str) -> Dict[str, str]:
     try:
         response = _make_request(api_url)
         release_data = response.json()
-        assets = release_data.get('assets', [])
-        return {asset['name']: asset['browser_download_url'] for asset in assets}
+        assets = release_data.get("assets", [])
+        return {asset["name"]: asset["browser_download_url"] for asset in assets}
     except (json.JSONDecodeError, requests.RequestException) as e:
         logging.error(f"Failed to fetch release data from GitHub: {e}")
         return {}
@@ -156,16 +163,22 @@ def download_file(url: str, path: str) -> bool:
     """
     try:
         response = requests.get(
-            url, stream=True, allow_redirects=True, timeout=DEFAULT_REQUEST_TIMEOUT)
+            url, stream=True, allow_redirects=True, timeout=DEFAULT_REQUEST_TIMEOUT
+        )
         response.raise_for_status()
 
-        total_size = int(response.headers.get('content-length', 0))
+        total_size = int(response.headers.get("content-length", 0))
         block_size = 1024
 
-        with open(path, 'wb') as f, tqdm(
-            total=total_size, unit='B', unit_scale=True,
-            desc=f"Downloading {Path(path).name}"
-        ) as pbar:
+        with (
+            open(path, "wb") as f,
+            tqdm(
+                total=total_size,
+                unit="B",
+                unit_scale=True,
+                desc=f"Downloading {Path(path).name}",
+            ) as pbar,
+        ):
             for data in response.iter_content(block_size):
                 f.write(data)
                 pbar.update(len(data))
@@ -185,7 +198,7 @@ def _download_7z(zip_tool: str) -> bool:
     """Download 7z tool for Windows."""
     if not os.path.exists(zip_tool):
         logging.info("Downloading 7z...")
-        return download_file('https://7-zip.org/a/7zr.exe', zip_tool)
+        return download_file("https://7-zip.org/a/7zr.exe", zip_tool)
     return True
 
 
@@ -219,16 +232,21 @@ def _install_with_package_manager(package: str) -> bool:
 
     install_cmd = PACKAGE_MANAGERS[pm].format(package)
     logging.info(f"Installing {package} using {pm}...")
-    return _run_command(install_cmd.split() if not any(op in install_cmd for op in ['&&', '||', ';']) else [install_cmd], shell=True)
+    return _run_command(
+        install_cmd.split()
+        if not any(op in install_cmd for op in ["&&", "||", ";"])
+        else [install_cmd],
+        shell=True,
+    )
 
 
 def _get_mpv_download_link(direct_links: Dict[str, str]) -> Optional[str]:
     """Get appropriate MPV download link based on CPU capabilities."""
     avx2_supported = check_avx2_support()
     pattern = (
-        r'mpv-x86_64-v3-\d{8}-git-[a-f0-9]{7}\.7z'
+        r"mpv-x86_64-v3-\d{8}-git-[a-f0-9]{7}\.7z"
         if avx2_supported
-        else r'mpv-x86_64-\d{8}-git-[a-f0-9]{7}\.7z'
+        else r"mpv-x86_64-\d{8}-git-[a-f0-9]{7}\.7z"
     )
 
     logging.debug(f"Searching for MPV using pattern: {pattern}")
@@ -236,7 +254,8 @@ def _get_mpv_download_link(direct_links: Dict[str, str]) -> Optional[str]:
     for name, link in direct_links.items():
         if re.match(pattern, name):
             logging.info(
-                f"Found MPV download: {name} ({'with' if avx2_supported else 'without'} AVX2)")
+                f"Found MPV download: {name} ({'with' if avx2_supported else 'without'} AVX2)"
+            )
             return link
 
     return None
@@ -260,8 +279,11 @@ def _extract_with_tar(zip_path: str, dest_path: str) -> bool:
         return False
 
 
-def download_mpv(dep_path: Optional[str] = None, appdata_path: Optional[str] = None,
-                 update: bool = False) -> bool:
+def download_mpv(
+    dep_path: Optional[str] = None,
+    appdata_path: Optional[str] = None,
+    update: bool = False,
+) -> bool:
     """
     Download and install MPV player.
 
@@ -277,17 +299,17 @@ def download_mpv(dep_path: Optional[str] = None, appdata_path: Optional[str] = N
         logging.info("Updating MPV...")
 
     # macOS installation
-    if sys.platform == 'darwin':
+    if sys.platform == "darwin":
         return _install_with_homebrew("mpv", update)
 
     # Linux installation
-    if sys.platform == 'linux':
+    if sys.platform == "linux":
         if MPV_PATH:
             return True
         return _install_with_package_manager("mpv")
 
     # Windows installation
-    if sys.platform != 'win32':
+    if sys.platform != "win32":
         return True
 
     appdata_path = appdata_path or DEFAULT_APPDATA_PATH
@@ -298,7 +320,7 @@ def download_mpv(dep_path: Optional[str] = None, appdata_path: Optional[str] = N
 
     _ensure_directory(dep_path)
 
-    executable_path = os.path.join(dep_path, 'mpv.exe')
+    executable_path = os.path.join(dep_path, "mpv.exe")
     if os.path.exists(executable_path) and not update:
         return True
 
@@ -313,7 +335,7 @@ def download_mpv(dep_path: Optional[str] = None, appdata_path: Optional[str] = N
         logging.error("No suitable MPV download link found")
         return False
 
-    zip_path = os.path.join(dep_path, 'mpv.7z')
+    zip_path = os.path.join(dep_path, "mpv.7z")
     zip_tool = os.path.join(appdata_path, "7z", "7zr.exe")
 
     _ensure_directory(os.path.dirname(zip_tool))
@@ -345,14 +367,17 @@ def download_mpv(dep_path: Optional[str] = None, appdata_path: Optional[str] = N
 def _get_syncplay_download_link(direct_links: Dict[str, str]) -> Optional[str]:
     """Get Syncplay download link."""
     for name, link in direct_links.items():
-        if re.match(r'Syncplay_\d+\.\d+\.\d+_Portable\.zip', name):
+        if re.match(r"Syncplay_\d+\.\d+\.\d+_Portable\.zip", name):
             logging.info(f"Found Syncplay download: {name}")
             return link
     return None
 
 
-def download_syncplay(dep_path: Optional[str] = None, appdata_path: Optional[str] = None,
-                      update: bool = False) -> bool:
+def download_syncplay(
+    dep_path: Optional[str] = None,
+    appdata_path: Optional[str] = None,
+    update: bool = False,
+) -> bool:
     """
     Download and install Syncplay.
 
@@ -368,17 +393,17 @@ def download_syncplay(dep_path: Optional[str] = None, appdata_path: Optional[str
         logging.info("Updating Syncplay...")
 
     # macOS installation
-    if sys.platform == 'darwin':
+    if sys.platform == "darwin":
         return _install_with_homebrew("syncplay", update)
 
     # Linux installation
-    if sys.platform == 'linux':
+    if sys.platform == "linux":
         if SYNCPLAY_PATH:
             return True
         return _install_with_package_manager("syncplay")
 
     # Windows installation
-    if sys.platform != 'win32':
+    if sys.platform != "win32":
         return True
 
     appdata_path = appdata_path or DEFAULT_APPDATA_PATH
@@ -389,7 +414,7 @@ def download_syncplay(dep_path: Optional[str] = None, appdata_path: Optional[str
 
     _ensure_directory(dep_path)
 
-    executable_path = os.path.join(dep_path, 'SyncplayConsole.exe')
+    executable_path = os.path.join(dep_path, "SyncplayConsole.exe")
     if os.path.exists(executable_path) and not update:
         return True
 
@@ -404,7 +429,7 @@ def download_syncplay(dep_path: Optional[str] = None, appdata_path: Optional[str
         logging.error("No suitable Syncplay download link found")
         return False
 
-    zip_path = os.path.join(dep_path, 'syncplay.zip')
+    zip_path = os.path.join(dep_path, "syncplay.zip")
 
     # Download and extract
     if not download_file(direct_link, zip_path):
@@ -424,11 +449,11 @@ def download_syncplay(dep_path: Optional[str] = None, appdata_path: Optional[str
 
 def _parse_season_episodes(soup: BeautifulSoup, season: int) -> int:
     """Parse episode count for a specific season."""
-    episode_links = soup.find_all('a', href=True)
+    episode_links = soup.find_all("a", href=True)
     unique_links = set(
-        link['href']
+        link["href"]
         for link in episode_links
-        if f"staffel-{season}/episode-" in link['href']
+        if f"staffel-{season}/episode-" in link["href"]
     )
     return len(unique_links)
 
@@ -446,23 +471,20 @@ def get_season_episode_count(slug: str) -> Dict[int, int]:
     try:
         base_url = f"{ANIWORLD_TO}/anime/stream/{slug}/"
         response = _make_request(base_url)
-        soup = BeautifulSoup(response.content, 'html.parser')
+        soup = BeautifulSoup(response.content, "html.parser")
 
-        season_meta = soup.find('meta', itemprop='numberOfSeasons')
-        number_of_seasons = int(season_meta['content']) if season_meta else 0
+        season_meta = soup.find("meta", itemprop="numberOfSeasons")
+        number_of_seasons = int(season_meta["content"]) if season_meta else 0
 
         episode_counts = {}
         for season in range(1, number_of_seasons + 1):
             season_url = f"{base_url}staffel-{season}"
             try:
                 season_response = _make_request(season_url)
-                season_soup = BeautifulSoup(
-                    season_response.content, 'html.parser')
-                episode_counts[season] = _parse_season_episodes(
-                    season_soup, season)
+                season_soup = BeautifulSoup(season_response.content, "html.parser")
+                episode_counts[season] = _parse_season_episodes(season_soup, season)
             except Exception as e:
-                logging.warning(
-                    f"Failed to get episodes for season {season}: {e}")
+                logging.warning(f"Failed to get episodes for season {season}: {e}")
                 episode_counts[season] = 0
 
         return episode_counts
@@ -485,7 +507,7 @@ def get_movie_episode_count(slug: str) -> int:
     try:
         movie_page_url = f"{ANIWORLD_TO}/anime/stream/{slug}/filme"
         response = _make_request(movie_page_url)
-        soup = BeautifulSoup(response.content, 'html.parser')
+        soup = BeautifulSoup(response.content, "html.parser")
 
         movie_indices = []
         movie_index = 1
@@ -493,8 +515,9 @@ def get_movie_episode_count(slug: str) -> int:
         while True:
             expected_subpath = f"{slug}/filme/film-{movie_index}"
             matching_links = [
-                link['href'] for link in soup.find_all('a', href=True)
-                if expected_subpath in link['href']
+                link["href"]
+                for link in soup.find_all("a", href=True)
+                if expected_subpath in link["href"]
             ]
 
             if matching_links:
@@ -512,15 +535,26 @@ def get_movie_episode_count(slug: str) -> int:
 
 def _natural_sort_key(link_url: str) -> List:
     """Natural sort key for URLs."""
-    return [int(text) if text.isdigit() else text for text in re.split(r'(\d+)', link_url)]
+    return [
+        int(text) if text.isdigit() else text for text in re.split(r"(\d+)", link_url)
+    ]
 
 
-def _process_base_url(base_url: str, arguments, slug_cache: Dict[str, Tuple[Dict[int, int], int]]) -> Set[str]:
+def _process_base_url(
+    base_url: str, arguments, slug_cache: Dict[str, Tuple[Dict[int, int], int]]
+) -> Set[str]:
     """Process a single base URL to generate episode links."""
     unique_links = set()
-    parts = base_url.split('/')
+    parts = base_url.split("/")
 
-    if not ("anime" in parts and ("episode" not in base_url and "film-" not in base_url or arguments.keep_watching)):
+    if not (
+        "anime" in parts
+        and (
+            "episode" not in base_url
+            and "film-" not in base_url
+            or arguments.keep_watching
+        )
+    ):
         unique_links.add(base_url)
         return unique_links
 
@@ -546,16 +580,18 @@ def _process_base_url(base_url: str, arguments, slug_cache: Dict[str, Tuple[Dict
 
     # Handle keep_watching mode
     if arguments.keep_watching:
-        unique_links.update(_process_keep_watching(
-            base_url, seasons_info, movies_info))
+        unique_links.update(_process_keep_watching(base_url, seasons_info, movies_info))
     else:
-        unique_links.update(_process_full_series(
-            base_url, parts, seasons_info, movies_info))
+        unique_links.update(
+            _process_full_series(base_url, parts, seasons_info, movies_info)
+        )
 
     return unique_links
 
 
-def _process_keep_watching(base_url: str, seasons_info: Dict[int, int], movies_info: int) -> Set[str]:
+def _process_keep_watching(
+    base_url: str, seasons_info: Dict[int, int], movies_info: int
+) -> Set[str]:
     """Process keep_watching mode for URL generation."""
     unique_links = set()
 
@@ -589,12 +625,18 @@ def _process_keep_watching(base_url: str, seasons_info: Dict[int, int], movies_i
     return unique_links
 
 
-def _process_full_series(base_url: str, parts: List[str], seasons_info: Dict[int, int], movies_info: int) -> Set[str]:
+def _process_full_series(
+    base_url: str, parts: List[str], seasons_info: Dict[int, int], movies_info: int
+) -> Set[str]:
     """Process full series URL generation."""
     unique_links = set()
 
     # Handle different URL patterns
-    if "staffel" not in base_url and "episode" not in base_url and "film" not in base_url:
+    if (
+        "staffel" not in base_url
+        and "episode" not in base_url
+        and "film" not in base_url
+    ):
         # Full series
         for season, episodes in seasons_info.items():
             season_url = f"{base_url}/staffel-{season}/"
@@ -650,7 +692,7 @@ def remove_anime4k() -> None:
     anime4k_paths = [
         os.path.join(MPV_DIRECTORY, "shaders"),
         os.path.join(MPV_DIRECTORY, "input.conf"),
-        os.path.join(MPV_DIRECTORY, "mpv.conf")
+        os.path.join(MPV_DIRECTORY, "mpv.conf"),
     ]
 
     for path in anime4k_paths:
@@ -687,30 +729,32 @@ def copy_file_if_different(source_path: str, destination_path: str) -> bool:
     """
     try:
         if os.path.exists(destination_path):
-            with open(source_path, 'r', encoding="utf-8") as source_file:
+            with open(source_path, "r", encoding="utf-8") as source_file:
                 source_content = source_file.read()
 
-            with open(destination_path, 'r', encoding="utf-8") as destination_file:
+            with open(destination_path, "r", encoding="utf-8") as destination_file:
                 destination_content = destination_file.read()
 
             if source_content != destination_content:
                 logging.debug(
-                    f"Content differs, overwriting {os.path.basename(destination_path)}")
+                    f"Content differs, overwriting {os.path.basename(destination_path)}"
+                )
                 shutil.copy(source_path, destination_path)
                 return True
             else:
                 logging.debug(
-                    f"{os.path.basename(destination_path)} already exists and is identical")
+                    f"{os.path.basename(destination_path)} already exists and is identical"
+                )
                 return False
         else:
             logging.debug(
-                f"Copying {os.path.basename(source_path)} to {os.path.dirname(destination_path)}")
+                f"Copying {os.path.basename(source_path)} to {os.path.dirname(destination_path)}"
+            )
             shutil.copy(source_path, destination_path)
             return True
 
     except Exception as e:
-        logging.error(
-            f"Failed to copy {source_path} to {destination_path}: {e}")
+        logging.error(f"Failed to copy {source_path} to {destination_path}: {e}")
         return False
 
 
@@ -723,7 +767,7 @@ def _setup_script(script_name: str) -> bool:
         # Ensure scripts directory exists
         mpv_scripts_directory.mkdir(parents=True, exist_ok=True)
 
-        source_path = script_directory / 'aniskip' / 'scripts' / script_name
+        source_path = script_directory / "aniskip" / "scripts" / script_name
         destination_path = mpv_scripts_directory / script_name
 
         return copy_file_if_different(str(source_path), str(destination_path))
@@ -736,13 +780,13 @@ def _setup_script(script_name: str) -> bool:
 def setup_autostart() -> bool:
     """Setup autostart script for MPV."""
     logging.debug("Setting up autostart script")
-    return _setup_script('autostart.lua')
+    return _setup_script("autostart.lua")
 
 
 def setup_autoexit() -> bool:
     """Setup autoexit script for MPV."""
     logging.debug("Setting up autoexit script")
-    return _setup_script('autoexit.lua')
+    return _setup_script("autoexit.lua")
 
 
 if __name__ == "__main__":
