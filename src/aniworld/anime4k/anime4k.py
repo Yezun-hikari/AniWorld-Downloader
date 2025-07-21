@@ -19,7 +19,7 @@ def _get_latest_release_info() -> dict:
     try:
         return get_github_release("Tama47/Anime4K")
     except Exception as e:
-        logging.error(f"Failed to get latest Anime4K release: {e}")
+        logging.error("Failed to get latest Anime4K release: %s", e)
         raise
 
 
@@ -43,7 +43,7 @@ def _cleanup_macos_artifacts(directory: Path) -> None:
             shutil.rmtree(macos_path)
             logging.debug("Removed macOS artifacts from %s", macos_path)
         except OSError as e:
-            logging.warning(f"Failed to remove macOS artifacts: {e}")
+            logging.warning("Failed to remove macOS artifacts: %s", e)
 
 
 def _extract_with_tar(zip_path: Path, dest_path: Path) -> bool:
@@ -88,7 +88,7 @@ def _remove_archive(archive_path: Path) -> None:
         archive_path.unlink()
         logging.debug("Removed archive file: %s", archive_path)
     except OSError as e:
-        logging.warning(f"Failed to remove archive file {archive_path}: {e}")
+        logging.warning("Failed to remove archive file %s: %s", archive_path, e)
 
 
 def get_anime4k_download_link(mode: str = "High") -> str:
@@ -105,7 +105,7 @@ def get_anime4k_download_link(mode: str = "High") -> str:
         Exception: If unable to get release information
     """
     if mode not in ["High", "Medium", "Low", "Ultra"]:
-        logging.warning(f"Unknown mode '{mode}', defaulting to 'High'")
+        logging.warning("Unknown mode '%s', defaulting to 'High'", mode)
         mode = "High"
 
     return _build_download_url(mode)
@@ -126,7 +126,7 @@ def extract_anime4k(zip_path: str, dep_path: str) -> bool:
     dep_path_obj = Path(dep_path)
 
     if not zip_path_obj.exists():
-        logging.error(f"Archive file not found: {zip_path}")
+        logging.error("Archive file not found: %s", zip_path)
         return False
 
     logging.debug("Extracting Anime4K from %s to %s", zip_path, dep_path)
@@ -164,7 +164,7 @@ def download_anime4k(mode: str) -> bool:
             logging.info("Anime4K removed successfully")
             return True
         except Exception as e:
-            logging.error(f"Failed to remove Anime4K: {e}")
+            logging.error("Failed to remove Anime4K: %s", e)
             return False
 
     # Ensure MPV directory exists
@@ -194,7 +194,7 @@ def download_anime4k(mode: str) -> bool:
         return success
 
     except Exception as e:
-        logging.error(f"Failed to download Anime4K: {e}")
+        logging.error("Failed to download Anime4K: %s", e)
         # Clean up partial download
         if archive_path.exists():
             _remove_archive(archive_path)

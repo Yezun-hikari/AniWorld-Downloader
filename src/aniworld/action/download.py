@@ -65,7 +65,7 @@ def _cleanup_partial_files(output_dir: Path) -> None:
             try:
                 file_path.unlink()
             except OSError as e:
-                logging.warning(f"Failed to remove partial file {file_path}: {e}")
+                logging.warning("Failed to remove partial file %s: %s", file_path, e)
         else:
             is_empty = False
 
@@ -74,7 +74,7 @@ def _cleanup_partial_files(output_dir: Path) -> None:
         try:
             output_dir.rmdir()
         except OSError as e:
-            logging.warning(f"Failed to remove empty directory {output_dir}: {e}")
+            logging.warning("Failed to remove empty directory %s: %s", str(output_dir), e)
 
 
 def _get_direct_link(episode, episode_title: str) -> Optional[str]:
@@ -83,8 +83,9 @@ def _get_direct_link(episode, episode_title: str) -> Optional[str]:
         return episode.get_direct_link()
     except Exception as e:
         logging.warning(
-            f'Something went wrong with "{episode_title}".\n'
-            f"Error while trying to find a direct link: {e}"
+            'Something went wrong with "%s".\nError while trying to find a direct link: %s',
+            episode_title,
+            e,
         )
         return None
 
@@ -96,7 +97,7 @@ def _execute_download(command: list[str], output_path: Path) -> bool:
         subprocess.run(command, check=True)
         return True
     except subprocess.CalledProcessError:
-        logging.error(f"Error running command:\n{' '.join(command)}")
+        logging.error("Error running command:\n%s", " ".join(command))
         return False
     except KeyboardInterrupt:
         logging.info("Download interrupted by user")
@@ -115,7 +116,7 @@ def download(anime: Anime) -> None:
         direct_link = _get_direct_link(episode, episode_title)
         if not direct_link:
             logging.warning(
-                f'Something went wrong with "{episode_title}".\nNo direct link found.'
+                'Something went wrong with "%s".\nNo direct link found.', episode_title
             )
             continue
 

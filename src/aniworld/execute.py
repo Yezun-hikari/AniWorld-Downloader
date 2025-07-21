@@ -41,20 +41,22 @@ def _execute_single_anime(anime: Anime) -> bool:
         action_func = ACTION_MAP[anime.action]
         action_func(anime)
         logging.debug(
-            f"Successfully executed {anime.action} for anime: {getattr(anime, 'title', 'Unknown')}"
+            "Successfully executed %s for anime: %s",
+            anime.action,
+            getattr(anime, 'title', 'Unknown')
         )
         return True
 
     except AttributeError as e:
-        logging.error(f"Anime object missing required attributes: {e}")
+        logging.error("Anime object missing required attributes: %s", e)
         return False
 
     except ValueError as e:
-        logging.error(f"Invalid action configuration: {e}")
+        logging.error("Invalid action configuration: %s", e)
         return False
 
     except Exception as e:
-        logging.error(f"Unexpected error executing {anime.action} for anime: {e}")
+        logging.error("Unexpected error executing %s for anime: %s", anime.action, e)
         return False
 
 
@@ -76,7 +78,7 @@ def execute(anime_list: List[Anime]) -> None:
     total_anime = len(anime_list)
 
     for i, anime in enumerate(anime_list, 1):
-        logging.debug(f"Processing anime {i}/{total_anime}")
+        logging.debug("Processing anime %d/%d", i, total_anime)
 
         if _execute_single_anime(anime):
             successful_executions += 1
@@ -86,7 +88,9 @@ def execute(anime_list: List[Anime]) -> None:
         sys.exit(1)
     elif successful_executions < total_anime:
         logging.warning(
-            f"Successfully executed {successful_executions}/{total_anime} anime actions"
+            "Successfully executed %d/%d anime actions",
+            successful_executions,
+            total_anime
         )
     else:
-        logging.debug(f"Successfully executed all {total_anime} anime actions")
+        logging.debug("Successfully executed all %d anime actions", total_anime)

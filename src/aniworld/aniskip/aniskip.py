@@ -33,7 +33,7 @@ def _make_request(
         response.raise_for_status()
         return response
     except requests.RequestException as e:
-        logging.error(f"Request failed for {url}: {e}")
+        logging.error("Request failed for %s: %s", url, e)
         raise
 
 
@@ -127,7 +127,7 @@ def check_episodes(anime_id: int) -> Optional[int]:
         return episode_count
 
     except Exception as e:
-        logging.error(f"Failed to check episodes for anime ID {anime_id}: {e}")
+        logging.error("Failed to check episodes for anime ID %s: %s", anime_id, e)
         return None
 
 
@@ -178,7 +178,7 @@ def get_mal_id_from_title(title: str, season: int) -> Optional[int]:
         return current_id
 
     except Exception as e:
-        logging.error(f"Failed to get MAL ID for {title}: {e}")
+        logging.error("Failed to get MAL ID for %s: %s", title, e)
         return None
 
 
@@ -209,7 +209,7 @@ def get_sequel_anime_id(anime_id: int) -> Optional[int]:
         return int(sequel_id)
 
     except Exception as e:
-        logging.error(f"Failed to get sequel for anime ID {anime_id}: {e}")
+        logging.error("Failed to get sequel for anime ID %s: %s", anime_id, e)
         return None
 
 
@@ -264,7 +264,7 @@ def build_options(metadata: Dict, chapters_file: str) -> str:
         return ",".join(options)
 
     except Exception as e:
-        logging.error(f"Failed to build options: {e}")
+        logging.error("Failed to build options: %s", e)
         return ""
 
 
@@ -314,7 +314,7 @@ def build_flags(anime_id: str, episode: int, chapters_file: str) -> str:
             return ""
 
     except Exception as e:
-        logging.error(f"Failed to build flags: {e}")
+        logging.error("Failed to build flags: %s", e)
         return ""
 
 
@@ -342,7 +342,7 @@ def setup_aniskip() -> bool:
         return True
 
     except Exception as e:
-        logging.error(f"Failed to setup aniskip: {e}")
+        logging.error("Failed to setup aniskip: %s", e)
         return False
 
 
@@ -390,7 +390,7 @@ def aniskip(title: str, episode: int, season: int, aniworld_episodes: int) -> st
             return build_flags(str(anime_id), episode, chapters_file.name)
 
     except Exception as e:
-        logging.error(f"Aniskip failed for {title}: {e}")
+        logging.error("Aniskip failed for %s: %s", title, e)
         return ""
 
 

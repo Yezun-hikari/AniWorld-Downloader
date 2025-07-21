@@ -34,7 +34,7 @@ def main() -> NoReturn:
         print("\n\nOperation cancelled by user.", file=sys.stderr)
         sys.exit(130)  # Standard exit code for SIGINT
     except Exception as e:
-        logging.error(f"Unexpected error: {e}", exc_info=True)
+        logging.error("Unexpected error: %s", e, exc_info=True)
         print(f"\nAn unexpected error occurred: {e}", file=sys.stderr)
         print("Please check the logs for more details.", file=sys.stderr)
         sys.exit(1)

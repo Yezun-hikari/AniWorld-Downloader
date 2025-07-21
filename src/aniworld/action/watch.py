@@ -41,8 +41,9 @@ def _get_direct_link(episode, episode_title: str) -> Optional[str]:
         return episode.get_direct_link()
     except Exception as e:
         logging.warning(
-            f'Something went wrong with "{episode_title}".\n'
-            f"Error while trying to find a direct link: {e}"
+            'Something went wrong with "%s".\nError while trying to find a direct link: %s',
+            episode_title,
+            e,
         )
         return None
 
@@ -60,7 +61,7 @@ def _get_aniskip_data(anime: Anime, episode) -> Optional[str]:
             episode.season_episode_count[episode.season],
         )
     except Exception as e:
-        logging.warning(f"Failed to get aniskip data for {anime.title}: {e}")
+        logging.warning("Failed to get aniskip data for %s: %s", anime.title, e)
         return None
 
 
@@ -128,7 +129,7 @@ def _process_anime_episodes(anime: Anime) -> None:
         direct_link = _get_direct_link(episode, episode_title)
         if not direct_link:
             logging.warning(
-                f'Something went wrong with "{episode_title}".\nNo direct link found.'
+                'Something went wrong with "%s".\nNo direct link found.', episode_title
             )
             continue
 
@@ -172,5 +173,5 @@ def watch(anime: Optional[Anime] = None) -> None:
     except KeyboardInterrupt:
         logging.info("Watch session interrupted by user")
     except Exception as e:
-        logging.error(f"Error in watch session: {e}")
+        logging.error("Error in watch session: %s", e)
         raise
