@@ -2,7 +2,7 @@ import re
 import subprocess
 import logging
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List
 
 from aniworld.models import Anime
 from aniworld.config import PROVIDER_HEADERS_D, INVALID_PATH_CHARS
@@ -28,7 +28,7 @@ def _get_output_filename(anime: Anime, episode, sanitized_title: str) -> str:
     return f"{sanitized_title} - S{episode.season:02}E{episode.episode:03} - ({anime.language}).mp4"
 
 
-def _build_ytdl_command(direct_link: str, output_path: str, anime: Anime) -> list[str]:
+def _build_ytdl_command(direct_link: str, output_path: str, anime: Anime) -> List[str]:
     """Build yt-dlp command with all necessary parameters."""
     command = [
         "yt-dlp",
@@ -74,7 +74,9 @@ def _cleanup_partial_files(output_dir: Path) -> None:
         try:
             output_dir.rmdir()
         except OSError as e:
-            logging.warning("Failed to remove empty directory %s: %s", str(output_dir), e)
+            logging.warning(
+                "Failed to remove empty directory %s: %s", str(output_dir), e
+            )
 
 
 def _get_direct_link(episode, episode_title: str) -> Optional[str]:
@@ -90,7 +92,7 @@ def _get_direct_link(episode, episode_title: str) -> Optional[str]:
         return None
 
 
-def _execute_download(command: list[str], output_path: Path) -> bool:
+def _execute_download(command: List[str], output_path: Path) -> bool:
     """Execute download command with error handling."""
     try:
         print(f"Downloading to {output_path}...")

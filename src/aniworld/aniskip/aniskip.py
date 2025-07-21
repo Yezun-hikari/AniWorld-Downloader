@@ -310,8 +310,8 @@ def build_flags(anime_id: str, episode: int, chapters_file: str) -> str:
 
         if options:
             return f"--chapters-file={chapters_file} --script-opts={options}"
-        else:
-            return ""
+
+        return ""
 
     except Exception as e:
         logging.error("Failed to build flags: %s", e)

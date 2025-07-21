@@ -98,7 +98,8 @@ class SelectionMenu(npyscreen.NPSApp):
         Extract anime data for UI population.
 
         Returns:
-            Tuple of (available_languages, season_episode_count, movie_episode_count, available_providers)
+            Tuple of (available_languages, season_episode_count,
+            movie_episode_count, available_providers)
         """
         try:
             anime_data = self.anime[0]
@@ -710,7 +711,7 @@ def menu(arguments: Any, slug: str) -> Anime:
         # Ensure terminal is properly restored
         try:
             curses.endwin()
-        except:
+        except Exception:
             pass
 
 

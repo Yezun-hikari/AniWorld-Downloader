@@ -401,7 +401,11 @@ class Anime:
 
     def __str__(self) -> str:
         """String representation of anime."""
-        return f"Anime(title='{self.title}', episodes={len(self.episode_list)}, action='{self.action}')"
+        return (
+            f"Anime(title='{self.title}', "
+            f"episodes={len(self.episode_list)}, "
+            f"action='{self.action}')"
+        )
 
     def __repr__(self) -> str:
         """Detailed string representation for debugging."""
@@ -846,7 +850,8 @@ class Episode:
         if language_key is None:
             valid_languages = list(site_language_codes.keys())
             raise ValueError(
-                f"Invalid language: {language_name}. Valid options for {self.site}: {valid_languages}"
+                f"Invalid language: {language_name}. "
+                f"Valid options for {self.site}: {valid_languages}"
             )
 
         return language_key
@@ -1080,7 +1085,10 @@ class Episode:
                 and self.episode is not None
             ):
                 if self.season == 0:  # Movie
-                    self.link = f"{self.base_url}/{self.stream_path}/{self.slug}/filme/film-{self.episode}"
+                    self.link = (
+                        f"{self.base_url}/{self.stream_path}/{self.slug}/filme/"
+                        f"film-{self.episode}"
+                    )
                 else:  # Regular episode
                     self.link = (
                         f"{self.base_url}/{self.stream_path}/{self.slug}/"

@@ -43,7 +43,7 @@ def _execute_single_anime(anime: Anime) -> bool:
         logging.debug(
             "Successfully executed %s for anime: %s",
             anime.action,
-            getattr(anime, 'title', 'Unknown')
+            getattr(anime, "title", "Unknown"),
         )
         return True
 
@@ -90,7 +90,7 @@ def execute(anime_list: List[Anime]) -> None:
         logging.warning(
             "Successfully executed %d/%d anime actions",
             successful_executions,
-            total_anime
+            total_anime,
         )
     else:
         logging.debug("Successfully executed all %d anime actions", total_anime)

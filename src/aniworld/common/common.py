@@ -45,7 +45,7 @@ def _make_request(
         response.raise_for_status()
         return response
     except requests.RequestException as e:
-        logging.error(f"Request failed for {url}: {e}")
+        logging.error("Request failed for %s: %s", url, e)
         raise
 
 
@@ -68,10 +68,10 @@ def _run_command(
         )
         return True
     except subprocess.CalledProcessError as e:
-        logging.error(f"Command failed: {command} - {e}")
+        logging.error("Command failed: %s - %s", command, e)
         return False
     except (FileNotFoundError, OSError) as e:
-        logging.error(f"Command execution error: {e}")
+        logging.error("Command execution error: %s", e)
         return False
 
 
@@ -93,9 +93,9 @@ def _remove_file_safe(file_path: str) -> None:
     try:
         if os.path.exists(file_path):
             os.remove(file_path)
-            logging.debug(f"Removed file: {file_path}")
+            logging.debug("Removed file: %s", file_path)
     except OSError as e:
-        logging.warning(f"Failed to remove file {file_path}: {e}")
+        logging.warning("Failed to remove file %s: %s", file_path, e)
 
 
 def _remove_directory_safe(dir_path: str) -> None:
@@ -103,9 +103,9 @@ def _remove_directory_safe(dir_path: str) -> None:
     try:
         if os.path.exists(dir_path):
             shutil.rmtree(dir_path)
-            logging.debug(f"Removed directory: {dir_path}")
+            logging.debug("Removed directory: %s", dir_path)
     except OSError as e:
-        logging.warning(f"Failed to remove directory {dir_path}: {e}")
+        logging.warning("Failed to remove directory %s: %s", dir_path, e)
 
 
 def check_avx2_support() -> bool:
@@ -124,7 +124,7 @@ def check_avx2_support() -> bool:
         logging.warning("cpuinfo package not available, assuming no AVX2 support")
         return False
     except Exception as e:
-        logging.error(f"Error checking AVX2 support: {e}")
+        logging.error("Error checking AVX2 support: %s", e)
         return False
 
 
@@ -146,7 +146,7 @@ def get_github_release(repo: str) -> Dict[str, str]:
         assets = release_data.get("assets", [])
         return {asset["name"]: asset["browser_download_url"] for asset in assets}
     except (json.JSONDecodeError, requests.RequestException) as e:
-        logging.error(f"Failed to fetch release data from GitHub: {e}")
+        logging.error("Failed to fetch release data from GitHub: %s", e)
         return {}
 
 
@@ -183,14 +183,14 @@ def download_file(url: str, path: str) -> bool:
                 f.write(data)
                 pbar.update(len(data))
 
-        logging.info(f"Successfully downloaded: {path}")
+        logging.info("Successfully downloaded: %s", path)
         return True
 
     except requests.RequestException as e:
-        logging.error(f"Failed to download {url}: {e}")
+        logging.error("Failed to download %s: %s", url, e)
         return False
     except OSError as e:
-        logging.error(f"Failed to write file {path}: {e}")
+        logging.error("Failed to write file %s: %s", path, e)
         return False
 
 
@@ -208,14 +208,14 @@ def _install_with_homebrew(package: str, update: bool = False) -> bool:
         return False
 
     if update:
-        logging.info(f"Updating {package} using Homebrew...")
+        logging.info("Updating %s using Homebrew...", package)
         success = _run_command(["brew", "update"])
         if success:
             success = _run_command(["brew", "upgrade", "--formula", package])
     else:
         if shutil.which(package):
             return True
-        logging.info(f"Installing {package} using Homebrew...")
+        logging.info("Installing %s using Homebrew...", package)
         success = _run_command(["brew", "update"])
         if success:
             success = _run_command(["brew", "install", "--formula", package])
@@ -231,7 +231,7 @@ def _install_with_package_manager(package: str) -> bool:
         return False
 
     install_cmd = PACKAGE_MANAGERS[pm].format(package)
-    logging.info(f"Installing {package} using {pm}...")
+    logging.info("Installing %s using %s...", package, pm)
     return _run_command(
         install_cmd.split()
         if not any(op in install_cmd for op in ["&&", "||", ";"])
@@ -249,12 +249,14 @@ def _get_mpv_download_link(direct_links: Dict[str, str]) -> Optional[str]:
         else r"mpv-x86_64-\d{8}-git-[a-f0-9]{7}\.7z"
     )
 
-    logging.debug(f"Searching for MPV using pattern: {pattern}")
+    logging.debug("Searching for MPV using pattern: %s", pattern)
 
     for name, link in direct_links.items():
         if re.match(pattern, name):
             logging.info(
-                f"Found MPV download: {name} ({'with' if avx2_supported else 'without'} AVX2)"
+                "Found MPV download: %s (%s AVX2)",
+                name,
+                "with" if avx2_supported else "without",
             )
             return link
 
@@ -266,7 +268,7 @@ def _extract_with_7z(zip_tool: str, zip_path: str, dest_path: str) -> bool:
     try:
         return _run_command([zip_tool, "x", zip_path], cwd=dest_path)
     except Exception as e:
-        logging.error(f"Failed to extract with 7z: {e}")
+        logging.error("Failed to extract with 7z: %s", e)
         return False
 
 
@@ -275,7 +277,7 @@ def _extract_with_tar(zip_path: str, dest_path: str) -> bool:
     try:
         return _run_command(["tar", "-xf", zip_path], cwd=dest_path)
     except Exception as e:
-        logging.error(f"Failed to extract with tar: {e}")
+        logging.error("Failed to extract with tar: %s", e)
         return False
 
 
@@ -354,7 +356,7 @@ def download_mpv(
         return False
 
     # Add to PATH
-    logging.debug(f"Adding MPV path to environment: {dep_path}")
+    logging.debug("Adding MPV path to environment: %s", dep_path)
     os.environ["PATH"] += os.pathsep + dep_path
 
     # Cleanup
@@ -368,7 +370,7 @@ def _get_syncplay_download_link(direct_links: Dict[str, str]) -> Optional[str]:
     """Get Syncplay download link."""
     for name, link in direct_links.items():
         if re.match(r"Syncplay_\d+\.\d+\.\d+_Portable\.zip", name):
-            logging.info(f"Found Syncplay download: {name}")
+            logging.info("Found Syncplay download: %s", name)
             return link
     return None
 
@@ -484,13 +486,13 @@ def get_season_episode_count(slug: str) -> Dict[int, int]:
                 season_soup = BeautifulSoup(season_response.content, "html.parser")
                 episode_counts[season] = _parse_season_episodes(season_soup, season)
             except Exception as e:
-                logging.warning(f"Failed to get episodes for season {season}: {e}")
+                logging.warning("Failed to get episodes for season %d: %s", season, e)
                 episode_counts[season] = 0
 
         return episode_counts
 
     except Exception as e:
-        logging.error(f"Failed to get season episode count for {slug}: {e}")
+        logging.error("Failed to get season episode count for %s: %s", slug, e)
         return {}
 
 
@@ -529,7 +531,7 @@ def get_movie_episode_count(slug: str) -> int:
         return max(movie_indices) if movie_indices else 0
 
     except Exception as e:
-        logging.error(f"Failed to get movie count for {slug}: {e}")
+        logging.error("Failed to get movie count for %s: %s", slug, e)
         return 0
 
 
@@ -570,7 +572,7 @@ def _process_base_url(
             slug_cache[series_slug] = (seasons_info, movies_info)
 
     except (ValueError, IndexError) as e:
-        logging.warning(f"Failed to parse URL {base_url}: {e}")
+        logging.warning("Failed to parse URL %s: %s", base_url, e)
         unique_links.add(base_url)
         return unique_links
 
@@ -681,7 +683,7 @@ def generate_links(urls: List[str], arguments) -> List[str]:
             links = _process_base_url(base_url, arguments, slug_cache)
             unique_links.update(links)
         except Exception as e:
-            logging.error(f"Failed to process URL {base_url}: {e}")
+            logging.error("Failed to process URL %s: %s", base_url, e)
             unique_links.add(base_url)
 
     return sorted(unique_links, key=_natural_sort_key)
@@ -697,10 +699,10 @@ def remove_anime4k() -> None:
 
     for path in anime4k_paths:
         if os.path.isdir(path):
-            logging.info(f"Removing directory: {path}")
+            logging.info("Removing directory: %s", path)
             _remove_directory_safe(path)
         elif os.path.exists(path):
-            logging.info(f"Removing file: {path}")
+            logging.info("Removing file: %s", path)
             _remove_file_safe(path)
 
 
@@ -712,7 +714,7 @@ def remove_mpv_scripts() -> None:
     for script in scripts:
         script_path = os.path.join(scripts_dir, script)
         if os.path.exists(script_path):
-            logging.info(f"Removing script: {script_path}")
+            logging.info("Removing script: %s", script_path)
             _remove_file_safe(script_path)
 
 
@@ -737,24 +739,28 @@ def copy_file_if_different(source_path: str, destination_path: str) -> bool:
 
             if source_content != destination_content:
                 logging.debug(
-                    f"Content differs, overwriting {os.path.basename(destination_path)}"
+                    "Content differs, overwriting %s",
+                    os.path.basename(destination_path),
                 )
                 shutil.copy(source_path, destination_path)
                 return True
             else:
                 logging.debug(
-                    f"{os.path.basename(destination_path)} already exists and is identical"
+                    "%s already exists and is identical",
+                    os.path.basename(destination_path),
                 )
                 return False
         else:
             logging.debug(
-                f"Copying {os.path.basename(source_path)} to {os.path.dirname(destination_path)}"
+                "Copying %s to %s",
+                os.path.basename(source_path),
+                os.path.dirname(destination_path),
             )
             shutil.copy(source_path, destination_path)
             return True
 
     except Exception as e:
-        logging.error(f"Failed to copy {source_path} to {destination_path}: {e}")
+        logging.error("Failed to copy %s to %s: %s", source_path, destination_path, e)
         return False
 
 
@@ -773,7 +779,7 @@ def _setup_script(script_name: str) -> bool:
         return copy_file_if_different(str(source_path), str(destination_path))
 
     except Exception as e:
-        logging.error(f"Failed to setup {script_name}: {e}")
+        logging.error("Failed to setup %s: %s", script_name, e)
         return False
 
 

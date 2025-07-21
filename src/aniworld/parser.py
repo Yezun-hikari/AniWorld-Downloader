@@ -277,13 +277,14 @@ def _handle_uninstall() -> None:
             command = "pip uninstall -y aniworld"
 
         print("pip uninstall -y aniworld")
-        subprocess.Popen(
+        with subprocess.Popen(
             command,
             shell=True,
             creationflags=subprocess.CREATE_NEW_CONSOLE
             if sys.platform.startswith("win")
             else 0,
-        )
+        ):
+            pass
     except Exception as e:
         logging.error("Error during uninstallation: %s", e)
         sys.exit(1)
@@ -479,8 +480,8 @@ def _open_terminal_with_command(command: str) -> None:
 
     for terminal, cmd in terminal_emulators:
         try:
-            subprocess.Popen(cmd)
-            return
+            with subprocess.Popen(cmd):
+                return
         except FileNotFoundError:
             logging.debug("%s not found, trying next option.", terminal)
         except subprocess.SubprocessError as e:

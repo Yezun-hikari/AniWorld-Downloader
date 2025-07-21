@@ -5,6 +5,8 @@ import subprocess
 import shutil
 from pathlib import Path
 
+import zipfile
+
 from aniworld.config import MPV_DIRECTORY
 from aniworld.common import get_github_release, download_file, remove_anime4k
 
@@ -69,8 +71,6 @@ def _extract_with_tar(zip_path: Path, dest_path: Path) -> bool:
 def _extract_with_python(zip_path: Path, dest_path: Path) -> bool:
     """Extract archive using Python's zipfile module as fallback."""
     try:
-        import zipfile
-
         with zipfile.ZipFile(zip_path, "r") as zip_ref:
             zip_ref.extractall(dest_path)
         logging.debug(
@@ -143,9 +143,9 @@ def extract_anime4k(zip_path: str, dep_path: str) -> bool:
         _cleanup_macos_artifacts(dep_path_obj)
         logging.info("Successfully extracted Anime4K")
         return True
-    else:
-        logging.error("Failed to extract Anime4K archive")
-        return False
+
+    logging.error("Failed to extract Anime4K archive")
+    return False
 
 
 def download_anime4k(mode: str) -> bool:
