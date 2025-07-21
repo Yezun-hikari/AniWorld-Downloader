@@ -4,7 +4,6 @@ import logging
 import subprocess
 import shutil
 from pathlib import Path
-from typing import Optional
 
 from aniworld.config import MPV_DIRECTORY
 from aniworld.common import get_github_release, download_file, remove_anime4k

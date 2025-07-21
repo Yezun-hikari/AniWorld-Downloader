@@ -3,7 +3,7 @@ import json
 import logging
 import re
 from functools import lru_cache
-from typing import Dict, List, Optional, Tuple, Union, Any
+from typing import Dict, List, Optional, Tuple, Any
 
 import requests
 import requests.models

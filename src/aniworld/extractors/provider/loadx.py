@@ -2,7 +2,7 @@ import requests
 import json
 import logging
 import sys
-from typing import Dict, Any, Optional
+from typing import Dict, Optional
 from urllib.parse import urlparse
 
 from aniworld.config import DEFAULT_REQUEST_TIMEOUT

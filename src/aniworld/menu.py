@@ -2,7 +2,7 @@ import curses
 import logging
 import os
 import sys
-from typing import Dict, List, Optional, Tuple, Any, Union
+from typing import Dict, List, Optional, Tuple, Any
 
 import npyscreen
 import urllib3

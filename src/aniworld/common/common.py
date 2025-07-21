@@ -520,7 +520,7 @@ def _process_base_url(base_url: str, arguments, slug_cache: Dict[str, Tuple[Dict
     unique_links = set()
     parts = base_url.split('/')
 
-    if not ("anime" in parts and (not "episode" in base_url and not "film-" in base_url or arguments.keep_watching)):
+    if not ("anime" in parts and ("episode" not in base_url and "film-" not in base_url or arguments.keep_watching)):
         unique_links.add(base_url)
         return unique_links
 

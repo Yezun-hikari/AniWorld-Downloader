@@ -2,7 +2,7 @@ import re
 import json
 import sys
 import logging
-from typing import Dict, List, Optional, Any, Union
+from typing import Dict, List, Optional, Any
 from urllib.parse import urlparse
 
 import requests

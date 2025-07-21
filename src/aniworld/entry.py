@@ -1,7 +1,7 @@
 import traceback
 import logging
 import sys
-from typing import List, Optional
+from typing import List
 
 from aniworld.ascii_art import display_traceback_art
 from aniworld.action import watch, syncplay

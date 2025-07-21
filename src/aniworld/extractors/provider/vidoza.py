@@ -1,5 +1,4 @@
 import re
-from typing import Optional
 
 import requests
 from bs4 import BeautifulSoup
