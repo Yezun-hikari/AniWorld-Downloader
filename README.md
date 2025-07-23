@@ -229,7 +229,7 @@ aniworld --episode-file test.txt --language "German Dub"
 
 This can also be combined with `Watch` and `Syncplay` actions, as well as other arguments, for a more customized experience.
 
-#### Example 6: Use an Episode File
+#### Example 6: Use a custom provider URL
 
 Download a provider link. It's important to note that you also need to specify the provider manually.
 
