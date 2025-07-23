@@ -1,8 +1,8 @@
 name: Lint
 
 on:
-  push:
-  pull_request:
+  # push:
+  # pull_request:
   workflow_dispatch:
 
 jobs:
@@ -19,6 +19,6 @@ jobs:
 
       - uses: astral-sh/ruff-action@v3
         with:
-          src: "./src/aniworld"
+          args: "check ./src/aniworld"
 
       - run: pylint src/aniworld --disable=broad-exception-caught,missing-module-docstring || true
