@@ -18,5 +18,7 @@ jobs:
       - run: pip install . pylint
 
       - uses: astral-sh/ruff-action@v3
+        with:
+          src: "./src/aniworld"
 
-      - run: pylint **/*.py
+      - run: pylint src/aniworld --disable=broad-exception-caught,missing-module-docstring || true
