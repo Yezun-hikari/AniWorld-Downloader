@@ -5,7 +5,7 @@ import sys
 from typing import Dict, Optional
 from urllib.parse import urlparse
 
-from aniworld.config import DEFAULT_REQUEST_TIMEOUT
+from ...config import DEFAULT_REQUEST_TIMEOUT
 
 # Setup module logger
 logger = logging.getLogger(__name__)
@@ -29,7 +29,8 @@ def _validate_loadx_url(url: str) -> str:
 
     url = url.strip()
     if not url.startswith(("http://", "https://")):
-        raise ValueError("Invalid URL format - must start with http:// or https://")
+        raise ValueError(
+            "Invalid URL format - must start with http:// or https://")
 
     try:
         parsed_url = urlparse(url)
@@ -189,7 +190,8 @@ def get_direct_link_from_loadx(embeded_loadx_link: str) -> str:
         logger.info(f"Extracting video from LoadX URL: {validated_url}")
 
         # Follow redirects to get actual URL
-        response = _make_request(validated_url, method="HEAD", allow_redirects=True)
+        response = _make_request(
+            validated_url, method="HEAD", allow_redirects=True)
 
         # Extract ID hash and host from final URL
         id_hash, host = _extract_id_hash_from_url(response.url)

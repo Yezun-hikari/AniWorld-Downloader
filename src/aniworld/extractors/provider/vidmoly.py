@@ -3,7 +3,7 @@ import re
 import requests
 from bs4 import BeautifulSoup
 
-from aniworld.config import DEFAULT_REQUEST_TIMEOUT, RANDOM_USER_AGENT
+from ...config import DEFAULT_REQUEST_TIMEOUT, RANDOM_USER_AGENT
 
 
 # Compile regex pattern once for better performance

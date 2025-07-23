@@ -4,9 +4,9 @@ import logging
 from pathlib import Path
 from typing import Optional, List
 
-from aniworld.models import Anime
-from aniworld.config import PROVIDER_HEADERS_D, INVALID_PATH_CHARS
-from aniworld.parser import arguments
+from ..models import Anime
+from ..config import PROVIDER_HEADERS_D, INVALID_PATH_CHARS
+from ..parser import arguments
 
 
 def _sanitize_filename(filename: str) -> str:
@@ -65,7 +65,8 @@ def _cleanup_partial_files(output_dir: Path) -> None:
             try:
                 file_path.unlink()
             except OSError as e:
-                logging.warning("Failed to remove partial file %s: %s", file_path, e)
+                logging.warning(
+                    "Failed to remove partial file %s: %s", file_path, e)
         else:
             is_empty = False
 
@@ -129,8 +130,10 @@ def download(anime: Anime) -> None:
             continue
 
         # Generate output path
-        output_file = _get_output_filename(anime, episode, sanitized_anime_title)
-        output_path = Path(arguments.output_dir) / sanitized_anime_title / output_file
+        output_file = _get_output_filename(
+            anime, episode, sanitized_anime_title)
+        output_path = Path(arguments.output_dir) / \
+            sanitized_anime_title / output_file
 
         # Ensure output directory exists
         output_path.parent.mkdir(parents=True, exist_ok=True)

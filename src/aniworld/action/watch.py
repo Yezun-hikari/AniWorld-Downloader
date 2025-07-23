@@ -2,11 +2,11 @@ import subprocess
 import logging
 from typing import Optional, List
 
-from aniworld.aniskip import aniskip
-from aniworld.common import download_mpv
-from aniworld.config import MPV_PATH, PROVIDER_HEADERS_W, INVALID_PATH_CHARS
-from aniworld.models import Anime
-from aniworld.parser import arguments
+from ..aniskip import aniskip
+from ..common import download_mpv
+from ..config import MPV_PATH, PROVIDER_HEADERS_W, INVALID_PATH_CHARS
+from ..models import Anime
+from ..parser import arguments
 
 
 def _sanitize_filename(filename: str) -> str:
@@ -61,7 +61,8 @@ def _get_aniskip_data(anime: Anime, episode) -> Optional[str]:
             episode.season_episode_count[episode.season],
         )
     except Exception as e:
-        logging.warning("Failed to get aniskip data for %s: %s", anime.title, e)
+        logging.warning(
+            "Failed to get aniskip data for %s: %s", anime.title, e)
         return None
 
 
@@ -105,7 +106,8 @@ def _execute_command(title: str, command: List[str]) -> None:
         logging.debug("Running Command:\n%s", command)
         subprocess.run(command, check=True)
     except subprocess.CalledProcessError as e:
-        logging.error("Error running command: %s\nCommand: %s", e, " ".join(command))
+        logging.error("Error running command: %s\nCommand: %s",
+                      e, " ".join(command))
     except KeyboardInterrupt:
         logging.info("Watch session interrupted by user")
         raise

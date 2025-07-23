@@ -7,8 +7,8 @@ from pathlib import Path
 
 import zipfile
 
-from aniworld.config import MPV_DIRECTORY
-from aniworld.common import get_github_release, download_file, remove_anime4k
+from ..config import MPV_DIRECTORY
+from ..common import get_github_release, download_file, remove_anime4k
 
 
 def _get_os_type() -> str:
@@ -61,7 +61,8 @@ def _extract_with_tar(zip_path: Path, dest_path: Path) -> bool:
         logging.debug("Successfully extracted %s to %s", zip_path, dest_path)
         return True
     except subprocess.CalledProcessError as e:
-        logging.error("Failed to extract with tar: %s", e.stderr if e.stderr else e)
+        logging.error("Failed to extract with tar: %s",
+                      e.stderr if e.stderr else e)
         return False
     except FileNotFoundError:
         logging.error("tar command not found")
@@ -88,7 +89,8 @@ def _remove_archive(archive_path: Path) -> None:
         archive_path.unlink()
         logging.debug("Removed archive file: %s", archive_path)
     except OSError as e:
-        logging.warning("Failed to remove archive file %s: %s", archive_path, e)
+        logging.warning("Failed to remove archive file %s: %s",
+                        archive_path, e)
 
 
 def get_anime4k_download_link(mode: str = "High") -> str:
@@ -187,7 +189,8 @@ def download_anime4k(mode: str) -> bool:
         success = extract_anime4k(str(archive_path), str(mpv_path))
 
         if success:
-            logging.info("Anime4K download and extraction completed successfully")
+            logging.info(
+                "Anime4K download and extraction completed successfully")
         else:
             logging.error("Anime4K extraction failed")
 

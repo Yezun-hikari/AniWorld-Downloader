@@ -6,7 +6,7 @@ from urllib.parse import urlparse
 
 import requests
 
-from aniworld import config
+from ... import config
 
 # Setup module logger
 logger = logging.getLogger(__name__)
@@ -30,7 +30,8 @@ def _validate_luluvdo_url(url: str) -> str:
 
     url = url.strip()
     if not url.startswith(("http://", "https://")):
-        raise ValueError("Invalid URL format - must start with http:// or https://")
+        raise ValueError(
+            "Invalid URL format - must start with http:// or https://")
 
     try:
         parsed_url = urlparse(url)
@@ -217,7 +218,8 @@ def get_direct_link_from_luluvdo(
 
         # Check response status
         if response.status_code != 200:
-            raise ValueError(f"Server returned status code: {response.status_code}")
+            raise ValueError(
+                f"Server returned status code: {response.status_code}")
 
         # Extract video URL
         video_url = _extract_video_url(response.text)

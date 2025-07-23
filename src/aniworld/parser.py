@@ -13,15 +13,15 @@ from typing import Dict, List, Optional, Callable
 
 import requests
 
-from aniworld.common import (
+from .common import (
     download_mpv,
     download_syncplay,
     remove_anime4k,
     remove_mpv_scripts,
 )
-from aniworld.extractors.provider.hanime import get_direct_link_from_hanime
-from aniworld.anime4k import download_anime4k
-from aniworld import config
+from .extractors.provider.hanime import get_direct_link_from_hanime
+from .anime4k import download_anime4k
+from . import config
 
 
 class CaseInsensitiveChoices:
@@ -73,7 +73,8 @@ def get_random_anime_slug(genre: str) -> Optional[str]:
         genre = "all"
 
     url = f"{config.ANIWORLD_TO}/ajax/randomGeneratorSeries"
-    data = {"productionStart": "all", "productionEnd": "all", "genres[]": genre}
+    data = {"productionStart": "all",
+            "productionEnd": "all", "genres[]": genre}
     headers = {"User-Agent": config.RANDOM_USER_AGENT}
 
     try:
@@ -95,7 +96,8 @@ def get_random_anime_slug(genre: str) -> Optional[str]:
     except requests.RequestException as e:
         logging.error("Network request failed for genre '%s': %s", genre, e)
     except (json.JSONDecodeError, KeyError, TypeError) as e:
-        logging.error("Error processing response data for genre '%s': %s", genre, e)
+        logging.error(
+            "Error processing response data for genre '%s': %s", genre, e)
     except Exception as e:
         logging.error(
             "Unexpected error getting random anime for genre '%s': %s", genre, e
@@ -184,7 +186,8 @@ def _add_action_arguments(parser: argparse.ArgumentParser) -> None:
     action_opts.add_argument(
         "-L",
         "--language",
-        type=CaseInsensitiveChoices(["German Dub", "English Sub", "German Sub"]),
+        type=CaseInsensitiveChoices(
+            ["German Dub", "English Sub", "German Sub"]),
         default=config.DEFAULT_LANGUAGE,
         help="Specify the language for playback or download.",
     )
@@ -322,9 +325,11 @@ def _handle_provider_links(args: argparse.Namespace) -> None:
         return
 
     # Validate provider links
-    invalid_links = [link for link in args.provider_link if not link.startswith("http")]
+    invalid_links = [
+        link for link in args.provider_link if not link.startswith("http")]
     if invalid_links:
-        logging.error("Invalid provider episode URLs: %s", ", ".join(invalid_links))
+        logging.error("Invalid provider episode URLs: %s",
+                      ", ".join(invalid_links))
         sys.exit(1)
 
     # Handle hanime.tv links specially
@@ -371,7 +376,8 @@ def _handle_provider_links(args: argparse.Namespace) -> None:
     if args.provider in config.SUPPORTED_PROVIDERS:
         try:
             module = importlib.import_module("aniworld.extractors")
-            func = getattr(module, f"get_direct_link_from_{args.provider.lower()}")
+            func = getattr(
+                module, f"get_direct_link_from_{args.provider.lower()}")
 
             for provider_episode in args.provider_link:
                 direct_link = f'"{func(provider_episode)}"'
@@ -565,7 +571,8 @@ def _handle_hanime_episodes(args: argparse.Namespace) -> None:
     args.provider_link.extend(hanime_episodes)
 
     logging.info(
-        "Moved %d hanime.tv URL(s) to provider link processing", len(hanime_episodes)
+        "Moved %d hanime.tv URL(s) to provider link processing", len(
+            hanime_episodes)
     )
 
 

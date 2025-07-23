@@ -36,7 +36,8 @@ class CriticalErrorHandler(logging.Handler):
 logging.basicConfig(
     level=logging.DEBUG,
     format="%(levelname)s:%(name)s:%(funcName)s: %(message)s",
-    handlers=[logging.FileHandler(log_file_path, mode="w"), CriticalErrorHandler()],
+    handlers=[logging.FileHandler(
+        log_file_path, mode="w"), CriticalErrorHandler()],
 )
 
 console_handler = logging.StreamHandler()
@@ -234,7 +235,8 @@ def _get_mpv_path():
     """Get MPV path with caching"""
     mpv_path = shutil.which("mpv")
     if _IS_WINDOWS and not mpv_path:
-        mpv_path = os.path.join(os.getenv("APPDATA", ""), "aniworld", "mpv", "mpv.exe")
+        mpv_path = os.path.join(os.getenv("APPDATA", ""),
+                                "aniworld", "mpv", "mpv.exe")
     return mpv_path
 
 
@@ -244,10 +246,12 @@ def _get_syncplay_path():
     syncplay_path = shutil.which("syncplay")
     if _IS_WINDOWS:
         if syncplay_path:
-            syncplay_path = syncplay_path.replace("syncplay.EXE", "SyncplayConsole.exe")
+            syncplay_path = syncplay_path.replace(
+                "syncplay.EXE", "SyncplayConsole.exe")
         else:
             syncplay_path = os.path.join(
-                os.getenv("APPDATA", ""), "aniworld", "syncplay", "SyncplayConsole.exe"
+                os.getenv(
+                    "APPDATA", ""), "aniworld", "syncplay", "SyncplayConsole.exe"
             )
     return syncplay_path
 

@@ -3,14 +3,14 @@ import logging
 import sys
 from typing import List
 
-from aniworld.ascii_art import display_traceback_art
-from aniworld.action import watch, syncplay
-from aniworld.models import Anime, Episode, SUPPORTED_SITES
-from aniworld.parser import arguments
-from aniworld.search import search_anime
-from aniworld.execute import execute
-from aniworld.menu import menu
-from aniworld.common import generate_links
+from .ascii_art import display_traceback_art
+from .action import watch, syncplay
+from .models import Anime, Episode, SUPPORTED_SITES
+from .parser import arguments
+from .search import search_anime
+from .execute import execute
+from .menu import menu
+from .common import generate_links
 
 
 def _detect_site_from_url(url: str) -> str:
@@ -45,10 +45,12 @@ def _read_episode_file(episode_file: str) -> List[str]:
     try:
         with open(episode_file, "r", encoding="UTF-8") as file:
             # Use list comprehension for better performance
-            urls = [line.strip() for line in file if line.strip().startswith("http")]
+            urls = [line.strip()
+                    for line in file if line.strip().startswith("http")]
             return urls
     except FileNotFoundError:
-        logging.error("The specified episode file does not exist: %s", episode_file)
+        logging.error(
+            "The specified episode file does not exist: %s", episode_file)
         sys.exit(1)
     except IOError as e:
         logging.error("Error reading the episode file: %s", e)

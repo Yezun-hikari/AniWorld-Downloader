@@ -6,8 +6,8 @@ import sys
 import logging
 from typing import NoReturn
 
-from aniworld.entry import aniworld
-from aniworld.config import VERSION, IS_NEWEST_VERSION
+from .entry import aniworld
+from .config import VERSION, IS_NEWEST_VERSION
 
 
 def set_terminal_title() -> None:

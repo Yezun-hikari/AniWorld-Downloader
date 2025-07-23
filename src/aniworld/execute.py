@@ -2,8 +2,8 @@ import sys
 import logging
 from typing import List, Dict, Callable
 
-from aniworld.models import Anime
-from aniworld.action import watch, download, syncplay
+from .models import Anime
+from .action import watch, download, syncplay
 
 
 # Action mapping for better performance and maintainability
@@ -17,7 +17,8 @@ ACTION_MAP: Dict[str, Callable[[Anime], None]] = {
 def _validate_anime(anime: Anime) -> None:
     """Validate anime object and its action."""
     if not hasattr(anime, "action") or anime.action is None:
-        raise AttributeError(f"Anime object missing 'action' attribute: {anime}")
+        raise AttributeError(
+            f"Anime object missing 'action' attribute: {anime}")
 
     if anime.action not in ACTION_MAP:
         valid_actions = ", ".join(ACTION_MAP.keys())
@@ -56,7 +57,8 @@ def _execute_single_anime(anime: Anime) -> bool:
         return False
 
     except Exception as e:
-        logging.error("Unexpected error executing %s for anime: %s", anime.action, e)
+        logging.error(
+            "Unexpected error executing %s for anime: %s", anime.action, e)
         return False
 
 
@@ -93,4 +95,5 @@ def execute(anime_list: List[Anime]) -> None:
             total_anime,
         )
     else:
-        logging.debug("Successfully executed all %d anime actions", total_anime)
+        logging.debug(
+            "Successfully executed all %d anime actions", total_anime)

@@ -4,21 +4,21 @@ import logging
 import hashlib
 from typing import Optional, List
 
-from aniworld.models import Anime
-from aniworld.config import (
+from ..models import Anime
+from ..config import (
     MPV_PATH,
     PROVIDER_HEADERS_W,
     SYNCPLAY_PATH,
     INVALID_PATH_CHARS,
 )
-from aniworld.common import (
+from ..common import (
     download_mpv,
     download_syncplay,
     setup_autostart,
     setup_autoexit,
 )
-from aniworld.aniskip import aniskip
-from aniworld.parser import arguments
+from ..aniskip import aniskip
+from ..parser import arguments
 
 
 def _get_syncplay_username() -> str:
@@ -68,7 +68,8 @@ def _execute_command(command: List[str]) -> None:
         logging.debug("Running Command:\n%s", command)
         subprocess.run(command, check=True)
     except subprocess.CalledProcessError as e:
-        logging.error("Error running command: %s\nCommand: %s", e, " ".join(command))
+        logging.error("Error running command: %s\nCommand: %s",
+                      e, " ".join(command))
     except KeyboardInterrupt:
         logging.info("Syncplay execution interrupted by user")
         raise
@@ -165,7 +166,8 @@ def _get_aniskip_data(anime: Anime, episode) -> Optional[str]:
             episode.season_episode_count[episode.season],
         )
     except Exception as e:
-        logging.warning("Failed to get aniskip data for %s: %s", anime.title, e)
+        logging.warning(
+            "Failed to get aniskip data for %s: %s", anime.title, e)
         return None
 
 

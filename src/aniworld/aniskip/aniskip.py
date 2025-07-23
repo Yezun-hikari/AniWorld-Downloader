@@ -8,8 +8,8 @@ from pathlib import Path
 import requests
 from bs4 import BeautifulSoup
 
-from aniworld.config import DEFAULT_REQUEST_TIMEOUT, MPV_SCRIPTS_DIRECTORY
-from aniworld.common import copy_file_if_different, setup_autostart, setup_autoexit
+from ..config import DEFAULT_REQUEST_TIMEOUT, MPV_SCRIPTS_DIRECTORY
+from ..common import copy_file_if_different, setup_autostart, setup_autoexit
 
 # Constants
 CHAPTER_FORMAT = "\n[CHAPTER]\nTIMEBASE=1/1000\nSTART={}\nEND={}\nTITLE={}\n"
@@ -45,7 +45,8 @@ def _extract_episode_count(soup: BeautifulSoup) -> Optional[int]:
         return None
 
     try:
-        episodes_text = episodes_span.parent.text.replace("Episodes:", "").strip()
+        episodes_text = episodes_span.parent.text.replace(
+            "Episodes:", "").strip()
         return int(episodes_text)
     except (ValueError, AttributeError):
         return None
@@ -61,7 +62,8 @@ def _clean_anime_title(title: str) -> str:
 
 def _find_best_match(search_results: List[Dict]) -> Optional[Dict]:
     """Find best match from search results, excluding OVAs."""
-    results = [entry for entry in search_results if "OVA" not in entry.get("name", "")]
+    results = [
+        entry for entry in search_results if "OVA" not in entry.get("name", "")]
 
     return results[0] if results else None
 
@@ -96,7 +98,8 @@ def _write_chapter(file_handle, start_time: float, end_time: float, title: str) 
     """Write chapter information to file."""
     file_handle.write(
         CHAPTER_FORMAT.format(
-            _float_to_milliseconds(start_time), _float_to_milliseconds(end_time), title
+            _float_to_milliseconds(
+                start_time), _float_to_milliseconds(end_time), title
         )
     )
 
@@ -122,12 +125,14 @@ def check_episodes(anime_id: int) -> Optional[int]:
 
         episode_count = _extract_episode_count(soup)
         if episode_count is None:
-            logging.warning("Episode count not found for anime ID: %s", anime_id)
+            logging.warning(
+                "Episode count not found for anime ID: %s", anime_id)
 
         return episode_count
 
     except Exception as e:
-        logging.error("Failed to check episodes for anime ID %s: %s", anime_id, e)
+        logging.error(
+            "Failed to check episodes for anime ID %s: %s", anime_id, e)
         return None
 
 
@@ -148,7 +153,8 @@ def get_mal_id_from_title(title: str, season: int) -> Optional[int]:
         keyword = _clean_anime_title(title)
         response = _make_request(MAL_SEARCH_URL.format(keyword))
 
-        logging.debug("MyAnimeList response status code: %d", response.status_code)
+        logging.debug("MyAnimeList response status code: %d",
+                      response.status_code)
 
         mal_metadata = response.json()
         categories = mal_metadata.get("categories", [])
@@ -164,7 +170,8 @@ def get_mal_id_from_title(title: str, season: int) -> Optional[int]:
 
         anime_id = best_match["id"]
         logging.debug(
-            "Found MAL ID: %s for %s", anime_id, json.dumps(best_match, indent=4)
+            "Found MAL ID: %s for %s", anime_id, json.dumps(
+                best_match, indent=4)
         )
 
         # Navigate to correct season
@@ -172,7 +179,8 @@ def get_mal_id_from_title(title: str, season: int) -> Optional[int]:
         for _ in range(season - 1):
             current_id = get_sequel_anime_id(current_id)
             if current_id is None:
-                logging.error("Could not find season %d for anime: %s", season, title)
+                logging.error(
+                    "Could not find season %d for anime: %s", season, title)
                 return None
 
         return current_id
@@ -203,7 +211,8 @@ def get_sequel_anime_id(anime_id: int) -> Optional[int]:
 
         sequel_id = _extract_anime_id_from_url(sequel_url)
         if not sequel_id:
-            logging.error("Could not extract anime ID from sequel URL: %s", sequel_url)
+            logging.error(
+                "Could not extract anime ID from sequel URL: %s", sequel_url)
             return None
 
         return int(sequel_id)
@@ -254,7 +263,8 @@ def build_options(metadata: Dict, chapters_file: str) -> str:
                 _write_chapter(f, start_time, end_time, chapter_name)
 
                 # Add skip option
-                options.append(_create_skip_option(skip_type, start_time, end_time))
+                options.append(_create_skip_option(
+                    skip_type, start_time, end_time))
 
             # Add episode chapter if we have opening end time
             if op_end is not None:
@@ -336,7 +346,8 @@ def setup_aniskip() -> bool:
         skip_source_path = script_directory / "aniskip" / "scripts" / "aniskip.lua"
         skip_destination_path = mpv_scripts_path / "aniskip.lua"
 
-        copy_file_if_different(str(skip_source_path), str(skip_destination_path))
+        copy_file_if_different(str(skip_source_path),
+                               str(skip_destination_path))
 
         logging.debug("Aniskip script setup completed")
         return True
