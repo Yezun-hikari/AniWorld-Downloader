@@ -229,6 +229,14 @@ aniworld --episode-file test.txt --language "German Dub"
 
 This can also be combined with `Watch` and `Syncplay` actions, as well as other arguments, for a more customized experience.
 
+#### Example 6: Use an Episode File
+
+Download a provider link. It's important to note that you also need to specify the provider manually.
+
+```shell
+aniworld --provider-link https://voe.sx/e/ayginbzzb6bi --provider VOE
+```
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Library Example
@@ -327,12 +335,6 @@ These dependencies are automatically installed when you set up AniWorld Download
 - **[Syncplay](https://github.com/Syncplay/syncplay.git)**: Enables synchronized playback sessions with friends.
 - **[Anime4K](https://github.com/bloc97/Anime4K)**: A cutting-edge real-time upscaler for enhancing anime video quality.
 - **[Aniskip](https://api.aniskip.com/api-docs)**: Provides the opening and ending skip times for the Aniskip extension.
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-### Still Left Todo
-
-- [ ] Implement a provider fallback mechanism
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
