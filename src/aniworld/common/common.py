@@ -23,6 +23,9 @@ from ..config import (
     SYNCPLAY_PATH,
 )
 
+if platform.system() == "Windows":
+    import cpuinfo
+
 # Constants
 PACKAGE_MANAGERS = {
     "apt": "sudo apt update && sudo apt install {}",
@@ -44,8 +47,8 @@ def _make_request(
         response = requests.get(url, timeout=timeout)
         response.raise_for_status()
         return response
-    except requests.RequestException as e:
-        logging.error("Request failed for %s: %s", url, e)
+    except requests.RequestException as err:
+        logging.error("Request failed for %s: %s", url, err)
         raise
 
 
@@ -67,11 +70,11 @@ def _run_command(
             command, check=True, cwd=cwd, stdout=stdout, stderr=stderr, shell=shell
         )
         return True
-    except subprocess.CalledProcessError as e:
-        logging.error("Command failed: %s - %s", command, e)
+    except subprocess.CalledProcessError as err:
+        logging.error("Command failed: %s - %s", command, err)
         return False
-    except (FileNotFoundError, OSError) as e:
-        logging.error("Command execution error: %s", e)
+    except (FileNotFoundError, OSError) as err:
+        logging.error("Command execution error: %s", err)
         return False
 
 
@@ -94,8 +97,8 @@ def _remove_file_safe(file_path: str) -> None:
         if os.path.exists(file_path):
             os.remove(file_path)
             logging.debug("Removed file: %s", file_path)
-    except OSError as e:
-        logging.warning("Failed to remove file %s: %s", file_path, e)
+    except OSError as err:
+        logging.warning("Failed to remove file %s: %s", file_path, err)
 
 
 def _remove_directory_safe(dir_path: str) -> None:
@@ -104,8 +107,8 @@ def _remove_directory_safe(dir_path: str) -> None:
         if os.path.exists(dir_path):
             shutil.rmtree(dir_path)
             logging.debug("Removed directory: %s", dir_path)
-    except OSError as e:
-        logging.warning("Failed to remove directory %s: %s", dir_path, e)
+    except OSError as err:
+        logging.warning("Failed to remove directory %s: %s", dir_path, err)
 
 
 def check_avx2_support() -> bool:
@@ -115,16 +118,14 @@ def check_avx2_support() -> bool:
         return False
 
     try:
-        import cpuinfo  # type: ignore # pylint: disable=import-outside-toplevel
-
         info = cpuinfo.get_cpu_info()
         flags = info.get("flags", [])
         return "avx2" in flags
     except ImportError:
         logging.warning("cpuinfo package not available, assuming no AVX2 support")
         return False
-    except Exception as e:
-        logging.error("Error checking AVX2 support: %s", e)
+    except Exception as err:
+        logging.error("Error checking AVX2 support: %s", err)
         return False
 
 
@@ -145,8 +146,8 @@ def get_github_release(repo: str) -> Dict[str, str]:
         release_data = response.json()
         assets = release_data.get("assets", [])
         return {asset["name"]: asset["browser_download_url"] for asset in assets}
-    except (json.JSONDecodeError, requests.RequestException) as e:
-        logging.error("Failed to fetch release data from GitHub: %s", e)
+    except (json.JSONDecodeError, requests.RequestException) as err:
+        logging.error("Failed to fetch release data from GitHub: %s", err)
         return {}
 
 
@@ -186,11 +187,11 @@ def download_file(url: str, path: str) -> bool:
         logging.info("Successfully downloaded: %s", path)
         return True
 
-    except requests.RequestException as e:
-        logging.error("Failed to download %s: %s", url, e)
+    except requests.RequestException as err:
+        logging.error("Failed to download %s: %s", url, err)
         return False
-    except OSError as e:
-        logging.error("Failed to write file %s: %s", path, e)
+    except OSError as err:
+        logging.error("Failed to write file %s: %s", path, err)
         return False
 
 
@@ -267,8 +268,8 @@ def _extract_with_7z(zip_tool: str, zip_path: str, dest_path: str) -> bool:
     """Extract archive using 7z tool."""
     try:
         return _run_command([zip_tool, "x", zip_path], cwd=dest_path)
-    except Exception as e:
-        logging.error("Failed to extract with 7z: %s", e)
+    except Exception as err:
+        logging.error("Failed to extract with 7z: %s", err)
         return False
 
 
@@ -276,8 +277,8 @@ def _extract_with_tar(zip_path: str, dest_path: str) -> bool:
     """Extract archive using tar."""
     try:
         return _run_command(["tar", "-xf", zip_path], cwd=dest_path)
-    except Exception as e:
-        logging.error("Failed to extract with tar: %s", e)
+    except Exception as err:
+        logging.error("Failed to extract with tar: %s", err)
         return False
 
 
@@ -485,14 +486,14 @@ def get_season_episode_count(slug: str) -> Dict[int, int]:
                 season_response = _make_request(season_url)
                 season_soup = BeautifulSoup(season_response.content, "html.parser")
                 episode_counts[season] = _parse_season_episodes(season_soup, season)
-            except Exception as e:
-                logging.warning("Failed to get episodes for season %d: %s", season, e)
+            except Exception as err:
+                logging.warning("Failed to get episodes for season %d: %s", season, err)
                 episode_counts[season] = 0
 
         return episode_counts
 
-    except Exception as e:
-        logging.error("Failed to get season episode count for %s: %s", slug, e)
+    except Exception as err:
+        logging.error("Failed to get season episode count for %s: %s", slug, err)
         return {}
 
 
@@ -530,8 +531,8 @@ def get_movie_episode_count(slug: str) -> int:
 
         return max(movie_indices) if movie_indices else 0
 
-    except Exception as e:
-        logging.error("Failed to get movie count for %s: %s", slug, e)
+    except Exception as err:
+        logging.error("Failed to get movie count for %s: %s", slug, err)
         return 0
 
 
@@ -571,8 +572,8 @@ def _process_base_url(
             movies_info = get_movie_episode_count(slug=series_slug)
             slug_cache[series_slug] = (seasons_info, movies_info)
 
-    except (ValueError, IndexError) as e:
-        logging.warning("Failed to parse URL %s: %s", base_url, e)
+    except (ValueError, IndexError) as err:
+        logging.warning("Failed to parse URL %s: %s", base_url, err)
         unique_links.add(base_url)
         return unique_links
 
@@ -682,8 +683,8 @@ def generate_links(urls: List[str], arguments) -> List[str]:
         try:
             links = _process_base_url(base_url, arguments, slug_cache)
             unique_links.update(links)
-        except Exception as e:
-            logging.error("Failed to process URL %s: %s", base_url, e)
+        except Exception as err:
+            logging.error("Failed to process URL %s: %s", base_url, err)
             unique_links.add(base_url)
 
     return sorted(unique_links, key=_natural_sort_key)
@@ -759,8 +760,8 @@ def copy_file_if_different(source_path: str, destination_path: str) -> bool:
             shutil.copy(source_path, destination_path)
             return True
 
-    except Exception as e:
-        logging.error("Failed to copy %s to %s: %s", source_path, destination_path, e)
+    except Exception as err:
+        logging.error("Failed to copy %s to %s: %s", source_path, destination_path, err)
         return False
 
 
@@ -778,8 +779,8 @@ def _setup_script(script_name: str) -> bool:
 
         return copy_file_if_different(str(source_path), str(destination_path))
 
-    except Exception as e:
-        logging.error("Failed to setup %s: %s", script_name, e)
+    except Exception as err:
+        logging.error("Failed to setup %s: %s", script_name, err)
         return False
 
 

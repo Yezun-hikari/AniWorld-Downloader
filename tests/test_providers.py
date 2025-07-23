@@ -41,14 +41,14 @@ def get_provider_function(provider_name: str) -> Callable[[str], str]:
         )
         function_name = f"get_direct_link_from_{provider_name}"
         return getattr(module, function_name)
-    except ImportError as e:
+    except ImportError as err:
         raise ImportError(
-            f"Failed to import provider module '{provider_name}': {e}"
-        ) from e
-    except AttributeError as e:
+            f"Failed to import provider module '{provider_name}': {err}"
+        ) from err
+    except AttributeError as err:
         raise AttributeError(
-            f"Provider '{provider_name}' missing function '{function_name}': {e}"
-        ) from e
+            f"Provider '{provider_name}' missing function '{function_name}': {err}"
+        ) from err
 
 
 @pytest.mark.parametrize("provider_name,test_url", PROVIDERS.items())
@@ -61,16 +61,15 @@ def test_get_direct_link(provider_name: str, test_url: Optional[str]):
         test_url: Test URL for the provider (None if broken/unavailable)
     """
     if test_url is None:
-        pytest.skip(
-            f"Provider '{provider_name}' is marked as broken/unavailable")
+        pytest.skip(f"Provider '{provider_name}' is marked as broken/unavailable")
 
     logger.info(f"Testing provider: {provider_name}")
 
     # Get the provider function
     try:
         extract_function = get_provider_function(provider_name)
-    except (ImportError, AttributeError) as e:
-        pytest.fail(f"Failed to load provider '{provider_name}': {e}")
+    except (ImportError, AttributeError) as err:
+        pytest.fail(f"Failed to load provider '{provider_name}': {err}")
 
     # Test the extraction
     try:
@@ -81,8 +80,7 @@ def test_get_direct_link(provider_name: str, test_url: Optional[str]):
         assert isinstance(direct_link, str), (
             f"Provider '{provider_name}' returned non-string: {type(direct_link)}"
         )
-        assert direct_link.strip(
-        ), f"Provider '{provider_name}' returned empty string"
+        assert direct_link.strip(), f"Provider '{provider_name}' returned empty string"
         assert direct_link.startswith(("http://", "https://")), (
             f"Provider '{provider_name}' returned invalid URL: {direct_link}"
         )
@@ -91,9 +89,9 @@ def test_get_direct_link(provider_name: str, test_url: Optional[str]):
             f"Provider '{provider_name}' successfully extracted: {direct_link[:50]}..."
         )
 
-    except Exception as e:
+    except Exception as err:
         pytest.fail(
-            f"Provider '{provider_name}' failed with exception: {type(e).__name__}: {e}"
+            f"Provider '{provider_name}' failed with exception: {type(err).__name__}: {err}"
         )
 
 
@@ -123,9 +121,8 @@ def test_provider_module_structure(provider_name: str):
 
         logger.info(f"Provider '{provider_name}' module structure is valid")
 
-    except Exception as e:
-        pytest.fail(
-            f"Provider '{provider_name}' module structure test failed: {e}")
+    except Exception as err:
+        pytest.fail(f"Provider '{provider_name}' module structure test failed: {err}")
 
 
 def test_all_providers_present():
@@ -135,12 +132,11 @@ def test_all_providers_present():
     for provider_name in PROVIDERS.keys():
         try:
             get_provider_function(provider_name)
-        except (ImportError, AttributeError) as e:
-            missing_providers.append(f"{provider_name}: {e}")
+        except (ImportError, AttributeError) as err:
+            missing_providers.append(f"{provider_name}: {err}")
 
     if missing_providers:
-        pytest.fail("Missing or broken providers:\n" +
-                    "\n".join(missing_providers))
+        pytest.fail("Missing or broken providers:\n" + "\n".join(missing_providers))
 
     logger.info(f"All {len(PROVIDERS)} providers are present and importable")
 
@@ -157,8 +153,8 @@ if __name__ == "__main__":
     try:
         test_all_providers_present()
         print("All providers are present and importable")
-    except Exception as e:
-        print(f"✗ Provider presence test failed: {e}")
+    except Exception as err:
+        print(f"✗ Provider presence test failed: {err}")
         sys.exit(1)
 
     # Test module structures
@@ -166,8 +162,8 @@ if __name__ == "__main__":
     for provider_name in PROVIDERS.keys():
         try:
             test_provider_module_structure(provider_name)
-        except Exception as e:
-            print(f"✗ Module structure test failed for {provider_name}: {e}")
+        except Exception as err:
+            print(f"✗ Module structure test failed for {provider_name}: {err}")
             sys.exit(1)
 
     # Test actual extraction (only for providers with URLs)
@@ -184,11 +180,10 @@ if __name__ == "__main__":
         for provider_name, test_url in available_providers.items():
             try:
                 test_get_direct_link(provider_name, test_url)
-            except Exception as e:
-                print(f"✗ Extraction test failed for {provider_name}: {e}")
+            except Exception as err:
+                print(f"✗ Extraction test failed for {provider_name}: {err}")
                 continue
 
     print("\nAll tests completed successfully!")
     print(f"Providers available: {len(available_providers)}")
-    print(
-        f"Providers needing URLs: {len(PROVIDERS) - len(available_providers)}")
+    print(f"Providers needing URLs: {len(PROVIDERS) - len(available_providers)}")

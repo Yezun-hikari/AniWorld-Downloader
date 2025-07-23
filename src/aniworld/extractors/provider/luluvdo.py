@@ -41,8 +41,8 @@ def _validate_luluvdo_url(url: str) -> str:
         if "luluvdo.com" not in parsed_url.netloc.lower():
             raise ValueError("URL must be from luluvdo.com domain")
 
-    except Exception as e:
-        raise ValueError(f"Invalid URL format: {e}") from e
+    except Exception as err:
+        raise ValueError(f"Invalid URL format: {err}") from err
 
     return url
 
@@ -78,9 +78,9 @@ def _extract_luluvdo_id(url: str) -> str:
 
         return luluvdo_id
 
-    except Exception as e:
-        logger.error(f"Failed to extract LuluVDO ID from URL: {e}")
-        raise ValueError(f"Failed to extract LuluVDO ID: {e}") from e
+    except Exception as err:
+        logger.error(f"Failed to extract LuluVDO ID from URL: {err}")
+        raise ValueError(f"Failed to extract LuluVDO ID: {err}") from err
 
 
 def _build_embed_url(luluvdo_id: str) -> str:
@@ -141,9 +141,9 @@ def _make_request(url: str, headers: Dict[str, str]) -> requests.Response:
         response.raise_for_status()
         return response
 
-    except requests.RequestException as e:
-        logger.error(f"Request failed for {url}: {e}")
-        raise ValueError(f"Failed to fetch URL: {e}") from e
+    except requests.RequestException as err:
+        logger.error(f"Request failed for {url}: {err}")
+        raise ValueError(f"Failed to fetch URL: {err}") from err
 
 
 def _extract_video_url(response_text: str) -> str:
@@ -176,9 +176,9 @@ def _extract_video_url(response_text: str) -> str:
         logger.debug(f"Extracted video URL: {video_url}")
         return video_url
 
-    except Exception as e:
-        logger.error(f"Failed to extract video URL: {e}")
-        raise ValueError(f"Failed to extract video URL: {e}") from e
+    except Exception as err:
+        logger.error(f"Failed to extract video URL: {err}")
+        raise ValueError(f"Failed to extract video URL: {err}") from err
 
 
 def get_direct_link_from_luluvdo(
@@ -227,9 +227,9 @@ def get_direct_link_from_luluvdo(
 
     except ValueError:
         raise
-    except Exception as e:
-        logger.error(f"Unexpected error extracting LuluVDO video: {e}")
-        raise ValueError(f"Failed to extract video from LuluVDO: {e}") from e
+    except Exception as err:
+        logger.error(f"Unexpected error extracting LuluVDO video: {err}")
+        raise ValueError(f"Failed to extract video from LuluVDO: {err}") from err
 
 
 def validate_video_url(url: str) -> bool:
@@ -279,13 +279,13 @@ def main() -> None:
     except KeyboardInterrupt:
         print("\nOperation cancelled by user.")
         sys.exit(0)
-    except ValueError as e:
-        print(f"Error: {e}")
-        logger.error(f"LuluVDO extraction error: {e}")
+    except ValueError as err:
+        print(f"Error: {err}")
+        logger.error(f"LuluVDO extraction error: {err}")
         sys.exit(1)
-    except Exception as e:
-        print(f"Unexpected error: {e}")
-        logger.error(f"Unexpected error: {e}")
+    except Exception as err:
+        print(f"Unexpected error: {err}")
+        logger.error(f"Unexpected error: {err}")
         sys.exit(1)
 
 

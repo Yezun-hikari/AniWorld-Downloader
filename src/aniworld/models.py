@@ -194,12 +194,12 @@ class Anime:
                     headers={"User-Agent": RANDOM_USER_AGENT},
                 )
                 self._html_cache.raise_for_status()
-            except requests.RequestException as e:
+            except requests.RequestException as err:
                 logging.error(
                     "Failed to fetch anime HTML for slug '%s' on site '%s': %s",
                     self.slug,
                     self.site,
-                    e,
+                    err,
                 )
                 raise
 
@@ -221,8 +221,8 @@ class Anime:
                     logging.warning(
                         "Could not extract title for anime slug: %s", self.slug
                     )
-            except Exception as e:
-                logging.error("Error extracting anime title: %s", e)
+            except Exception as err:
+                logging.error("Error extracting anime title: %s", err)
                 self._title_cache = f"Unknown Anime ({self.slug})"
 
         return self._title_cache
@@ -274,8 +274,8 @@ class Anime:
 
             return "Could not fetch German description."
 
-        except Exception as e:
-            logging.error("Error fetching German description: %s", e)
+        except Exception as err:
+            logging.error("Error fetching German description: %s", err)
             return "Error fetching German description."
 
     def _fetch_description_english(self) -> str:
@@ -305,8 +305,8 @@ class Anime:
 
             return "Could not fetch English description."
 
-        except Exception as e:
-            logging.error("Error fetching English description: %s", e)
+        except Exception as err:
+            logging.error("Error fetching English description: %s", err)
             return "Error fetching English description."
 
     def validate_configuration(self) -> List[str]:
@@ -600,9 +600,9 @@ class Episode:
                     headers={"User-Agent": RANDOM_USER_AGENT},
                 )
                 self._html_cache.raise_for_status()
-            except requests.RequestException as e:
+            except requests.RequestException as err:
                 logging.error(
-                    "Failed to fetch episode HTML for link '%s': %s", self.link, e
+                    "Failed to fetch episode HTML for link '%s': %s", self.link, err
                 )
                 raise
 
@@ -630,8 +630,8 @@ class Episode:
 
             return german_title, english_title
 
-        except Exception as e:
-            logging.error("Error extracting episode titles: %s", e)
+        except Exception as err:
+            logging.error("Error extracting episode titles: %s", err)
             return "", ""
 
     def _extract_season_from_link(self) -> int:
@@ -661,10 +661,10 @@ class Episode:
 
             raise ValueError(f"No valid season number found in link: {self.link}")
 
-        except (IndexError, ValueError) as e:
+        except (IndexError, ValueError) as err:
             raise ValueError(
-                f"Failed to extract season from link '{self.link}': {e}"
-            ) from e
+                f"Failed to extract season from link '{self.link}': {err}"
+            ) from err
 
     def _extract_episode_from_link(self) -> int:
         """
@@ -692,10 +692,10 @@ class Episode:
 
             raise ValueError(f"No valid episode number found in link: {self.link}")
 
-        except (IndexError, ValueError) as e:
+        except (IndexError, ValueError) as err:
             raise ValueError(
-                f"Failed to extract episode from link '{self.link}': {e}"
-            ) from e
+                f"Failed to extract episode from link '{self.link}': {err}"
+            ) from err
 
     @lru_cache(maxsize=32)
     def _get_available_languages_from_html(self) -> List[int]:
@@ -730,8 +730,8 @@ class Episode:
 
             return sorted(language_codes)
 
-        except Exception as e:
-            logging.error("Error extracting language codes: %s", e)
+        except Exception as err:
+            logging.error("Error extracting language codes: %s", err)
             return []
 
     @lru_cache(maxsize=32)
@@ -788,8 +788,8 @@ class Episode:
 
             return providers
 
-        except Exception as e:
-            logging.error("Error extracting providers: %s", e)
+        except Exception as err:
+            logging.error("Error extracting providers: %s", err)
             raise
 
     def _extract_provider_data(self, link_element) -> Optional[Tuple[str, int, str]]:
@@ -826,8 +826,8 @@ class Episode:
 
             return None
 
-        except (ValueError, AttributeError) as e:
-            logging.debug("Failed to extract provider data from element: %s", e)
+        except (ValueError, AttributeError) as err:
+            logging.debug("Failed to extract provider data from element: %s", err)
             return None
 
     def _get_language_key_from_name(self, language_name: str) -> int:
@@ -925,13 +925,13 @@ class Episode:
 
             return direct_link
 
-        except Exception as e:
+        except Exception as err:
             logging.error(
-                "Error getting direct link from provider '%s': %s", provider, e
+                "Error getting direct link from provider '%s': %s", provider, err
             )
             raise ValueError(
-                f"Failed to get direct link from provider '{provider}': {e}"
-            ) from e
+                f"Failed to get direct link from provider '{provider}': {err}"
+            ) from err
 
     def get_redirect_link(self) -> Optional[str]:
         """
@@ -987,8 +987,8 @@ class Episode:
             self.redirect_link = None
             return None
 
-        except Exception as e:
-            logging.error("Error getting redirect link: %s", e)
+        except Exception as err:
+            logging.error("Error getting redirect link: %s", err)
             self.redirect_link = None
             return None
 
@@ -1018,9 +1018,9 @@ class Episode:
             self.embeded_link = response.url
             return self.embeded_link
 
-        except requests.RequestException as e:
+        except requests.RequestException as err:
             logging.error(
-                "Error getting embedded link from '%s': %s", self.redirect_link, e
+                "Error getting embedded link from '%s': %s", self.redirect_link, err
             )
             self.embeded_link = None
             return None
@@ -1064,8 +1064,8 @@ class Episode:
             self.direct_link = self._get_direct_link_from_provider()
             return self.direct_link
 
-        except Exception as e:
-            logging.error("Error getting direct link: %s", e)
+        except Exception as err:
+            logging.error("Error getting direct link: %s", err)
             self.direct_link = None
             return None
 
@@ -1108,14 +1108,14 @@ class Episode:
                 if self.season is None:
                     try:
                         self.season = self._extract_season_from_link()
-                    except ValueError as e:
-                        logging.warning("Could not extract season: %s", e)
+                    except ValueError as err:
+                        logging.warning("Could not extract season: %s", err)
 
                 if self.episode is None:
                     try:
                         self.episode = self._extract_episode_from_link()
-                    except ValueError as e:
-                        logging.warning("Could not extract episode: %s", e)
+                    except ValueError as err:
+                        logging.warning("Could not extract episode: %s", err)
 
             # Fetch and populate metadata if link is available
             if self.link:
@@ -1175,11 +1175,11 @@ class Episode:
                         ):
                             del self.season_episode_count[last_season]
 
-                except Exception as e:
-                    logging.error("Error auto-filling episode details: %s", e)
+                except Exception as err:
+                    logging.error("Error auto-filling episode details: %s", err)
 
-        except Exception as e:
-            logging.error("Critical error in auto_fill_details: %s", e)
+        except Exception as err:
+            logging.error("Critical error in auto_fill_details: %s", err)
 
     def validate_configuration(self) -> List[str]:
         """
@@ -1314,8 +1314,8 @@ def get_anime_title_from_html(
 
         return ""
 
-    except Exception as e:
-        logging.error("Error extracting anime title from %s: %s", site, e)
+    except Exception as err:
+        logging.error("Error extracting anime title from %s: %s", site, err)
         return ""
 
 

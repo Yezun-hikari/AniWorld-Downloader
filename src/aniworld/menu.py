@@ -72,8 +72,10 @@ class SelectionMenu(npyscreen.NPSApp):
             self.anime = Anime(
                 slug=slug, episode_list=[Episode(slug=slug, season=1, episode=1)]
             )
-        except Exception as e:
-            logging.error("Failed to initialize anime data for slug '%s': %s", slug, e)
+        except Exception as err:
+            logging.error(
+                "Failed to initialize anime data for slug '%s': %s", slug, err
+            )
             raise
 
         # UI state
@@ -114,9 +116,9 @@ class SelectionMenu(npyscreen.NPSApp):
                 movie_episode_count,
                 available_providers,
             )
-        except (IndexError, AttributeError) as e:
-            logging.error("Failed to extract anime data: %s", e)
-            raise ValueError("Invalid anime data structure") from e
+        except (IndexError, AttributeError) as err:
+            logging.error("Failed to extract anime data: %s", err)
+            raise ValueError("Invalid anime data structure") from err
 
     def _filter_supported_providers(self, available_providers: List[str]) -> List[str]:
         """
@@ -357,8 +359,8 @@ class SelectionMenu(npyscreen.NPSApp):
                     self.selected_episodes = list(self.episode_dict.keys())
                     self.select_all_button.name = "Deselect All"
                 form.display()
-            except Exception as e:
-                logging.error("Error in toggle_select_all: %s", e)
+            except Exception as err:
+                logging.error("Error in toggle_select_all: %s", err)
 
         return toggle_select_all
 
@@ -397,8 +399,8 @@ class SelectionMenu(npyscreen.NPSApp):
                             self.provider_selection.value = [provider_index]
 
                 form.display()
-            except Exception as e:
-                logging.error("Error in update_visibility: %s", e)
+            except Exception as err:
+                logging.error("Error in update_visibility: %s", err)
 
         return update_visibility
 
@@ -495,8 +497,8 @@ class SelectionMenu(npyscreen.NPSApp):
             # Start the form
             form.edit()
 
-        except Exception as e:
-            logging.error("Error in main menu setup: %s", e)
+        except Exception as err:
+            logging.error("Error in main menu setup: %s", err)
             raise
 
     def on_ok(self) -> None:
@@ -521,8 +523,8 @@ class SelectionMenu(npyscreen.NPSApp):
                 "Updated selected episodes: %d items", len(self.selected_episodes)
             )
 
-        except Exception as e:
-            logging.error("Error updating selected episodes: %s", e)
+        except Exception as err:
+            logging.error("Error updating selected episodes: %s", err)
             self.selected_episodes = []
 
     def _get_selected_values_safely(self) -> Tuple[str, str, str, str, bool]:
@@ -670,13 +672,13 @@ class SelectionMenu(npyscreen.NPSApp):
                 aniskip=selected_aniskip,
             )
 
-        except urllib3.exceptions.ReadTimeoutError as e:
-            logging.error("Network timeout error: %s", e)
+        except urllib3.exceptions.ReadTimeoutError as err:
+            logging.error("Network timeout error: %s", err)
             print("Request timed out. Please try again later or use a VPN.")
             sys.exit(1)
-        except Exception as e:
-            logging.error("Error getting selected values: %s", e)
-            raise RuntimeError(f"Failed to get selected values: {e}") from e
+        except Exception as err:
+            logging.error("Error getting selected values: %s", err)
+            raise RuntimeError(f"Failed to get selected values: {err}") from err
 
 
 def menu(arguments: Any, slug: str) -> Anime:
@@ -703,10 +705,10 @@ def menu(arguments: Any, slug: str) -> Anime:
         logging.info("Menu cancelled by user")
         curses.endwin()
         sys.exit(0)
-    except Exception as e:
-        logging.error("Error in menu: %s", e)
+    except Exception as err:
+        logging.error("Error in menu: %s", err)
         curses.endwin()
-        raise RuntimeError(f"Menu error: {e}") from e
+        raise RuntimeError(f"Menu error: {err}") from err
     finally:
         # Ensure terminal is properly restored
         try:

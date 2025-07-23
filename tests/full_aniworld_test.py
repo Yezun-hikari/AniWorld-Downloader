@@ -18,10 +18,10 @@ def main():
         print("Testing command:\n", command)
         subprocess.run(command, check=True, shell=True)
         PASSED_TESTS += 1
-    except Exception as e:
+    except Exception as err:
         print("An Error occurred:")
-        print(type(e).__name__)
-        print(e)
+        print(type(err).__name__)
+        print(err)
         FAILED_TESTS += 1
 
     try:
@@ -29,10 +29,10 @@ def main():
         print("Testing command:\n", command)
         subprocess.run(command, check=True, shell=True)
         PASSED_TESTS += 1
-    except Exception as e:
+    except Exception as err:
         print("An Error occurred:")
-        print(type(e).__name__)
-        print(e)
+        print(type(err).__name__)
+        print(err)
         FAILED_TESTS += 1
 
     try:
@@ -40,10 +40,10 @@ def main():
         print("Testing command:\n", command)
         subprocess.run(command, check=True, shell=True)
         PASSED_TESTS += 1
-    except Exception as e:
+    except Exception as err:
         print("An Error occurred:")
-        print(type(e).__name__)
-        print(e)
+        print(type(err).__name__)
+        print(err)
         FAILED_TESTS += 1
 
     try:
@@ -51,10 +51,10 @@ def main():
         print("Testing command:\n", command)
         subprocess.run(command, check=True, shell=True)
         PASSED_TESTS += 1
-    except Exception as e:
+    except Exception as err:
         print("An Error occurred:")
-        print(type(e).__name__)
-        print(e)
+        print(type(err).__name__)
+        print(err)
         FAILED_TESTS += 1
 
     try:
@@ -62,10 +62,10 @@ def main():
         print("Testing command:\n", command)
         subprocess.run(command, check=True, shell=True)
         PASSED_TESTS += 1
-    except Exception as e:
+    except Exception as err:
         print("An Error occurred:")
-        print(type(e).__name__)
-        print(e)
+        print(type(err).__name__)
+        print(err)
         FAILED_TESTS += 1
 
     try:
@@ -73,10 +73,10 @@ def main():
         print("Testing command:\n", command)
         subprocess.run(command, check=True, shell=True)
         PASSED_TESTS += 1
-    except Exception as e:
+    except Exception as err:
         print("An Error occurred:")
-        print(type(e).__name__)
-        print(e)
+        print(type(err).__name__)
+        print(err)
         FAILED_TESTS += 1
 
     try:
@@ -84,10 +84,10 @@ def main():
         print("Testing command:\n", command)
         subprocess.run(command, check=True, shell=True)
         PASSED_TESTS += 1
-    except Exception as e:
+    except Exception as err:
         print("An Error occurred:")
-        print(type(e).__name__)
-        print(e)
+        print(type(err).__name__)
+        print(err)
         FAILED_TESTS += 1
 
     try:
@@ -95,10 +95,10 @@ def main():
         print("Testing command:\n", command)
         subprocess.run(command, check=True, shell=True)
         PASSED_TESTS += 1
-    except Exception as e:
+    except Exception as err:
         print("An Error occurred:")
-        print(type(e).__name__)
-        print(e)
+        print(type(err).__name__)
+        print(err)
         FAILED_TESTS += 1
 
     try:
@@ -106,10 +106,10 @@ def main():
         print("Testing command:\n", command)
         subprocess.run(command, check=True, shell=True)
         PASSED_TESTS += 1
-    except Exception as e:
+    except Exception as err:
         print("An Error occurred:")
-        print(type(e).__name__)
-        print(e)
+        print(type(err).__name__)
+        print(err)
         FAILED_TESTS += 1
 
     try:
@@ -117,10 +117,10 @@ def main():
         print("Testing command:\n", command)
         subprocess.run(command, check=True, shell=True)
         PASSED_TESTS += 1
-    except Exception as e:
+    except Exception as err:
         print("An Error occurred:")
-        print(type(e).__name__)
-        print(e)
+        print(type(err).__name__)
+        print(err)
         FAILED_TESTS += 1
 
     print("PASSED TESTS: ", PASSED_TESTS)

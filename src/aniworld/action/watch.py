@@ -39,11 +39,11 @@ def _get_direct_link(episode, episode_title: str) -> Optional[str]:
     """Get direct link for episode with error handling."""
     try:
         return episode.get_direct_link()
-    except Exception as e:
+    except Exception as err:
         logging.warning(
             'Something went wrong with "%s".\nError while trying to find a direct link: %s',
             episode_title,
-            e,
+            err,
         )
         return None
 
@@ -60,8 +60,8 @@ def _get_aniskip_data(anime: Anime, episode) -> Optional[str]:
             episode.season,
             episode.season_episode_count[episode.season],
         )
-    except Exception as e:
-        logging.warning("Failed to get aniskip data for %s: %s", anime.title, e)
+    except Exception as err:
+        logging.warning("Failed to get aniskip data for %s: %s", anime.title, err)
         return None
 
 
@@ -104,8 +104,8 @@ def _execute_command(title: str, command: List[str]) -> None:
     try:
         logging.debug("Running Command:\n%s", command)
         subprocess.run(command, check=True)
-    except subprocess.CalledProcessError as e:
-        logging.error("Error running command: %s\nCommand: %s", e, " ".join(command))
+    except subprocess.CalledProcessError as err:
+        logging.error("Error running command: %s\nCommand: %s", err, " ".join(command))
     except KeyboardInterrupt:
         logging.info("Watch session interrupted by user")
         raise
@@ -172,6 +172,6 @@ def watch(anime: Optional[Anime] = None) -> None:
 
     except KeyboardInterrupt:
         logging.info("Watch session interrupted by user")
-    except Exception as e:
-        logging.error("Error in watch session: %s", e)
+    except Exception as err:
+        logging.error("Error in watch session: %s", err)
         raise

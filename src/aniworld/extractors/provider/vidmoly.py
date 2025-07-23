@@ -46,10 +46,10 @@ def get_direct_link_from_vidmoly(embeded_vidmoly_link: str) -> str:
             if match:
                 return match.group(1)
 
-    except requests.RequestException as e:
-        raise ValueError(f"Failed to fetch Vidmoly page: {e}") from e
-    except Exception as e:
-        raise ValueError(f"Error parsing Vidmoly page: {e}") from e
+    except requests.RequestException as err:
+        raise ValueError(f"Failed to fetch Vidmoly page: {err}") from err
+    except Exception as err:
+        raise ValueError(f"Error parsing Vidmoly page: {err}") from err
 
     raise ValueError("No direct link found in Vidmoly page.")
 

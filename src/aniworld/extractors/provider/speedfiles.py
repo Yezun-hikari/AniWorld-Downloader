@@ -40,8 +40,8 @@ def _validate_speedfiles_url(url: str) -> str:
         parsed_url = urlparse(url)
         if not parsed_url.netloc:
             raise ValueError("Invalid URL format - missing domain")
-    except Exception as e:
-        raise ValueError(f"Invalid URL format: {e}") from e
+    except Exception as err:
+        raise ValueError(f"Invalid URL format: {err}") from err
 
     return url
 
@@ -69,9 +69,9 @@ def _make_request(url: str) -> requests.Response:
         response.raise_for_status()
         return response
 
-    except requests.RequestException as e:
-        logger.error(f"Request failed for {url}: {e}")
-        raise ValueError(f"Failed to fetch URL: {e}") from e
+    except requests.RequestException as err:
+        logger.error(f"Request failed for {url}: {err}")
+        raise ValueError(f"Failed to fetch URL: {err}") from err
 
 
 def _check_server_status(response_text: str) -> None:
@@ -116,9 +116,9 @@ def _extract_encoded_data(response_text: str) -> str:
         logger.debug(f"Extracted encoded data: {encoded_data[:50]}...")
         return encoded_data
 
-    except Exception as e:
-        logger.error(f"Failed to extract encoded data: {e}")
-        raise ValueError(f"Failed to extract encoded data: {e}") from e
+    except Exception as err:
+        logger.error(f"Failed to extract encoded data: {err}")
+        raise ValueError(f"Failed to extract encoded data: {err}") from err
 
 
 def _decode_speedfiles_data(encoded_data: str) -> str:
@@ -172,12 +172,12 @@ def _decode_speedfiles_data(encoded_data: str) -> str:
         logger.info(f"Successfully decoded SpeedFiles URL: {result}")
         return result
 
-    except (base64.binascii.Error, ValueError, UnicodeDecodeError) as e:
-        logger.error(f"Decoding failed: {e}")
-        raise ValueError(f"Failed to decode SpeedFiles data: {e}") from e
-    except Exception as e:
-        logger.error(f"Unexpected error during decoding: {e}")
-        raise ValueError(f"Unexpected decoding error: {e}") from e
+    except (base64.binascii.Error, ValueError, UnicodeDecodeError) as err:
+        logger.error(f"Decoding failed: {err}")
+        raise ValueError(f"Failed to decode SpeedFiles data: {err}") from err
+    except Exception as err:
+        logger.error(f"Unexpected error during decoding: {err}")
+        raise ValueError(f"Unexpected decoding error: {err}") from err
 
 
 def get_direct_link_from_speedfiles(embeded_speedfiles_link: str) -> str:
@@ -215,9 +215,9 @@ def get_direct_link_from_speedfiles(embeded_speedfiles_link: str) -> str:
 
     except ValueError:
         raise
-    except Exception as e:
-        logger.error(f"Unexpected error extracting SpeedFiles video: {e}")
-        raise ValueError(f"Failed to extract video from SpeedFiles: {e}") from e
+    except Exception as err:
+        logger.error(f"Unexpected error extracting SpeedFiles video: {err}")
+        raise ValueError(f"Failed to extract video from SpeedFiles: {err}") from err
 
 
 def validate_video_url(url: str) -> bool:
@@ -267,13 +267,13 @@ def main() -> None:
     except KeyboardInterrupt:
         print("\nOperation cancelled by user.")
         sys.exit(0)
-    except ValueError as e:
-        print(f"Error: {e}")
-        logger.error(f"SpeedFiles extraction error: {e}")
+    except ValueError as err:
+        print(f"Error: {err}")
+        logger.error(f"SpeedFiles extraction error: {err}")
         sys.exit(1)
-    except Exception as e:
-        print(f"Unexpected error: {e}")
-        logger.error(f"Unexpected error: {e}")
+    except Exception as err:
+        print(f"Unexpected error: {err}")
+        logger.error(f"Unexpected error: {err}")
         sys.exit(1)
 
 

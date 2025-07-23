@@ -44,16 +44,16 @@ def _make_request(url: str, retry_count: int = 0) -> requests.Response:
         response.raise_for_status()
         return response
 
-    except requests.RequestException as e:
-        logger.error(f"Request failed for {url} (attempt {retry_count + 1}): {e}")
+    except requests.RequestException as err:
+        logger.error(f"Request failed for {url} (attempt {retry_count + 1}): {err}")
 
         if retry_count < MAX_RETRY_ATTEMPTS - 1:
             logger.info(f"Retrying request to {url}")
             return _make_request(url, retry_count + 1)
 
         raise ValueError(
-            f"Failed to fetch URL after {MAX_RETRY_ATTEMPTS} attempts: {e}"
-        ) from e
+            f"Failed to fetch URL after {MAX_RETRY_ATTEMPTS} attempts: {err}"
+        ) from err
 
 
 def _extract_json_from_line(line: str) -> Dict[str, Any]:
@@ -82,9 +82,9 @@ def _extract_json_from_line(line: str) -> Dict[str, Any]:
 
         return json.loads(json_str)
 
-    except (ValueError, json.JSONDecodeError) as e:
-        logger.error(f"Failed to parse JSON from line: {e}")
-        raise ValueError(f"Invalid JSON data in video manifest: {e}") from e
+    except (ValueError, json.JSONDecodeError) as err:
+        logger.error(f"Failed to parse JSON from line: {err}")
+        raise ValueError(f"Invalid JSON data in video manifest: {err}") from err
 
 
 def _parse_video_info(data: Dict[str, Any]) -> Dict[str, Any]:
@@ -113,9 +113,9 @@ def _parse_video_info(data: Dict[str, Any]) -> Dict[str, Any]:
 
         return {"name": name, "streams": streams}
 
-    except (KeyError, IndexError, TypeError) as e:
-        logger.error(f"Failed to parse video info: {e}")
-        raise ValueError(f"Invalid video data structure: {e}") from e
+    except (KeyError, IndexError, TypeError) as err:
+        logger.error(f"Failed to parse video info: {err}")
+        raise ValueError(f"Invalid video data structure: {err}") from err
 
 
 def _validate_url(url: str) -> str:
@@ -151,8 +151,8 @@ def _validate_url(url: str) -> str:
         ):
             raise ValueError(f"Unsupported domain: {domain}")
 
-    except Exception as e:
-        raise ValueError(f"Invalid URL format: {e}") from e
+    except Exception as err:
+        raise ValueError(f"Invalid URL format: {err}") from err
 
     return url
 
@@ -175,8 +175,8 @@ def _get_url_from_input() -> str:
         if not url:
             raise ValueError("No URL provided")
         return url
-    except (EOFError, KeyboardInterrupt) as e:
-        raise ValueError("No URL provided") from e
+    except (EOFError, KeyboardInterrupt) as err:
+        raise ValueError("No URL provided") from err
 
 
 def _display_stream_info(stream: Dict[str, Any], index: int) -> None:
@@ -307,9 +307,9 @@ def get_streams(url: str) -> Dict[str, Any]:
 
     except (ValueError,):
         raise
-    except Exception as e:
-        logger.error(f"Unexpected error getting streams: {e}")
-        raise ValueError(f"Failed to get streams: {e}") from e
+    except Exception as err:
+        logger.error(f"Unexpected error getting streams: {err}")
+        raise ValueError(f"Failed to get streams: {err}") from err
 
 
 def display_streams(streams: List[Dict[str, Any]]) -> None:
@@ -396,13 +396,13 @@ def get_direct_link_from_hanime(url: Optional[str] = None) -> Optional[str]:
             logger.info("User cancelled stream selection")
             return None
 
-    except ValueError as e:
-        print(f"Error: {e}")
-        logger.error(f"Hanime extraction error: {e}")
+    except ValueError as err:
+        print(f"Error: {err}")
+        logger.error(f"Hanime extraction error: {err}")
         return None
-    except Exception as e:
-        print(f"Unexpected error: {e}")
-        logger.error(f"Unexpected error in get_direct_link_from_hanime: {e}")
+    except Exception as err:
+        print(f"Unexpected error: {err}")
+        logger.error(f"Unexpected error in get_direct_link_from_hanime: {err}")
         return None
 
 
@@ -447,9 +447,9 @@ def get_stream_info(url: str) -> Dict[str, Any]:
 
         return video_data
 
-    except Exception as e:
-        logger.error(f"Failed to get stream info: {e}")
-        raise ValueError(f"Failed to get stream info: {e}") from e
+    except Exception as err:
+        logger.error(f"Failed to get stream info: {err}")
+        raise ValueError(f"Failed to get stream info: {err}") from err
 
 
 def main() -> None:
@@ -475,13 +475,13 @@ def main() -> None:
     except KeyboardInterrupt:
         print("\nOperation cancelled by user.")
         sys.exit(0)
-    except ValueError as e:
-        print(f"Hanime error: {e}")
-        logger.error(f"Hanime error: {e}")
+    except ValueError as err:
+        print(f"Hanime error: {err}")
+        logger.error(f"Hanime error: {err}")
         sys.exit(1)
-    except Exception as e:
-        print(f"Unexpected error: {e}")
-        logger.error(f"Unexpected error: {e}")
+    except Exception as err:
+        print(f"Unexpected error: {err}")
+        logger.error(f"Unexpected error: {err}")
         sys.exit(1)
 
 

@@ -163,13 +163,13 @@ def fetch_anime_list(url: str) -> List[Dict]:
             try:
                 decoded_data = json.loads(cleaned_text)
                 return decoded_data if isinstance(decoded_data, list) else []
-            except json.JSONDecodeError as e:
-                logging.error("Failed to parse JSON after cleaning: %s", e)
-                raise ValueError("Could not parse anime search results") from e
+            except json.JSONDecodeError as err:
+                logging.error("Failed to parse JSON after cleaning: %s", err)
+                raise ValueError("Could not parse anime search results") from err
 
-    except requests.RequestException as e:
-        logging.error("Failed to fetch anime list: %s", e)
-        raise ValueError("Could not fetch anime data from server") from e
+    except requests.RequestException as err:
+        logging.error("Failed to fetch anime list: %s", err)
+        raise ValueError("Could not fetch anime data from server") from err
 
 
 def _handle_konami_code(entered_keys: List[str], key_input: str) -> List[str]:
@@ -193,8 +193,8 @@ def _handle_konami_code(entered_keys: List[str], key_input: str) -> List[str]:
     if entered_keys == KONAMI_CODE:
         try:
             webbrowser.open(EASTER_EGG_URL)
-        except Exception as e:
-            logging.debug("Failed to open Easter egg URL: %s", e)
+        except Exception as err:
+            logging.debug("Failed to open Easter egg URL: %s", err)
         entered_keys.clear()
 
     return entered_keys
@@ -276,8 +276,8 @@ def show_menu(stdscr: curses.window, options: List[Dict]) -> Optional[str]:
             elif key == ord("q") or key == 27:  # 'q' or ESC
                 break
 
-    except curses.error as e:
-        logging.error("Curses error in menu: %s", e)
+    except curses.error as err:
+        logging.error("Curses error in menu: %s", err)
     except KeyboardInterrupt:
         pass
 

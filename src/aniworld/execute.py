@@ -47,16 +47,16 @@ def _execute_single_anime(anime: Anime) -> bool:
         )
         return True
 
-    except AttributeError as e:
-        logging.error("Anime object missing required attributes: %s", e)
+    except AttributeError as err:
+        logging.error("Anime object missing required attributes: %s", err)
         return False
 
-    except ValueError as e:
-        logging.error("Invalid action configuration: %s", e)
+    except ValueError as err:
+        logging.error("Invalid action configuration: %s", err)
         return False
 
-    except Exception as e:
-        logging.error("Unexpected error executing %s for anime: %s", anime.action, e)
+    except Exception as err:
+        logging.error("Unexpected error executing %s for anime: %s", anime.action, err)
         return False
 
 

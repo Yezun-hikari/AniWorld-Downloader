@@ -92,13 +92,13 @@ def get_random_anime_slug(genre: str) -> Optional[str]:
 
         return random_anime.get("link")
 
-    except requests.RequestException as e:
-        logging.error("Network request failed for genre '%s': %s", genre, e)
-    except (json.JSONDecodeError, KeyError, TypeError) as e:
-        logging.error("Error processing response data for genre '%s': %s", genre, e)
-    except Exception as e:
+    except requests.RequestException as err:
+        logging.error("Network request failed for genre '%s': %s", genre, err)
+    except (json.JSONDecodeError, KeyError, TypeError) as err:
+        logging.error("Error processing response data for genre '%s': %s", genre, err)
+    except Exception as err:
         logging.error(
-            "Unexpected error getting random anime for genre '%s': %s", genre, e
+            "Unexpected error getting random anime for genre '%s': %s", genre, err
         )
 
     return None
@@ -285,8 +285,8 @@ def _handle_uninstall() -> None:
             else 0,
         ):
             pass
-    except Exception as e:
-        logging.error("Error during uninstallation: %s", e)
+    except Exception as err:
+        logging.error("Error during uninstallation: %s", err)
         sys.exit(1)
 
     sys.exit(0)
@@ -347,8 +347,8 @@ def _handle_provider_links(args: argparse.Namespace) -> None:
                     logging.error(
                         "Could not extract direct link from hanime URL: %s", link
                     )
-            except Exception as e:
-                logging.error("Error processing hanime link '%s': %s", link, e)
+            except Exception as err:
+                logging.error("Error processing hanime link '%s': %s", link, err)
 
         # Remove processed hanime links from provider_link list
         args.provider_link = [
@@ -402,8 +402,8 @@ def _handle_provider_links(args: argparse.Namespace) -> None:
                 print(f"-> {provider_episode}")
                 print(direct_link)
                 print("-" * 40)
-        except Exception as e:
-            logging.error("Error processing provider links: %s", e)
+        except Exception as err:
+            logging.error("Error processing provider links: %s", err)
             sys.exit(1)
 
     sys.exit(0)
@@ -423,10 +423,10 @@ def _update_yt_dlp() -> None:
             stderr=subprocess.DEVNULL,
         )
         logging.info("yt-dlp updated successfully")
-    except subprocess.CalledProcessError as e:
-        logging.error("Failed to update yt-dlp: %s", e)
-    except Exception as e:
-        logging.error("Unexpected error updating yt-dlp: %s", e)
+    except subprocess.CalledProcessError as err:
+        logging.error("Failed to update yt-dlp: %s", err)
+    except Exception as err:
+        logging.error("Unexpected error updating yt-dlp: %s", err)
 
 
 def _update_all_tools() -> None:
@@ -437,8 +437,8 @@ def _update_all_tools() -> None:
         _update_yt_dlp()
         download_syncplay(update=True)
         logging.info("All tools updated successfully")
-    except Exception as e:
-        logging.error("Error updating tools: %s", e)
+    except Exception as err:
+        logging.error("Error updating tools: %s", err)
 
 
 def _handle_updates(update_type: str) -> None:
@@ -454,8 +454,8 @@ def _handle_updates(update_type: str) -> None:
     if action:
         try:
             action()
-        except Exception as e:
-            logging.error("Error during %s update: %s", update_type, e)
+        except Exception as err:
+            logging.error("Error during %s update: %s", update_type, err)
     else:
         logging.error("Invalid update option: %s", update_type)
 
@@ -484,8 +484,8 @@ def _open_terminal_with_command(command: str) -> None:
                 return
         except FileNotFoundError:
             logging.debug("%s not found, trying next option.", terminal)
-        except subprocess.SubprocessError as e:
-            logging.error("Error opening terminal with %s: %s", terminal, e)
+        except subprocess.SubprocessError as err:
+            logging.error("Error opening terminal with %s: %s", terminal, err)
 
     logging.error(
         "No supported terminal emulator found. "
@@ -524,10 +524,10 @@ def _handle_debug_mode() -> None:
         elif system == "Linux":
             _open_terminal_with_command("tail -f -n +1 /tmp/aniworld.log")
 
-    except subprocess.CalledProcessError as e:
-        logging.error("Failed to start tailing the log file: %s", e)
-    except Exception as e:
-        logging.error("Unexpected error setting up debug mode: %s", e)
+    except subprocess.CalledProcessError as err:
+        logging.error("Failed to start tailing the log file: %s", err)
+    except Exception as err:
+        logging.error("Unexpected error setting up debug mode: %s", err)
 
 
 def _setup_default_provider(args: argparse.Namespace) -> None:

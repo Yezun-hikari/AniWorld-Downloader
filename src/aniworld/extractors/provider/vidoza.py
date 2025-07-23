@@ -49,10 +49,10 @@ def get_direct_link_from_vidoza(embeded_vidoza_link: str) -> str:
                 if match:
                     return match.group(1)
 
-    except requests.RequestException as e:
-        raise ValueError(f"Failed to fetch Vidoza page: {e}") from e
-    except Exception as e:
-        raise ValueError(f"Error parsing Vidoza page: {e}") from e
+    except requests.RequestException as err:
+        raise ValueError(f"Failed to fetch Vidoza page: {err}") from err
+    except Exception as err:
+        raise ValueError(f"Error parsing Vidoza page: {err}") from err
 
     raise ValueError("No direct link found in Vidoza page.")
 

@@ -66,8 +66,8 @@ def decode_voe_string(encoded: str) -> Dict[str, Any]:
         step4 = shift_back(step3, 3)
         step5 = base64.b64decode(step4[::-1]).decode()
         return json.loads(step5)
-    except (binascii.Error, json.JSONDecodeError, UnicodeDecodeError) as e:
-        raise ValueError(f"Failed to decode VOE string: {e}") from e
+    except (binascii.Error, json.JSONDecodeError, UnicodeDecodeError) as err:
+        raise ValueError(f"Failed to decode VOE string: {err}") from err
 
 
 def extract_voe_from_script(html: str) -> Optional[str]:
@@ -166,14 +166,14 @@ def get_direct_link_from_voe(embeded_voe_link: str) -> str:
 
         raise ValueError("No video source found using any extraction method.")
 
-    except requests.RequestException as e:
-        raise ValueError(f"Failed to fetch VOE page: {e}") from e
-    except Exception as e:
+    except requests.RequestException as err:
+        raise ValueError(f"Failed to fetch VOE page: {err}") from err
+    except Exception as err:
         raise ValueError(
-            f"Unable to process this VOE link: {e}\n\n"
+            f"Unable to process this VOE link: {err}\n\n"
             "Try using a different provider for now.\n"
             "If this issue persists and hasn't been reported yet, please consider creating a new issue."
-        ) from e
+        ) from err
 
 
 if __name__ == "__main__":

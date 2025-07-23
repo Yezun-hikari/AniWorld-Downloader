@@ -64,8 +64,8 @@ def _cleanup_partial_files(output_dir: Path) -> None:
         if partial_pattern.search(file_path.name):
             try:
                 file_path.unlink()
-            except OSError as e:
-                logging.warning("Failed to remove partial file %s: %s", file_path, e)
+            except OSError as err:
+                logging.warning("Failed to remove partial file %s: %s", file_path, err)
         else:
             is_empty = False
 
@@ -73,9 +73,9 @@ def _cleanup_partial_files(output_dir: Path) -> None:
     if is_empty:
         try:
             output_dir.rmdir()
-        except OSError as e:
+        except OSError as err:
             logging.warning(
-                "Failed to remove empty directory %s: %s", str(output_dir), e
+                "Failed to remove empty directory %s: %s", str(output_dir), err
             )
 
 
@@ -83,11 +83,11 @@ def _get_direct_link(episode, episode_title: str) -> Optional[str]:
     """Get direct link for episode with error handling."""
     try:
         return episode.get_direct_link()
-    except Exception as e:
+    except Exception as err:
         logging.warning(
             'Something went wrong with "%s".\nError while trying to find a direct link: %s',
             episode_title,
-            e,
+            err,
         )
         return None
 

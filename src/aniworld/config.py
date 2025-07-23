@@ -72,8 +72,8 @@ def get_latest_github_version():
         return (
             response.json().get("tag_name", "") if response.status_code == 200 else ""
         )
-    except requests.RequestException as e:
-        logging.error("Error fetching latest release: %s", e)
+    except requests.RequestException as err:
+        logging.error("Error fetching latest release: %s", err)
         return ""
 
 
@@ -88,10 +88,10 @@ def is_newest_version():
             return None, False
         latest = Version(latest_str)
         return latest, current >= latest
-    except InvalidVersion as e:
-        logging.error("Invalid version format: %s", e)
-    except requests.RequestException as e:
-        logging.error("Network error while fetching latest version: %s", e)
+    except InvalidVersion as err:
+        logging.error("Invalid version format: %s", err)
+    except requests.RequestException as err:
+        logging.error("Network error while fetching latest version: %s", err)
 
     return None, False
 

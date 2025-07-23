@@ -35,8 +35,8 @@ def _validate_loadx_url(url: str) -> str:
         parsed_url = urlparse(url)
         if not parsed_url.netloc:
             raise ValueError("Invalid URL format - missing domain")
-    except Exception as e:
-        raise ValueError(f"Invalid URL format: {e}") from e
+    except Exception as err:
+        raise ValueError(f"Invalid URL format: {err}") from err
 
     return url
 
@@ -91,9 +91,9 @@ def _make_request(
         response.raise_for_status()
         return response
 
-    except requests.RequestException as e:
-        logger.error(f"Request failed for {url}: {e}")
-        raise ValueError(f"Failed to fetch URL: {e}") from e
+    except requests.RequestException as err:
+        logger.error(f"Request failed for {url}: {err}")
+        raise ValueError(f"Failed to fetch URL: {err}") from err
 
 
 def _extract_id_hash_from_url(url: str) -> tuple[str, str]:
@@ -129,9 +129,9 @@ def _extract_id_hash_from_url(url: str) -> tuple[str, str]:
 
         return id_hash, host
 
-    except Exception as e:
-        logger.error(f"Failed to extract ID hash from URL: {e}")
-        raise ValueError(f"Failed to parse LoadX URL: {e}") from e
+    except Exception as err:
+        logger.error(f"Failed to extract ID hash from URL: {err}")
+        raise ValueError(f"Failed to parse LoadX URL: {err}") from err
 
 
 def _parse_video_response(response_text: str) -> str:
@@ -162,12 +162,12 @@ def _parse_video_response(response_text: str) -> str:
 
         return video_url.strip()
 
-    except json.JSONDecodeError as e:
-        logger.error(f"Failed to parse JSON response: {e}")
-        raise ValueError(f"Invalid JSON response: {e}") from e
-    except Exception as e:
-        logger.error(f"Failed to parse video response: {e}")
-        raise ValueError(f"Failed to parse video data: {e}") from e
+    except json.JSONDecodeError as err:
+        logger.error(f"Failed to parse JSON response: {err}")
+        raise ValueError(f"Invalid JSON response: {err}") from err
+    except Exception as err:
+        logger.error(f"Failed to parse video response: {err}")
+        raise ValueError(f"Failed to parse video data: {err}") from err
 
 
 def get_direct_link_from_loadx(embeded_loadx_link: str) -> str:
@@ -210,9 +210,9 @@ def get_direct_link_from_loadx(embeded_loadx_link: str) -> str:
 
     except ValueError:
         raise
-    except Exception as e:
-        logger.error(f"Unexpected error extracting LoadX video: {e}")
-        raise ValueError(f"Failed to extract video from LoadX: {e}") from e
+    except Exception as err:
+        logger.error(f"Unexpected error extracting LoadX video: {err}")
+        raise ValueError(f"Failed to extract video from LoadX: {err}") from err
 
 
 def validate_video_url(url: str) -> bool:
@@ -262,13 +262,13 @@ def main() -> None:
     except KeyboardInterrupt:
         print("\nOperation cancelled by user.")
         sys.exit(0)
-    except ValueError as e:
-        print(f"Error: {e}")
-        logger.error(f"LoadX extraction error: {e}")
+    except ValueError as err:
+        print(f"Error: {err}")
+        logger.error(f"LoadX extraction error: {err}")
         sys.exit(1)
-    except Exception as e:
-        print(f"Unexpected error: {e}")
-        logger.error(f"Unexpected error: {e}")
+    except Exception as err:
+        print(f"Unexpected error: {err}")
+        logger.error(f"Unexpected error: {err}")
         sys.exit(1)
 
 

@@ -50,8 +50,8 @@ def _read_episode_file(episode_file: str) -> List[str]:
     except FileNotFoundError:
         logging.error("The specified episode file does not exist: %s", episode_file)
         sys.exit(1)
-    except IOError as e:
-        logging.error("Error reading the episode file: %s", e)
+    except IOError as err:
+        logging.error("Error reading the episode file: %s", err)
         sys.exit(1)
 
 
@@ -192,8 +192,8 @@ def aniworld() -> None:
 
     except KeyboardInterrupt:
         pass
-    except Exception as e:  # pylint: disable=broad-exception-caught
-        _handle_runtime_error(e)
+    except Exception as err:
+        _handle_runtime_error(err)
 
 
 if __name__ == "__main__":

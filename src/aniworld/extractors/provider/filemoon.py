@@ -24,8 +24,8 @@ def _make_request(url: str, headers: Optional[dict] = None) -> requests.Response
         response = requests.get(url, headers=headers, timeout=DEFAULT_REQUEST_TIMEOUT)
         response.raise_for_status()
         return response
-    except requests.RequestException as e:
-        logging.error(f"Request failed for {url}: {e}")
+    except requests.RequestException as err:
+        logging.error(f"Request failed for {url}: {err}")
         raise
 
 
@@ -53,8 +53,8 @@ def _extract_iframe_src(html_content: str, source_url: str) -> str:
         logging.debug(f"Extracted iframe src: {iframe_src}")
         return iframe_src
 
-    except Exception as e:
-        logging.error(f"Failed to extract iframe from {source_url}: {e}")
+    except Exception as err:
+        logging.error(f"Failed to extract iframe from {source_url}: {err}")
         raise
 
 
@@ -64,8 +64,8 @@ def _beautify_javascript(html_content: str) -> str:
         beautified = jsbeautifier.beautify(html_content)
         logging.debug("Successfully beautified JavaScript content")
         return beautified
-    except Exception as e:
-        logging.error(f"Failed to beautify JavaScript: {e}")
+    except Exception as err:
+        logging.error(f"Failed to beautify JavaScript: {err}")
         # Return original content if beautification fails
         return html_content
 
@@ -128,8 +128,8 @@ def get_direct_link_from_filemoon(embeded_filemoon_link: str) -> str:
         logging.info("Successfully extracted Filemoon direct link")
         return file_url
 
-    except Exception as e:
-        logging.error(f"Failed to extract direct link from Filemoon: {e}")
+    except Exception as err:
+        logging.error(f"Failed to extract direct link from Filemoon: {err}")
         raise
 
 
@@ -146,6 +146,6 @@ if __name__ == "__main__":
         result = get_direct_link_from_filemoon(url)
         print(f"Direct Link: {result}")
 
-    except Exception as e:
-        print(f"Error: {e}")
+    except Exception as err:
+        print(f"Error: {err}")
         exit(1)

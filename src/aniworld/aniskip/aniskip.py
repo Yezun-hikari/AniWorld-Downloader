@@ -32,8 +32,8 @@ def _make_request(
         response = requests.get(url, timeout=timeout)
         response.raise_for_status()
         return response
-    except requests.RequestException as e:
-        logging.error("Request failed for %s: %s", url, e)
+    except requests.RequestException as err:
+        logging.error("Request failed for %s: %s", url, err)
         raise
 
 
@@ -126,8 +126,8 @@ def check_episodes(anime_id: int) -> Optional[int]:
 
         return episode_count
 
-    except Exception as e:
-        logging.error("Failed to check episodes for anime ID %s: %s", anime_id, e)
+    except Exception as err:
+        logging.error("Failed to check episodes for anime ID %s: %s", anime_id, err)
         return None
 
 
@@ -177,8 +177,8 @@ def get_mal_id_from_title(title: str, season: int) -> Optional[int]:
 
         return current_id
 
-    except Exception as e:
-        logging.error("Failed to get MAL ID for %s: %s", title, e)
+    except Exception as err:
+        logging.error("Failed to get MAL ID for %s: %s", title, err)
         return None
 
 
@@ -208,8 +208,8 @@ def get_sequel_anime_id(anime_id: int) -> Optional[int]:
 
         return int(sequel_id)
 
-    except Exception as e:
-        logging.error("Failed to get sequel for anime ID %s: %s", anime_id, e)
+    except Exception as err:
+        logging.error("Failed to get sequel for anime ID %s: %s", anime_id, err)
         return None
 
 
@@ -263,8 +263,8 @@ def build_options(metadata: Dict, chapters_file: str) -> str:
 
         return ",".join(options)
 
-    except Exception as e:
-        logging.error("Failed to build options: %s", e)
+    except Exception as err:
+        logging.error("Failed to build options: %s", err)
         return ""
 
 
@@ -313,8 +313,8 @@ def build_flags(anime_id: str, episode: int, chapters_file: str) -> str:
 
         return ""
 
-    except Exception as e:
-        logging.error("Failed to build flags: %s", e)
+    except Exception as err:
+        logging.error("Failed to build flags: %s", err)
         return ""
 
 
@@ -341,8 +341,8 @@ def setup_aniskip() -> bool:
         logging.debug("Aniskip script setup completed")
         return True
 
-    except Exception as e:
-        logging.error("Failed to setup aniskip: %s", e)
+    except Exception as err:
+        logging.error("Failed to setup aniskip: %s", err)
         return False
 
 
@@ -389,8 +389,8 @@ def aniskip(title: str, episode: int, season: int, aniworld_episodes: int) -> st
         with tempfile.NamedTemporaryFile(mode="w+", delete=False) as chapters_file:
             return build_flags(str(anime_id), episode, chapters_file.name)
 
-    except Exception as e:
-        logging.error("Aniskip failed for %s: %s", title, e)
+    except Exception as err:
+        logging.error("Aniskip failed for %s: %s", title, err)
         return ""
 
 

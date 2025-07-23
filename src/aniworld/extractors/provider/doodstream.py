@@ -29,8 +29,8 @@ def _make_request(url: str, headers: dict) -> requests.Response:
         )
         response.raise_for_status()
         return response
-    except requests.RequestException as e:
-        logging.error(f"Request failed for {url}: {e}")
+    except requests.RequestException as err:
+        logging.error(f"Request failed for {url}: {err}")
         raise
 
 
@@ -81,8 +81,8 @@ def _get_video_base_url(pass_md5_url: str, headers: dict) -> str:
         logging.debug(f"Retrieved video base URL: {video_base_url}")
         return video_base_url
 
-    except Exception as e:
-        logging.error(f"Failed to get video base URL from {pass_md5_url}: {e}")
+    except Exception as err:
+        logging.error(f"Failed to get video base URL from {pass_md5_url}: {err}")
         raise
 
 
@@ -135,8 +135,8 @@ def get_direct_link_from_doodstream(embeded_doodstream_link: str) -> str:
         logging.info("Successfully extracted Doodstream direct link")
         return direct_link
 
-    except Exception as e:
-        logging.error(f"Failed to extract direct link from Doodstream: {e}")
+    except Exception as err:
+        logging.error(f"Failed to extract direct link from Doodstream: {err}")
         raise
 
 
@@ -153,6 +153,6 @@ if __name__ == "__main__":
         result = get_direct_link_from_doodstream(link)
         print(f"Direct Link: {result}")
 
-    except Exception as e:
-        print(f"Error: {e}")
+    except Exception as err:
+        print(f"Error: {err}")
         exit(1)

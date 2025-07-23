@@ -20,8 +20,8 @@ def _get_latest_release_info() -> dict:
     """Get latest release information from GitHub."""
     try:
         return get_github_release("Tama47/Anime4K")
-    except Exception as e:
-        logging.error("Failed to get latest Anime4K release: %s", e)
+    except Exception as err:
+        logging.error("Failed to get latest Anime4K release: %s", err)
         raise
 
 
@@ -44,8 +44,8 @@ def _cleanup_macos_artifacts(directory: Path) -> None:
         try:
             shutil.rmtree(macos_path)
             logging.debug("Removed macOS artifacts from %s", macos_path)
-        except OSError as e:
-            logging.warning("Failed to remove macOS artifacts: %s", e)
+        except OSError as err:
+            logging.warning("Failed to remove macOS artifacts: %s", err)
 
 
 def _extract_with_tar(zip_path: Path, dest_path: Path) -> bool:
@@ -60,8 +60,10 @@ def _extract_with_tar(zip_path: Path, dest_path: Path) -> bool:
         )
         logging.debug("Successfully extracted %s to %s", zip_path, dest_path)
         return True
-    except subprocess.CalledProcessError as e:
-        logging.error("Failed to extract with tar: %s", e.stderr if e.stderr else e)
+    except subprocess.CalledProcessError as err:
+        logging.error(
+            "Failed to extract with tar: %s", err.stderr if err.stderr else err
+        )
         return False
     except FileNotFoundError:
         logging.error("tar command not found")
@@ -77,8 +79,8 @@ def _extract_with_python(zip_path: Path, dest_path: Path) -> bool:
             "Successfully extracted %s to %s using Python zipfile", zip_path, dest_path
         )
         return True
-    except Exception as e:
-        logging.error("Failed to extract with Python zipfile: %s", e)
+    except Exception as err:
+        logging.error("Failed to extract with Python zipfile: %s", err)
         return False
 
 
@@ -87,8 +89,8 @@ def _remove_archive(archive_path: Path) -> None:
     try:
         archive_path.unlink()
         logging.debug("Removed archive file: %s", archive_path)
-    except OSError as e:
-        logging.warning("Failed to remove archive file %s: %s", archive_path, e)
+    except OSError as err:
+        logging.warning("Failed to remove archive file %s: %s", archive_path, err)
 
 
 def get_anime4k_download_link(mode: str = "High") -> str:
@@ -163,8 +165,8 @@ def download_anime4k(mode: str) -> bool:
             remove_anime4k()
             logging.info("Anime4K removed successfully")
             return True
-        except Exception as e:
-            logging.error("Failed to remove Anime4K: %s", e)
+        except Exception as err:
+            logging.error("Failed to remove Anime4K: %s", err)
             return False
 
     # Ensure MPV directory exists
@@ -193,8 +195,8 @@ def download_anime4k(mode: str) -> bool:
 
         return success
 
-    except Exception as e:
-        logging.error("Failed to download Anime4K: %s", e)
+    except Exception as err:
+        logging.error("Failed to download Anime4K: %s", err)
         # Clean up partial download
         if archive_path.exists():
             _remove_archive(archive_path)

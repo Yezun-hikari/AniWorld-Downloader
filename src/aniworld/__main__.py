@@ -33,9 +33,9 @@ def main() -> NoReturn:
     except KeyboardInterrupt:
         print("\n\nOperation cancelled by user.", file=sys.stderr)
         sys.exit(130)  # Standard exit code for SIGINT
-    except Exception as e:
-        logging.error("Unexpected error: %s", e, exc_info=True)
-        print(f"\nAn unexpected error occurred: {e}", file=sys.stderr)
+    except Exception as err:
+        logging.error("Unexpected error: %s", err, exc_info=True)
+        print(f"\nAn unexpected error occurred: {err}", file=sys.stderr)
         print("Please check the logs for more details.", file=sys.stderr)
         sys.exit(1)
 
