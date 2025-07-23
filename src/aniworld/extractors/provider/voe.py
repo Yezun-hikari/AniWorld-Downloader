@@ -131,8 +131,7 @@ def get_direct_link_from_voe(embeded_voe_link: str) -> str:
         # Follow redirect and get final HTML
         try:
             with urlopen(
-                Request(redirect_url, headers={
-                        "User-Agent": config.RANDOM_USER_AGENT}),
+                Request(redirect_url, headers={"User-Agent": config.RANDOM_USER_AGENT}),
                 timeout=config.DEFAULT_REQUEST_TIMEOUT,
             ) as resp:
                 html = resp.read().decode()

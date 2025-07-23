@@ -45,12 +45,10 @@ def _read_episode_file(episode_file: str) -> List[str]:
     try:
         with open(episode_file, "r", encoding="UTF-8") as file:
             # Use list comprehension for better performance
-            urls = [line.strip()
-                    for line in file if line.strip().startswith("http")]
+            urls = [line.strip() for line in file if line.strip().startswith("http")]
             return urls
     except FileNotFoundError:
-        logging.error(
-            "The specified episode file does not exist: %s", episode_file)
+        logging.error("The specified episode file does not exist: %s", episode_file)
         sys.exit(1)
     except IOError as e:
         logging.error("Error reading the episode file: %s", e)

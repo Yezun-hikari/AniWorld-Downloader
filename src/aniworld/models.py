@@ -124,8 +124,7 @@ class Anime:
         """
         # Validate required parameters
         if not episode_list:
-            raise ValueError(
-                "Provide 'episode_list' with at least one episode.")
+            raise ValueError("Provide 'episode_list' with at least one episode.")
 
         # Validate site
         if site not in SUPPORTED_SITES:
@@ -148,11 +147,9 @@ class Anime:
         # Initialize attributes with fallbacks to parser arguments
         self.action = action or getattr(arguments, "action", "Watch")
         self.provider = provider or getattr(arguments, "provider", None)
-        self.language = language or getattr(
-            arguments, "language", "German Sub")
+        self.language = language or getattr(arguments, "language", "German Sub")
         self.aniskip = aniskip or getattr(arguments, "aniskip", False)
-        self.output_directory = output_directory or getattr(
-            arguments, "output_dir", "")
+        self.output_directory = output_directory or getattr(arguments, "output_dir", "")
         self.episode_list = episode_list
 
         # Initialize HTML and title
@@ -218,8 +215,7 @@ class Anime:
         """
         if self._title_cache is None:
             try:
-                self._title_cache = get_anime_title_from_html(
-                    self.html, self.site)
+                self._title_cache = get_anime_title_from_html(self.html, self.site)
                 if not self._title_cache:
                     self._title_cache = f"Unknown Anime ({self.slug})"
                     logging.warning(
@@ -335,8 +331,7 @@ class Anime:
             issues.append(f"Invalid action: {self.action}")
 
         # Use site-specific language codes for validation
-        site_language_codes = SITE_LANGUAGE_CODES.get(
-            self.site, LANGUAGE_CODES)
+        site_language_codes = SITE_LANGUAGE_CODES.get(self.site, LANGUAGE_CODES)
         if self.language not in site_language_codes:
             issues.append(f"Invalid language: {self.language}")
 
@@ -623,18 +618,14 @@ class Episode:
         try:
             episode_soup = BeautifulSoup(self.html.content, "html.parser")
 
-            german_title_div = episode_soup.find(
-                "span", class_="episodeGermanTitle")
-            english_title_div = episode_soup.find(
-                "small", class_="episodeEnglishTitle")
+            german_title_div = episode_soup.find("span", class_="episodeGermanTitle")
+            english_title_div = episode_soup.find("small", class_="episodeEnglishTitle")
 
             german_title = (
-                german_title_div.get_text(
-                    strip=True) if german_title_div else ""
+                german_title_div.get_text(strip=True) if german_title_div else ""
             )
             english_title = (
-                english_title_div.get_text(
-                    strip=True) if english_title_div else ""
+                english_title_div.get_text(strip=True) if english_title_div else ""
             )
 
             return german_title, english_title
@@ -668,8 +659,7 @@ class Episode:
             if numbers:
                 return int(numbers[-1])
 
-            raise ValueError(
-                f"No valid season number found in link: {self.link}")
+            raise ValueError(f"No valid season number found in link: {self.link}")
 
         except (IndexError, ValueError) as e:
             raise ValueError(
@@ -700,8 +690,7 @@ class Episode:
             if numbers:
                 return int(numbers[-1])
 
-            raise ValueError(
-                f"No valid episode number found in link: {self.link}")
+            raise ValueError(f"No valid episode number found in link: {self.link}")
 
         except (IndexError, ValueError) as e:
             raise ValueError(
@@ -723,8 +712,7 @@ class Episode:
         """
         try:
             episode_soup = BeautifulSoup(self.html.content, "html.parser")
-            change_language_box = episode_soup.find(
-                "div", class_="changeLanguageBox")
+            change_language_box = episode_soup.find("div", class_="changeLanguageBox")
 
             if not change_language_box:
                 logging.warning(
@@ -790,8 +778,7 @@ class Episode:
                     providers[provider_name][lang_key] = redirect_url
 
             if not providers:
-                raise ValueError(
-                    f"Could not extract providers from {self.link}")
+                raise ValueError(f"Could not extract providers from {self.link}")
 
             logging.debug(
                 'Available providers for "%s":\n%s',
@@ -819,14 +806,12 @@ class Episode:
             # Extract provider name
             provider_name_tag = link_element.find("h4")
             provider_name = (
-                provider_name_tag.get_text(
-                    strip=True) if provider_name_tag else None
+                provider_name_tag.get_text(strip=True) if provider_name_tag else None
             )
 
             # Extract redirect link
             redirect_link_tag = link_element.find("a", class_="watchEpisode")
-            redirect_path = redirect_link_tag.get(
-                "href") if redirect_link_tag else None
+            redirect_path = redirect_link_tag.get("href") if redirect_link_tag else None
 
             # Extract language key
             lang_key_str = link_element.get("data-lang-key")
@@ -842,8 +827,7 @@ class Episode:
             return None
 
         except (ValueError, AttributeError) as e:
-            logging.debug(
-                "Failed to extract provider data from element: %s", e)
+            logging.debug("Failed to extract provider data from element: %s", e)
             return None
 
     def _get_language_key_from_name(self, language_name: str) -> int:
@@ -860,8 +844,7 @@ class Episode:
             ValueError: If language name is invalid
         """
         # Use site-specific language codes
-        site_language_codes = SITE_LANGUAGE_CODES.get(
-            self.site, LANGUAGE_CODES)
+        site_language_codes = SITE_LANGUAGE_CODES.get(self.site, LANGUAGE_CODES)
         language_key = site_language_codes.get(language_name)
 
         if language_key is None:
@@ -887,15 +870,13 @@ class Episode:
             ValueError: If any language key is invalid
         """
         # Use site-specific language names
-        site_language_names = SITE_LANGUAGE_NAMES.get(
-            self.site, LANGUAGE_NAMES)
+        site_language_names = SITE_LANGUAGE_NAMES.get(self.site, LANGUAGE_NAMES)
         language_names = []
 
         for key in language_keys:
             name = site_language_names.get(key)
             if name is None:
-                raise ValueError(
-                    f"Invalid language key: {key} for site: {self.site}")
+                raise ValueError(f"Invalid language key: {key} for site: {self.site}")
             language_names.append(name)
 
         return language_names
@@ -919,8 +900,7 @@ class Episode:
             )
 
         if not self.embeded_link:
-            raise ValueError(
-                "No embedded link available for direct link extraction")
+            raise ValueError("No embedded link available for direct link extraction")
 
         try:
             module = importlib.import_module("aniworld.extractors")
@@ -941,8 +921,7 @@ class Episode:
             direct_link = func(**kwargs)
 
             if not direct_link:
-                raise ValueError(
-                    f"Provider '{provider}' returned empty direct link")
+                raise ValueError(f"Provider '{provider}' returned empty direct link")
 
             return direct_link
 
@@ -962,8 +941,7 @@ class Episode:
             Redirect link or None if not available
         """
         try:
-            lang_key = self._get_language_key_from_name(
-                self._selected_language)
+            lang_key = self._get_language_key_from_name(self._selected_language)
 
             # Check if selected provider and language combination exists
             if (
@@ -993,8 +971,7 @@ class Episode:
                 available_langs.update(lang_dict.keys())
 
             # Use site-specific language names for error message
-            site_language_names = SITE_LANGUAGE_NAMES.get(
-                self.site, LANGUAGE_NAMES)
+            site_language_names = SITE_LANGUAGE_NAMES.get(self.site, LANGUAGE_NAMES)
             available_lang_names = [
                 site_language_names.get(key, f"Unknown({key})")
                 for key in available_langs
@@ -1026,8 +1003,7 @@ class Episode:
             self.get_redirect_link()
 
         if not self.redirect_link:
-            logging.warning(
-                "No redirect link available for embedded link extraction")
+            logging.warning("No redirect link available for embedded link extraction")
             return None
 
         try:
@@ -1074,8 +1050,7 @@ class Episode:
 
         # Validate selected provider
         if self._selected_provider not in SUPPORTED_PROVIDERS:
-            logging.error("Provider '%s' is not supported",
-                          self._selected_provider)
+            logging.error("Provider '%s' is not supported", self._selected_provider)
             return None
 
         try:
@@ -1177,12 +1152,10 @@ class Episode:
 
                     # Get season/episode counts if missing
                     if not self.season_episode_count and self.slug:
-                        self.season_episode_count = get_season_episode_count(
-                            self.slug)
+                        self.season_episode_count = get_season_episode_count(self.slug)
 
                     if self.movie_episode_count is None and self.slug:
-                        self.movie_episode_count = get_movie_episode_count(
-                            self.slug)
+                        self.movie_episode_count = get_movie_episode_count(self.slug)
 
                     # Clean up season episode count if movies exist
                     if (
@@ -1220,15 +1193,13 @@ class Episode:
         if not self.link and (
             not self.slug or self.season is None or self.episode is None
         ):
-            issues.append(
-                "Either 'link' or 'slug + season + episode' must be provided")
+            issues.append("Either 'link' or 'slug + season + episode' must be provided")
 
         if self.site not in SUPPORTED_SITES:
             issues.append(f"Unsupported site: {self.site}")
 
         # Use site-specific language codes for validation
-        site_language_codes = SITE_LANGUAGE_CODES.get(
-            self.site, LANGUAGE_CODES)
+        site_language_codes = SITE_LANGUAGE_CODES.get(self.site, LANGUAGE_CODES)
         if self._selected_language not in site_language_codes:
             issues.append(
                 f"Invalid selected language: {self._selected_language} for site: {self.site}"

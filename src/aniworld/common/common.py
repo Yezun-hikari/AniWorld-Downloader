@@ -121,8 +121,7 @@ def check_avx2_support() -> bool:
         flags = info.get("flags", [])
         return "avx2" in flags
     except ImportError:
-        logging.warning(
-            "cpuinfo package not available, assuming no AVX2 support")
+        logging.warning("cpuinfo package not available, assuming no AVX2 support")
         return False
     except Exception as e:
         logging.error("Error checking AVX2 support: %s", e)
@@ -484,13 +483,10 @@ def get_season_episode_count(slug: str) -> Dict[int, int]:
             season_url = f"{base_url}staffel-{season}"
             try:
                 season_response = _make_request(season_url)
-                season_soup = BeautifulSoup(
-                    season_response.content, "html.parser")
-                episode_counts[season] = _parse_season_episodes(
-                    season_soup, season)
+                season_soup = BeautifulSoup(season_response.content, "html.parser")
+                episode_counts[season] = _parse_season_episodes(season_soup, season)
             except Exception as e:
-                logging.warning(
-                    "Failed to get episodes for season %d: %s", season, e)
+                logging.warning("Failed to get episodes for season %d: %s", season, e)
                 episode_counts[season] = 0
 
         return episode_counts
@@ -586,8 +582,7 @@ def _process_base_url(
 
     # Handle keep_watching mode
     if arguments.keep_watching:
-        unique_links.update(_process_keep_watching(
-            base_url, seasons_info, movies_info))
+        unique_links.update(_process_keep_watching(base_url, seasons_info, movies_info))
     else:
         unique_links.update(
             _process_full_series(base_url, parts, seasons_info, movies_info)
@@ -765,8 +760,7 @@ def copy_file_if_different(source_path: str, destination_path: str) -> bool:
             return True
 
     except Exception as e:
-        logging.error("Failed to copy %s to %s: %s",
-                      source_path, destination_path, e)
+        logging.error("Failed to copy %s to %s: %s", source_path, destination_path, e)
         return False
 
 

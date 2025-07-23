@@ -45,8 +45,7 @@ def _make_request(url: str, retry_count: int = 0) -> requests.Response:
         return response
 
     except requests.RequestException as e:
-        logger.error(
-            f"Request failed for {url} (attempt {retry_count + 1}): {e}")
+        logger.error(f"Request failed for {url} (attempt {retry_count + 1}): {e}")
 
         if retry_count < MAX_RETRY_ATTEMPTS - 1:
             logger.info(f"Retrying request to {url}")
@@ -137,8 +136,7 @@ def _validate_url(url: str) -> str:
 
     url = url.strip()
     if not url.startswith(("http://", "https://")):
-        raise ValueError(
-            "Invalid URL format - must start with http:// or https://")
+        raise ValueError("Invalid URL format - must start with http:// or https://")
 
     # Parse URL to validate domain
     try:
@@ -189,8 +187,7 @@ def _display_stream_info(stream: Dict[str, Any], index: int) -> None:
         stream: Stream information dictionary
         index: Stream index for display
     """
-    premium_tag = "(Premium)" if not stream.get(
-        "is_guest_allowed", True) else ""
+    premium_tag = "(Premium)" if not stream.get("is_guest_allowed", True) else ""
     width = stream.get("width", "Unknown")
     height = stream.get("height", "Unknown")
     filesize = stream.get("filesize_mbs", "Unknown")
@@ -224,8 +221,7 @@ def _get_stream_selection(streams: List[Dict[str, Any]]) -> int:
             if 0 <= selected_index < len(streams):
                 return selected_index
             else:
-                print(
-                    f"Invalid selection. Please choose between 1 and {len(streams)}.")
+                print(f"Invalid selection. Please choose between 1 and {len(streams)}.")
 
         except ValueError:
             print("Invalid input. Please enter a number.")

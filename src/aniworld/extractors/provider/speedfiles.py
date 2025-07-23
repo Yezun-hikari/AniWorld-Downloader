@@ -34,8 +34,7 @@ def _validate_speedfiles_url(url: str) -> str:
 
     url = url.strip()
     if not url.startswith(("http://", "https://")):
-        raise ValueError(
-            "Invalid URL format - must start with http:// or https://")
+        raise ValueError("Invalid URL format - must start with http:// or https://")
 
     try:
         parsed_url = urlparse(url)
@@ -155,7 +154,7 @@ def _decode_speedfiles_data(encoded_data: str) -> str:
             raise ValueError("Invalid hex string length")
 
         decoded_hex = "".join(
-            chr(int(decoded[i: i + 2], 16)) for i in range(0, len(decoded), 2)
+            chr(int(decoded[i : i + 2], 16)) for i in range(0, len(decoded), 2)
         )
         logger.debug("Step 4: Converted hex to characters")
 
@@ -218,8 +217,7 @@ def get_direct_link_from_speedfiles(embeded_speedfiles_link: str) -> str:
         raise
     except Exception as e:
         logger.error(f"Unexpected error extracting SpeedFiles video: {e}")
-        raise ValueError(
-            f"Failed to extract video from SpeedFiles: {e}") from e
+        raise ValueError(f"Failed to extract video from SpeedFiles: {e}") from e
 
 
 def validate_video_url(url: str) -> bool:

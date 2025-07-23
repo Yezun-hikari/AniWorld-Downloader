@@ -15,8 +15,7 @@ from .config import DEFAULT_REQUEST_TIMEOUT, ANIWORLD_TO
 
 
 # Constants for better maintainability
-KONAMI_CODE = ["UP", "UP", "DOWN", "DOWN",
-               "LEFT", "RIGHT", "LEFT", "RIGHT", "b", "a"]
+KONAMI_CODE = ["UP", "UP", "DOWN", "DOWN", "LEFT", "RIGHT", "LEFT", "RIGHT", "b", "a"]
 EASTER_EGG_URL = "https://www.youtube.com/watch?v=PDJLvF1dUek"
 
 # Forbidden search patterns (case-insensitive)

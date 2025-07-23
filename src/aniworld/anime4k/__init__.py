@@ -1,1 +1,1 @@
-from .anime4k import download_anime4k
+__all__ = ["download_anime4k"]

@@ -61,8 +61,7 @@ def _get_aniskip_data(anime: Anime, episode) -> Optional[str]:
             episode.season_episode_count[episode.season],
         )
     except Exception as e:
-        logging.warning(
-            "Failed to get aniskip data for %s: %s", anime.title, e)
+        logging.warning("Failed to get aniskip data for %s: %s", anime.title, e)
         return None
 
 
@@ -106,8 +105,7 @@ def _execute_command(title: str, command: List[str]) -> None:
         logging.debug("Running Command:\n%s", command)
         subprocess.run(command, check=True)
     except subprocess.CalledProcessError as e:
-        logging.error("Error running command: %s\nCommand: %s",
-                      e, " ".join(command))
+        logging.error("Error running command: %s\nCommand: %s", e, " ".join(command))
     except KeyboardInterrupt:
         logging.info("Watch session interrupted by user")
         raise

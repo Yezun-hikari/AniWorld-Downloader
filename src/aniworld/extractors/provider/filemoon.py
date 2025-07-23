@@ -21,8 +21,7 @@ def _get_headers() -> dict:
 def _make_request(url: str, headers: Optional[dict] = None) -> requests.Response:
     """Make HTTP request with error handling."""
     try:
-        response = requests.get(url, headers=headers,
-                                timeout=DEFAULT_REQUEST_TIMEOUT)
+        response = requests.get(url, headers=headers, timeout=DEFAULT_REQUEST_TIMEOUT)
         response.raise_for_status()
         return response
     except requests.RequestException as e:
@@ -48,8 +47,7 @@ def _extract_iframe_src(html_content: str, source_url: str) -> str:
         iframe = soup.find("iframe")
 
         if not iframe or not iframe.has_attr("src"):
-            raise ValueError(
-                f"No iframe with src attribute found in {source_url}")
+            raise ValueError(f"No iframe with src attribute found in {source_url}")
 
         iframe_src = iframe["src"]
         logging.debug(f"Extracted iframe src: {iframe_src}")
@@ -103,8 +101,7 @@ def get_direct_link_from_filemoon(embeded_filemoon_link: str) -> str:
     if not embeded_filemoon_link:
         raise ValueError("Embed URL cannot be empty")
 
-    logging.info(
-        f"Extracting direct link from Filemoon: {embeded_filemoon_link}")
+    logging.info(f"Extracting direct link from Filemoon: {embeded_filemoon_link}")
 
     try:
         # Convert embed URL to download URL

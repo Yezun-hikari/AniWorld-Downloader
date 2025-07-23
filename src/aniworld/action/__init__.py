@@ -1,3 +1,1 @@
-from .download import download
-from .syncplay import syncplay
-from .watch import watch
+__all__ = ["download", "syncplay", "watch"]

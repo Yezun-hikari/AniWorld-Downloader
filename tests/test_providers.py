@@ -61,7 +61,8 @@ def test_get_direct_link(provider_name: str, test_url: Optional[str]):
         test_url: Test URL for the provider (None if broken/unavailable)
     """
     if test_url is None:
-        pytest.skip(f"Provider '{provider_name}' is marked as broken/unavailable")
+        pytest.skip(
+            f"Provider '{provider_name}' is marked as broken/unavailable")
 
     logger.info(f"Testing provider: {provider_name}")
 
@@ -80,7 +81,8 @@ def test_get_direct_link(provider_name: str, test_url: Optional[str]):
         assert isinstance(direct_link, str), (
             f"Provider '{provider_name}' returned non-string: {type(direct_link)}"
         )
-        assert direct_link.strip(), f"Provider '{provider_name}' returned empty string"
+        assert direct_link.strip(
+        ), f"Provider '{provider_name}' returned empty string"
         assert direct_link.startswith(("http://", "https://")), (
             f"Provider '{provider_name}' returned invalid URL: {direct_link}"
         )
@@ -122,7 +124,8 @@ def test_provider_module_structure(provider_name: str):
         logger.info(f"Provider '{provider_name}' module structure is valid")
 
     except Exception as e:
-        pytest.fail(f"Provider '{provider_name}' module structure test failed: {e}")
+        pytest.fail(
+            f"Provider '{provider_name}' module structure test failed: {e}")
 
 
 def test_all_providers_present():
@@ -136,7 +139,8 @@ def test_all_providers_present():
             missing_providers.append(f"{provider_name}: {e}")
 
     if missing_providers:
-        pytest.fail("Missing or broken providers:\n" + "\n".join(missing_providers))
+        pytest.fail("Missing or broken providers:\n" +
+                    "\n".join(missing_providers))
 
     logger.info(f"All {len(PROVIDERS)} providers are present and importable")
 
@@ -186,4 +190,5 @@ if __name__ == "__main__":
 
     print("\nAll tests completed successfully!")
     print(f"Providers available: {len(available_providers)}")
-    print(f"Providers needing URLs: {len(PROVIDERS) - len(available_providers)}")
+    print(
+        f"Providers needing URLs: {len(PROVIDERS) - len(available_providers)}")

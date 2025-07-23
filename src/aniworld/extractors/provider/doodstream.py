@@ -113,8 +113,7 @@ def get_direct_link_from_doodstream(embeded_doodstream_link: str) -> str:
     if not embeded_doodstream_link:
         raise ValueError("Embed URL cannot be empty")
 
-    logging.info(
-        f"Extracting direct link from Doodstream: {embeded_doodstream_link}")
+    logging.info(f"Extracting direct link from Doodstream: {embeded_doodstream_link}")
 
     try:
         headers = _get_headers()
@@ -124,8 +123,7 @@ def get_direct_link_from_doodstream(embeded_doodstream_link: str) -> str:
         response = _make_request(embeded_doodstream_link, headers)
 
         # Extract pass_md5 URL and token
-        pass_md5_url = _extract_pass_md5_url(
-            response.text, embeded_doodstream_link)
+        pass_md5_url = _extract_pass_md5_url(response.text, embeded_doodstream_link)
         token = _extract_token(response.text, embeded_doodstream_link)
 
         # Get video base URL
