@@ -374,34 +374,36 @@ def _handle_provider_links(args: argparse.Namespace) -> None:
             func = getattr(module, f"get_direct_link_from_{args.provider.lower()}")
 
             for provider_episode in args.provider_link:
-                direct_link = f'"{func(provider_episode)}"'
+                direct_link = func(provider_episode)
 
-                # Handle provider headers
-                if args.provider in config.PROVIDER_HEADERS_D:
-                    if config.PROVIDER_HEADERS_D.get(args.provider):
-                        action_map = {
-                            "Download": config.YTDLP_PATH,
-                            "Watch": config.MPV_PATH,
-                            "Syncplay": config.SYNCPLAY_PATH,
-                        }
+                action_map = {
+                    "Download": config.YTDLP_PATH,
+                    "Watch": config.MPV_PATH,
+                    "Syncplay": config.SYNCPLAY_PATH,
+                }
+                action = action_map.get(args.action)
+                if not action:
+                    raise ValueError(f"Invalid action: {args.action}")
 
-                        action = action_map.get(args.action)
-                        if action:
-                            header = (
-                                "--add-header"
-                                if args.action == "Download"
-                                else "--http-header-fields"
-                            )
-                            direct_link = (
-                                f"{action} {direct_link} "
-                                f"{header}='{config.PROVIDER_HEADERS_D[args.provider]}'"
-                            )
-                        else:
-                            raise ValueError(f"Invalid action: {args.action}")
+                cmd = [action, direct_link]
+                # Add provider headers if present
+                if (
+                    args.provider in config.PROVIDER_HEADERS_D
+                    and config.PROVIDER_HEADERS_D.get(args.provider)
+                ):
+                    header = (
+                        "--add-header"
+                        if args.action == "Download"
+                        else "--http-header-fields"
+                    )
+                    for h in config.PROVIDER_HEADERS_D[args.provider]:
+                        cmd.extend([header, h])
 
                 print(f"-> {provider_episode}")
-                print(direct_link)
+                subprocess.run(cmd)
                 print("-" * 40)
+        except KeyboardInterrupt:
+            pass
         except Exception as err:
             logging.error("Error processing provider links: %s", err)
             sys.exit(1)
