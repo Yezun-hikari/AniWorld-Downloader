@@ -439,7 +439,7 @@ class SelectionMenu(npyscreen.NPSApp):
             available_episodes = list(self.episode_dict.values())
 
             # Calculate layout
-            max_episode_height, terminal_height = self._calculate_layout(
+            max_episode_height, _ = self._calculate_layout(
                 available_languages, supported_providers
             )
 

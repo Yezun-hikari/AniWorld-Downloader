@@ -400,7 +400,7 @@ def _handle_provider_links(args: argparse.Namespace) -> None:
                         cmd.extend([header, h])
 
                 print(f"-> {provider_episode}")
-                subprocess.run(cmd)
+                subprocess.run(cmd, check=True)
                 print("-" * 40)
         except KeyboardInterrupt:
             pass
