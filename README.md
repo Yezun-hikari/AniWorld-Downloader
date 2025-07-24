@@ -368,7 +368,7 @@ Contributions to AniWorld Downloader are highly appreciated! You can help enhanc
 If you need help with AniWorld Downloader, you can:
 
 - **Submit an issue** on the [GitHub Issues](https://github.com/phoenixthrush/AniWorld-Downloader/issues) page.
-- **Reach out directly** via email at [contact@phoenixthrush.com](mailto:contact@phoenixthrush.com) or on Discord at `phoenixthrush`.
+- **Reach out directly** via email at [contact@phoenixthrush.com](mailto:contact@phoenixthrush.com) or on Discord at `phoenixthrush` or `tmaster067`.
 
 While email support is available, opening a GitHub issue is preferred, even for installation-related questions, as it helps others benefit from shared solutions. However, feel free to email if that’s your preference.
 
