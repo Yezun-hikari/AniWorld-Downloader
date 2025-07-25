@@ -217,7 +217,7 @@ DEFAULT_ONLY_COMMAND = False
 DEFAULT_ONLY_DIRECT_LINK = False
 # SUPPORTED_PROVIDERS above
 DEFAULT_PROVIDER_DOWNLOAD = "VOE"
-DEFAULT_PROVIDER_WATCH = "Vidmoly"
+DEFAULT_PROVIDER_WATCH = "Filemoon"
 DEFAULT_TERMINAL_SIZE = (90, 30)
 
 # https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file

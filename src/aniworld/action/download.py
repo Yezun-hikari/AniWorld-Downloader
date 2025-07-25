@@ -2,16 +2,12 @@ import re
 import subprocess
 import logging
 from pathlib import Path
-from typing import Optional, List
+from typing import List
 
 from ..models import Anime
-from ..config import PROVIDER_HEADERS_D, INVALID_PATH_CHARS
+from ..config import PROVIDER_HEADERS_D
 from ..parser import arguments
-
-
-def _sanitize_filename(filename: str) -> str:
-    """Sanitize filename by removing invalid characters"""
-    return "".join(char for char in filename if char not in INVALID_PATH_CHARS)
+from .common import get_direct_link, sanitize_filename
 
 
 def _format_episode_title(anime: Anime, episode) -> str:
@@ -79,19 +75,6 @@ def _cleanup_partial_files(output_dir: Path) -> None:
             )
 
 
-def _get_direct_link(episode, episode_title: str) -> Optional[str]:
-    """Get direct link for episode with error handling."""
-    try:
-        return episode.get_direct_link()
-    except Exception as err:
-        logging.warning(
-            'Something went wrong with "%s".\nError while trying to find a direct link: %s',
-            episode_title,
-            err,
-        )
-        return None
-
-
 def _execute_download(command: List[str], output_path: Path) -> bool:
     """Execute download command with error handling."""
     try:
@@ -109,13 +92,13 @@ def _execute_download(command: List[str], output_path: Path) -> bool:
 
 def download(anime: Anime) -> None:
     """Download all episodes of an anime."""
-    sanitized_anime_title = _sanitize_filename(anime.title)
+    sanitized_anime_title = sanitize_filename(anime.title)
 
     for episode in anime:
         episode_title = _format_episode_title(anime, episode)
 
         # Get direct link
-        direct_link = _get_direct_link(episode, episode_title)
+        direct_link = get_direct_link(episode, episode_title)
         if not direct_link:
             logging.warning(
                 'Something went wrong with "%s".\nNo direct link found.', episode_title

@@ -32,7 +32,7 @@ def _make_request(url: str, headers: Optional[dict] = None) -> requests.Response
 def _convert_embed_to_download_url(embed_url: str) -> str:
     """Convert embed URL to download URL format."""
     if "/e/" not in embed_url:
-        logging.warning(f"URL doesn't contain '/e/' pattern: {embed_url}")
+        logging.debug(f"URL doesn't contain '/e/' pattern: {embed_url}")
         return embed_url
 
     download_url = embed_url.replace("/e/", "/d/")
