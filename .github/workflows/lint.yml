@@ -16,5 +16,10 @@ jobs:
           python-version: '3.x'
 
       - run: pip install . ruff pylint
+
       - run: ruff check src/aniworld
-      - run: pylint src/aniworld --disable=broad-exception-caught,missing-module-docstring || true
+      - run: |
+          pylint src/aniworld \
+            --disable=broad-exception-caught,missing-module-docstring \
+            --allow-reexport-from-package=y # https://pylint.readthedocs.io/en/stable/user_guide/messages/convention/useless-import-alias.html#known-issue \
+            || true
