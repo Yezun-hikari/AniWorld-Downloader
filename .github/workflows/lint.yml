@@ -22,4 +22,4 @@ jobs:
           pylint src/aniworld \
             --disable=broad-exception-caught,missing-module-docstring \
             --allow-reexport-from-package=y # https://pylint.readthedocs.io/en/stable/user_guide/messages/convention/useless-import-alias.html#known-issue \
-            || true
+            --exit-zero  # for now
