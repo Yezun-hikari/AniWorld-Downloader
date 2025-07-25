@@ -23,8 +23,6 @@ from ..config import (
     SYNCPLAY_PATH,
 )
 
-if platform.system() == "Windows":
-    import cpuinfo
 
 # Constants
 PACKAGE_MANAGERS = {
@@ -118,12 +116,15 @@ def check_avx2_support() -> bool:
         return False
 
     try:
-        info = cpuinfo.get_cpu_info()
-        flags = info.get("flags", [])
-        return "avx2" in flags
+        import cpuinfo
     except ImportError:
         logging.warning("cpuinfo package not available, assuming no AVX2 support")
         return False
+
+    try:
+        info = cpuinfo.get_cpu_info()
+        flags = info.get("flags", [])
+        return "avx2" in flags
     except Exception as err:
         logging.error("Error checking AVX2 support: %s", err)
         return False
@@ -745,20 +746,18 @@ def copy_file_if_different(source_path: str, destination_path: str) -> bool:
                 )
                 shutil.copy(source_path, destination_path)
                 return True
-            else:
-                logging.debug(
-                    "%s already exists and is identical",
-                    os.path.basename(destination_path),
-                )
-                return False
-        else:
             logging.debug(
-                "Copying %s to %s",
-                os.path.basename(source_path),
-                os.path.dirname(destination_path),
+                "%s already exists and is identical",
+                os.path.basename(destination_path),
             )
-            shutil.copy(source_path, destination_path)
-            return True
+            return False
+        logging.debug(
+            "Copying %s to %s",
+            os.path.basename(source_path),
+            os.path.dirname(destination_path),
+        )
+        shutil.copy(source_path, destination_path)
+        return True
 
     except Exception as err:
         logging.error("Failed to copy %s to %s: %s", source_path, destination_path, err)

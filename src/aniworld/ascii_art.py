@@ -861,6 +861,16 @@ def is_windows_legacy() -> bool:
 
 
 def display_ascii_art() -> str:
+    """
+    Displays a randomly selected ASCII art from a predefined list of options.
+
+    On Windows 10 or older, returns a specific legacy ASCII art banner.
+    Otherwise, selects and returns one ASCII art string at random from the available options.
+
+    Returns:
+        str: The selected ASCII art as a string.
+    """
+
     options = [
         LUCKY_STAR,
         CINNAMOROLL,
@@ -912,7 +922,6 @@ ________                      .__                    .___
         \/                  \/                \/      \/    \/
     """
 
-    # TODO - detect if font supports character instead of platform
     if platform.system() == "Windows" and is_windows_legacy():
         return options_legacy
 
@@ -920,6 +929,16 @@ ________                      .__                    .___
 
 
 def display_traceback_art() -> str:
+    """
+    Returns a randomly selected ASCII art representation of a traceback.
+
+    This function chooses between two predefined ASCII art strings, TRACEBACK1 and TRACEBACK2,
+    and returns one of them at random. It can be used to display a fun or decorative traceback
+    art in the application.
+
+    Returns:
+        str: A randomly selected ASCII art string representing a traceback.
+    """
     return random.choice([TRACEBACK1, TRACEBACK2])
 
 

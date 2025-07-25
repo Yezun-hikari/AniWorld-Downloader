@@ -28,6 +28,8 @@ log_file_path = os.path.join(tempfile.gettempdir(), "aniworld.log")
 
 
 class CriticalErrorHandler(logging.Handler):
+    """A custom logging handler that raises SystemExit on CRITICAL log records."""
+
     def emit(self, record):
         if record.levelno == logging.CRITICAL:
             raise SystemExit(record.getMessage())
@@ -78,6 +80,18 @@ def get_latest_github_version():
 
 
 def is_newest_version():
+    """
+    Checks if the current version of the application is the newest available on GitHub.
+
+    Returns:
+        tuple:
+            - latest (Version or None): The latest version found on GitHub, or None if unavailable.
+            - is_newest (bool): True if the current version is up-to-date or newer, False otherwise.
+
+    Notes:
+        - If the current version is not set or cannot be determined, returns (None, False).
+        - Handles invalid version formats and network errors gracefully, logging them as errors.
+    """
     if not VERSION:
         return None, False
 
@@ -120,17 +134,13 @@ SUPPORTED_PROVIDERS = (
 )
 
 #########################################################################################
+
+
 # User Agents - Lazy initialization to avoid UserAgent() call on import
-_random_user_agent = None
-
-
 @lru_cache(maxsize=1)
 def get_random_user_agent():
     """Get random user agent with caching to avoid repeated UserAgent() calls"""
-    global _random_user_agent
-    if _random_user_agent is None:
-        _random_user_agent = UserAgent().random
-    return _random_user_agent
+    return UserAgent().random
 
 
 # Backward compatibility - keep RANDOM_USER_AGENT as a constant
@@ -179,10 +189,12 @@ def _get_provider_headers_w():
 
 
 def get_provider_headers_d():
+    """Return provider headers used when downloading"""
     return _get_provider_headers_d()
 
 
 def get_provider_headers_w():
+    """Return provider headers used when streaming"""
     return _get_provider_headers_w()
 
 
@@ -250,11 +262,6 @@ def _get_syncplay_path():
                 os.getenv("APPDATA", ""), "aniworld", "syncplay", "SyncplayConsole.exe"
             )
     return syncplay_path
-
-
-# Lazy initialization for paths
-_mpv_path = None
-_syncplay_path = None
 
 
 def get_mpv_path():
