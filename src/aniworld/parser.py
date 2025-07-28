@@ -184,7 +184,9 @@ def _add_action_arguments(parser: argparse.ArgumentParser) -> None:
     action_opts.add_argument(
         "-L",
         "--language",
-        type=CaseInsensitiveChoices(["German Dub", "English Sub", "German Sub"]),
+        type=CaseInsensitiveChoices(
+            ["German Dub", "English Sub", "German Sub", "English Dub"]
+        ),
         default=config.DEFAULT_LANGUAGE,
         help="Specify the language for playback or download.",
     )

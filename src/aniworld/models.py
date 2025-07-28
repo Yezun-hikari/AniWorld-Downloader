@@ -13,35 +13,13 @@ from .aniskip import get_mal_id_from_title
 from .config import (
     DEFAULT_REQUEST_TIMEOUT,
     RANDOM_USER_AGENT,
-    ANIWORLD_TO,
-    S_TO,
+    SUPPORTED_SITES,
+    SITE_LANGUAGE_CODES,
+    SITE_LANGUAGE_NAMES,
     SUPPORTED_PROVIDERS,
 )
 from .parser import arguments
 from .common import get_season_episode_count, get_movie_episode_count
-
-
-# Supported streaming sites with their URL patterns
-SUPPORTED_SITES = {
-    "aniworld.to": {"base_url": ANIWORLD_TO, "stream_path": "anime/stream"},
-    "s.to": {"base_url": S_TO, "stream_path": "serie/stream"},
-}
-
-# Language code mappings for consistent handling
-LANGUAGE_CODES = {"German Dub": 1, "English Sub": 2, "German Sub": 3}
-
-LANGUAGE_NAMES = {1: "German Dub", 2: "English Sub", 3: "German Sub"}
-
-# Site-specific language mappings (s.to might have different language codes)
-SITE_LANGUAGE_CODES = {
-    "aniworld.to": LANGUAGE_CODES,
-    "s.to": LANGUAGE_CODES,  # Same as aniworld.to for now, can be customized
-}
-
-SITE_LANGUAGE_NAMES = {
-    "aniworld.to": LANGUAGE_NAMES,
-    "s.to": LANGUAGE_NAMES,  # Same as aniworld.to for now, can be customized
-}
 
 
 class Anime:
@@ -331,9 +309,14 @@ class Anime:
             issues.append(f"Invalid action: {self.action}")
 
         # Use site-specific language codes for validation
-        site_language_codes = SITE_LANGUAGE_CODES.get(self.site, LANGUAGE_CODES)
-        if self.language not in site_language_codes:
-            issues.append(f"Invalid language: {self.language}")
+        site_language_codes = SITE_LANGUAGE_CODES.get(self.site)
+        if not site_language_codes or self.language not in site_language_codes:
+            valid_languages = (
+                list(site_language_codes.keys()) if site_language_codes else []
+            )
+            issues.append(
+                f"Invalid language: {self.language}. Valid options for {self.site}: {valid_languages}"
+            )
 
         return issues
 
@@ -844,14 +827,17 @@ class Episode:
             ValueError: If language name is invalid
         """
         # Use site-specific language codes
-        site_language_codes = SITE_LANGUAGE_CODES.get(self.site, LANGUAGE_CODES)
-        language_key = site_language_codes.get(language_name)
+        site_language_codes = SITE_LANGUAGE_CODES.get(self.site)
+        language_key = (
+            site_language_codes.get(language_name) if site_language_codes else None
+        )
 
         if language_key is None:
-            valid_languages = list(site_language_codes.keys())
+            valid_languages = (
+                list(site_language_codes.keys()) if site_language_codes else []
+            )
             raise ValueError(
-                f"Invalid language: {language_name}. "
-                f"Valid options for {self.site}: {valid_languages}"
+                f"Invalid language: {language_name}. Valid options for {self.site}: {valid_languages}"
             )
 
         return language_key
@@ -870,13 +856,18 @@ class Episode:
             ValueError: If any language key is invalid
         """
         # Use site-specific language names
-        site_language_names = SITE_LANGUAGE_NAMES.get(self.site, LANGUAGE_NAMES)
+        site_language_names = SITE_LANGUAGE_NAMES.get(self.site)
         language_names = []
 
         for key in language_keys:
-            name = site_language_names.get(key)
+            name = site_language_names.get(key) if site_language_names else None
             if name is None:
-                raise ValueError(f"Invalid language key: {key} for site: {self.site}")
+                valid_keys = (
+                    list(site_language_names.keys()) if site_language_names else []
+                )
+                raise ValueError(
+                    f"Invalid language key: {key} for site: {self.site}. Valid keys: {valid_keys}"
+                )
             language_names.append(name)
 
         return language_names
@@ -971,9 +962,11 @@ class Episode:
                 available_langs.update(lang_dict.keys())
 
             # Use site-specific language names for error message
-            site_language_names = SITE_LANGUAGE_NAMES.get(self.site, LANGUAGE_NAMES)
+            site_language_names = SITE_LANGUAGE_NAMES.get(self.site)
             available_lang_names = [
                 site_language_names.get(key, f"Unknown({key})")
+                if site_language_names
+                else f"Unknown({key})"
                 for key in available_langs
             ]
 
@@ -1199,10 +1192,16 @@ class Episode:
             issues.append(f"Unsupported site: {self.site}")
 
         # Use site-specific language codes for validation
-        site_language_codes = SITE_LANGUAGE_CODES.get(self.site, LANGUAGE_CODES)
-        if self._selected_language not in site_language_codes:
+        site_language_codes = SITE_LANGUAGE_CODES.get(self.site)
+        if (
+            not site_language_codes
+            or self._selected_language not in site_language_codes
+        ):
+            valid_languages = (
+                list(site_language_codes.keys()) if site_language_codes else []
+            )
             issues.append(
-                f"Invalid selected language: {self._selected_language} for site: {self.site}"
+                f"Invalid selected language: {self._selected_language} for site: {self.site}. Valid options: {valid_languages}"
             )
 
         if (

@@ -20,6 +20,38 @@ from fake_useragent import UserAgent
 ANIWORLD_TO = "https://aniworld.to"
 S_TO = "https://s.to"
 
+# Supported streaming sites with their URL patterns
+SUPPORTED_SITES = {
+    "aniworld.to": {"base_url": ANIWORLD_TO, "stream_path": "anime/stream"},
+    "s.to": {"base_url": S_TO, "stream_path": "serie/stream"},
+}
+
+# Language code mappings for consistent handling
+LANGUAGE_CODES_ANIWORLD = {
+    "German Dub": 1,
+    "English Sub": 2,
+    "German Sub": 3,
+}
+LANGUAGE_NAMES_ANIWORLD = {v: k for k, v in LANGUAGE_CODES_ANIWORLD.items()}
+
+LANGUAGE_CODES_STO = {
+    "German Dub": 1,
+    "English Dub": 2,
+    "German Sub": 3,
+}
+LANGUAGE_NAMES_STO = {v: k for k, v in LANGUAGE_CODES_STO.items()}
+
+# Site-specific language mappings
+SITE_LANGUAGE_CODES = {
+    "aniworld.to": LANGUAGE_CODES_ANIWORLD,
+    "s.to": LANGUAGE_CODES_STO,
+}
+
+SITE_LANGUAGE_NAMES = {
+    "aniworld.to": LANGUAGE_NAMES_ANIWORLD,
+    "s.to": LANGUAGE_NAMES_STO,
+}
+
 #########################################################################################
 # Logging Configuration
 #########################################################################################
