@@ -172,7 +172,8 @@ SUPPORTED_PROVIDERS = (
 @lru_cache(maxsize=1)
 def get_random_user_agent():
     """Get random user agent with caching to avoid repeated UserAgent() calls"""
-    return UserAgent().random
+    ua = UserAgent(os=["Windows", "Mac OS X"])
+    return ua.random
 
 
 # Backward compatibility - keep RANDOM_USER_AGENT as a constant
