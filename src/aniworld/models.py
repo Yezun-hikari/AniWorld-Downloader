@@ -1062,6 +1062,98 @@ class Episode:
             self.direct_link = None
             return None
 
+    def _get_preview_image_link_from_provider(self) -> str:
+        """
+        Get preview image link from the given provider.
+
+        Args:
+            provider: Provider name
+
+        Returns:
+            Preview image link
+
+        Raises:
+            ValueError: If provider is not supported or extraction fails
+        """
+
+        provider = self._selected_provider
+
+        if provider not in SUPPORTED_PROVIDERS:
+            raise ValueError(
+                f"Provider '{provider}' is currently not supported. "
+                f"Supported providers: {SUPPORTED_PROVIDERS}"
+            )
+
+        if not self.embeded_link:
+            raise ValueError("No embedded link available for preview image extraction")
+
+        try:
+            module = importlib.import_module("aniworld.extractors")
+            func_name = f"get_preview_image_link_from_{provider.lower()}"
+
+            if not hasattr(module, func_name):
+                raise ValueError(f"Preview extractor function '{func_name}' not found")
+
+            func = getattr(module, func_name)
+
+            # Prepare kwargs for the extractor function
+            kwargs = {f"embeded_{provider.lower()}_link": self.embeded_link}
+            return func(**kwargs)
+
+        except Exception as err:
+            raise ValueError(
+                f"Failed to get preview image from provider '{provider}': {err}"
+            ) from err
+
+    def get_preview_image_link(self, provider: Optional[str] = None) -> Optional[str]:
+        """
+        Get the preview image link for the episode.
+
+        Args:
+            provider: Provider name to use (overrides selected provider)
+
+        Returns:
+            Preview image link or None if unavailable
+        """
+        # Override provider if passed
+        if provider:
+            self._selected_provider = provider
+            lang_key = next(iter(self.provider.get(provider, {})), None)
+            if lang_key is not None:
+                lang_name = self._get_language_names_from_keys([lang_key])[0]
+                self._selected_language = lang_name
+
+        # Validate provider
+        if self._selected_provider not in SUPPORTED_PROVIDERS:
+            logging.error("Provider '%s' is not supported", self._selected_provider)
+            return None
+
+        try:
+            # Ensure embedded link is available
+            if not self.embeded_link:
+                if not self.get_embeded_link():
+                    logging.error("Failed to get embedded link")
+                    return None
+
+            # Extract preview image
+            preview_link = self._get_preview_image_link_from_provider()
+
+            if not preview_link:
+                logging.warning(
+                    "No preview image found from provider '%s'", self._selected_provider
+                )
+                return None
+
+            return preview_link
+
+        except Exception as err:
+            logging.error(
+                "Error getting preview image from provider '%s': %s",
+                self._selected_provider,
+                err,
+            )
+            return None
+
     def auto_fill_details(self) -> None:
         """
         Automatically fill episode details from available information.
