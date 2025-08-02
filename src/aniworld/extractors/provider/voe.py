@@ -176,6 +176,64 @@ def get_direct_link_from_voe(embeded_voe_link: str) -> str:
         ) from err
 
 
+def get_preview_image_link_from_voe(embeded_voe_link: str) -> str:
+    """
+    Try to extract the preview image from a VOE embed page.
+
+    Args:
+        embeded_voe_link: URL of the VOE embed page
+
+    Returns:
+        Direct image URL of the preview frame
+
+    Raises:
+        ValueError: If no redirect or image URL is found
+        requests.RequestException: If any request fails
+    """
+    try:
+        # Initial request to get redirect URL
+        response = requests.get(
+            embeded_voe_link,
+            headers={"User-Agent": config.RANDOM_USER_AGENT},
+            timeout=config.DEFAULT_REQUEST_TIMEOUT,
+        )
+        response.raise_for_status()
+
+        # Find redirect URL using compiled regex
+        redirect_match = REDIRECT_PATTERN.search(response.text)
+        if not redirect_match:
+            raise ValueError("No redirect URL found in VOE response.")
+
+        redirect_url = redirect_match.group(0)
+        image_url = f"{redirect_url.replace('/e/', '/cache/')}_storyboard_L2.jpg"
+
+        # Check if the preview image is actually reachable
+        try:
+            head_response = requests.head(
+                image_url,
+                headers={"User-Agent": config.RANDOM_USER_AGENT},
+                timeout=config.DEFAULT_REQUEST_TIMEOUT,
+                allow_redirects=True,
+            )
+            head_response.raise_for_status()
+            if "image" in head_response.headers.get("Content-Type", ""):
+                return image_url
+        except requests.RequestException as err:
+            raise ValueError(f"Preview image not available or invalid: {err}") from err
+
+        raise ValueError("Preview image not found or not reachable.")
+
+    except requests.RequestException as err:
+        raise ValueError(f"Failed to fetch VOE page: {err}") from err
+    except Exception as err:
+        raise ValueError(
+            f"Unable to process this VOE link: {err}\n\n"
+            "Try using a different provider for now.\n"
+            "If this issue persists and hasn't been reported yet, please consider creating a new issue."
+        ) from err
+
+
 if __name__ == "__main__":
     link = input("Enter VOE Link: ")
     print(get_direct_link_from_voe(link))
+    print(get_preview_image_link_from_voe(link))

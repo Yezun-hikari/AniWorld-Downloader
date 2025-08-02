@@ -133,6 +133,51 @@ def get_direct_link_from_filemoon(embeded_filemoon_link: str) -> str:
         raise
 
 
+def get_preview_image_link_from_filemoon(embeded_filemoon_link: str) -> str:
+    """
+    Extract preview image link from Filemoon embed URL.
+
+    Args:
+        embeded_filemoon_link: Filemoon embed URL
+
+    Returns:
+        Preview image URL
+
+    Raises:
+        ValueError: If required data cannot be extracted
+        requests.RequestException: If HTTP requests fail
+    """
+    if not embeded_filemoon_link:
+        raise ValueError("Embed URL cannot be empty")
+
+    logging.info(f"Extracting preview image from Filemoon: {embeded_filemoon_link}")
+
+    try:
+        # Resolve final redirected URL to get video ID
+        logging.debug("Resolving redirect to obtain video ID...")
+        response = requests.head(
+            embeded_filemoon_link,
+            headers={"User-Agent": RANDOM_USER_AGENT},
+            timeout=DEFAULT_REQUEST_TIMEOUT,
+            allow_redirects=True,
+        )
+        response.raise_for_status()
+
+        # Extract video ID from final URL
+        video_id = response.url.strip().split("/")[-1]
+        if not video_id:
+            raise ValueError("No video ID could be extracted from redirect URL.")
+
+        # Construct preview image URL
+        image_url = f"https://videothumbs.me/{video_id}.jpg"
+        logging.info("Successfully extracted Filemoon preview image link")
+        return image_url
+
+    except Exception as err:
+        logging.error(f"Failed to extract preview image from Filemoon: {err}")
+        raise
+
+
 if __name__ == "__main__":
     # Setup basic logging for standalone execution
     logging.basicConfig(level=logging.DEBUG)
@@ -143,8 +188,10 @@ if __name__ == "__main__":
             print("Error: No URL provided")
             exit(1)
 
-        result = get_direct_link_from_filemoon(url)
-        print(f"Direct Link: {result}")
+        video_result = get_direct_link_from_filemoon(url)
+        image_result = get_preview_image_link_from_filemoon(url)
+        print(f"Direct Link: {video_result}")
+        print(f"Preview Image Link: {image_result}")
 
     except Exception as err:
         print(f"Error: {err}")
