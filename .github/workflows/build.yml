@@ -79,7 +79,7 @@ jobs:
             icon: --linux-icon=src/aniworld/nuitka/icon.webp
             ext: ""
             filename: linux_x64
-          - os: macos-latest
+          - os: macos-15
             ext: ""
             filename: macos_x64
             icon: --macos-app-icon=src/aniworld/nuitka/icon.webp --macos-signed-app-name=com.phoenixthrush.aniworld
