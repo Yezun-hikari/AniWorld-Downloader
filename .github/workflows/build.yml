@@ -72,17 +72,17 @@ jobs:
       matrix:
         include:
           - os: windows-latest
-            icon: --windows-icon-from-ico=src/aniworld/icon.webp
+            icon: --windows-icon-from-ico=src/aniworld/nuitka/icon.webp
             ext: .exe
             filename: windows_x64
           - os: ubuntu-latest
-            icon: --linux-icon=src/aniworld/icon.webp
+            icon: --linux-icon=src/aniworld/nuitka/icon.webp
             ext: ""
             filename: linux_x64
           - os: macos-latest
             ext: ""
             filename: macos_x64
-            icon: --macos-app-icon=src/aniworld/icon.webp --macos-signed-app-name=com.phoenixthrush.aniworld
+            icon: --macos-app-icon=src/aniworld/nuitka/icon.webp --macos-signed-app-name=com.phoenixthrush.aniworld
             
     runs-on: ${{ matrix.os }}
     
@@ -111,6 +111,7 @@ jobs:
           YEAR="${{ needs.extract-version.outputs.year }}"
           
           # Build with Nuitka
+          python src/aniworld/preprocess.py
           python -m nuitka \
             --onefile \
             --assume-yes-for-downloads \
@@ -121,7 +122,7 @@ jobs:
             --product-name="AniWorld Downloader" \
             --file-version="$VERSION" \
             --product-version="$VERSION" \
-            --file-description="AniWorld Downloader is a command-line tool built to download and stream anime content from aniworld.to" \
+            --file-description="AniWorld Downloader is a command-line tool for downloading and streaming content from aniworld.to and s.to. " \
             --copyright="Copyright (c) 2024-${YEAR} phoenixthrush, Tmaster055" \
             ${{ matrix.icon }} \
             src/aniworld/entry.py
