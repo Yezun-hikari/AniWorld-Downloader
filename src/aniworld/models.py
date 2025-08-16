@@ -17,6 +17,7 @@ from .config import (
     SITE_LANGUAGE_CODES,
     SITE_LANGUAGE_NAMES,
     SUPPORTED_PROVIDERS,
+    S_TO,
 )
 from .parser import arguments
 from .common import get_season_episode_count, get_movie_episode_count
@@ -31,8 +32,8 @@ class Anime:
     and caching for optimal performance.
 
     Supports multiple streaming sites:
-    - aniworld.to (default)
-    - s.to
+    - ANIWORLD_TO (default)
+    - S_TO
 
     Example:
         anime = Anime(
@@ -52,7 +53,7 @@ class Anime:
     Attributes:
         title (str): The title of the anime.
         slug (str): A URL-friendly version of the title used for web requests.
-        site (str): The streaming site to use ("aniworld.to" or "s.to").
+        site (str): The streaming site to use (ANIWORLD_TO or S_TO).
         action (str): The default action to be performed ("Download", "Watch", "Syncplay").
         provider (str): The provider of the anime content.
         language (str): The language code for the anime.
@@ -85,7 +86,7 @@ class Anime:
         Args:
             title: The anime title
             slug: URL-friendly anime identifier
-            site: Streaming site to use ("aniworld.to" or "s.to")
+            site: Streaming site to use (ANIWORLD_TO or S_TO)
             action: Action to perform (Watch/Download/Syncplay)
             provider: Streaming provider
             language: Language preference
@@ -408,8 +409,8 @@ class Episode:
     and caching for optimal performance.
 
     Supports multiple streaming sites:
-    - aniworld.to (default)
-    - s.to
+    - ANIWORLD_TO (default)
+    - S_TO
 
     Example:
         Episode(
@@ -430,7 +431,7 @@ class Episode:
         season (int): The season number (0 for movies).
         episode (int): The episode number within the season.
         slug (str): URL-friendly anime identifier.
-        site (str): The streaming site ("aniworld.to" or "s.to").
+        site (str): The streaming site (ANIWORLD_TO or S_TO).
         link (str): The direct link to the episode page.
         mal_id (int): The MyAnimeList ID for the episode.
         redirect_link (str): The redirect link for streaming.
@@ -482,7 +483,7 @@ class Episode:
             season: Season number (0 for movies)
             episode: Episode number
             slug: Anime slug identifier
-            site: Streaming site to use ("aniworld.to" or "s.to")
+            site: Streaming site to use (ANIWORLD_TO or S_TO)
             link: Direct episode link
             mal_id: MyAnimeList ID
             redirect_link: Redirect streaming link
@@ -1377,8 +1378,8 @@ def get_anime_title_from_html(
         soup = BeautifulSoup(html.content, "html.parser")
 
         # Site-specific title extraction
-        if site == "s.to":
-            # s.to uses: <div class="series-title"><h1><span>Title</span></h1>...</div>
+        if site == S_TO:
+            # S_TO uses: <div class="series-title"><h1><span>Title</span></h1>...</div>
             title_div = soup.find("div", class_="series-title")
             if title_div:
                 title_span = title_div.find("h1")

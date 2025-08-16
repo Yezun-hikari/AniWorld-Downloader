@@ -22,7 +22,7 @@ def _detect_site_from_url(url: str) -> str:
         url: The episode URL
 
     Returns:
-        Site identifier ("aniworld.to", "s.to", etc.)
+        Site identifier (ANIWORLD_TO, S_TO, etc.)
     """
     for site, config in SUPPORTED_SITES.items():
         base_url = config["base_url"]
