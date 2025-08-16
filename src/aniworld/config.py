@@ -18,7 +18,7 @@ from fake_useragent import UserAgent
 #########################################################################################
 
 ANIWORLD_TO = "https://aniworld.to"
-S_TO = "https://s.to"
+S_TO = "http://186.2.175.5"
 
 # Supported streaming sites with their URL patterns
 SUPPORTED_SITES = {

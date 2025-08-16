@@ -11,6 +11,7 @@ from .search import search_anime
 from .execute import execute
 from .menu import menu
 from .common import generate_links
+from .config import S_TO
 
 
 def _detect_site_from_url(url: str) -> str:
@@ -65,6 +66,12 @@ def _collect_episode_links() -> List[str]:
 
     if arguments.episode:
         links.extend(arguments.episode)
+
+    # Convert s.to links to config.S_TO IP for now
+    links = [
+        link.replace("http://s.to", S_TO).replace("https://s.to", S_TO)
+        for link in links
+    ]
 
     return generate_links(links, arguments)
 
