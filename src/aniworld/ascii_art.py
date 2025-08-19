@@ -9,7 +9,11 @@ from typing import Dict, List
 @lru_cache(maxsize=1)
 def _load_ascii_content() -> str:
     """Load ASCII content from file with caching."""
-    ascii_file = os.path.join(os.path.dirname(__file__), "ASCII.txt")
+    try:
+        ascii_file = os.path.join(os.path.dirname(__file__), "ASCII.txt")
+    except ImportError:
+        # TODO: untested should happen on nuitka build
+        ascii_file = os.path.join(os.path.dirname(__file__), "ASCII.txt")
     with open(ascii_file, encoding="utf-8") as f:
         return f.read()
 
