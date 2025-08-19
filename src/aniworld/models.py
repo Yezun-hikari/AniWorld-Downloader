@@ -1238,7 +1238,9 @@ class Episode:
 
                     # Get season/episode counts if missing
                     if not self.season_episode_count and self.slug:
-                        self.season_episode_count = get_season_episode_count(self.slug)
+                        self.season_episode_count = get_season_episode_count(
+                            self.slug, self.link
+                        )
 
                     if self.movie_episode_count is None and self.slug:
                         self.movie_episode_count = get_movie_episode_count(self.slug)

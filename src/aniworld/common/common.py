@@ -17,6 +17,7 @@ from ..config import (
     DEFAULT_REQUEST_TIMEOUT,
     MPV_DIRECTORY,
     ANIWORLD_TO,
+    S_TO,
     MPV_SCRIPTS_DIRECTORY,
     DEFAULT_APPDATA_PATH,
     MPV_PATH,
@@ -462,18 +463,22 @@ def _parse_season_episodes(soup: BeautifulSoup, season: int) -> int:
     return len(unique_links)
 
 
-def get_season_episode_count(slug: str) -> Dict[int, int]:
+def get_season_episode_count(slug: str, link: str) -> Dict[int, int]:
     """
     Get episode count for each season of an anime.
 
     Args:
         slug: Anime slug from URL
+        link: Base Url
 
     Returns:
         Dictionary mapping season numbers to episode counts
     """
     try:
-        base_url = f"{ANIWORLD_TO}/anime/stream/{slug}/"
+        if not S_TO in link:
+            base_url = f"{ANIWORLD_TO}/anime/stream/{slug}/"
+        else:
+            base_url = f"{S_TO}/serie/stream/{slug}/"
         response = _make_request(base_url)
         soup = BeautifulSoup(response.content, "html.parser")
 
@@ -552,12 +557,7 @@ def _process_base_url(
     parts = base_url.split("/")
 
     if not (
-        "anime" in parts
-        and (
-            "episode" not in base_url
-            and "film-" not in base_url
-            or arguments.keep_watching
-        )
+        "episode" not in base_url and "film-" not in base_url or arguments.keep_watching
     ):
         unique_links.add(base_url)
         return unique_links
@@ -569,7 +569,7 @@ def _process_base_url(
         if series_slug in slug_cache:
             seasons_info, movies_info = slug_cache[series_slug]
         else:
-            seasons_info = get_season_episode_count(slug=series_slug)
+            seasons_info = get_season_episode_count(slug=series_slug, link=base_url)
             movies_info = get_movie_episode_count(slug=series_slug)
             slug_cache[series_slug] = (seasons_info, movies_info)
 
