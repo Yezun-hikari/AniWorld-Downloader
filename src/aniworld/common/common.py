@@ -467,7 +467,7 @@ def _parse_season_episodes(soup: BeautifulSoup, season: int) -> int:
     return len(unique_links)
 
 
-def get_season_episode_count(slug: str, link: str) -> Dict[int, int]:
+def get_season_episode_count(slug: str, link: str = ANIWORLD_TO) -> Dict[int, int]:
     """
     Get episode count for each season of an anime.
 
