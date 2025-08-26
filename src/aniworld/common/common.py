@@ -205,7 +205,7 @@ def _download_7z(zip_tool: str) -> bool:
     return True
 
 
-def _install_with_homebrew(package: str, update: bool = False) -> bool:
+def _install_with_homebrew(package: str, update: bool = False, cask=False) -> bool:
     """Install or update package using Homebrew."""
     if not shutil.which("brew"):
         return False
@@ -214,14 +214,18 @@ def _install_with_homebrew(package: str, update: bool = False) -> bool:
         logging.info("Updating %s using Homebrew...", package)
         success = _run_command(["brew", "update"])
         if success:
-            success = _run_command(["brew", "upgrade", "--formula", package])
+            success = _run_command(
+                ["brew", "upgrade", "--cask" if cask else "--formula", package]
+            )
     else:
         if shutil.which(package):
             return True
         logging.info("Installing %s using Homebrew...", package)
         success = _run_command(["brew", "update"])
         if success:
-            success = _run_command(["brew", "install", "--formula", package])
+            success = _run_command(
+                ["brew", "install", "--cask" if cask else "--formula", package]
+            )
 
     return success
 
@@ -399,7 +403,7 @@ def download_syncplay(
 
     # macOS installation
     if sys.platform == "darwin":
-        return _install_with_homebrew("syncplay", update)
+        return _install_with_homebrew("syncplay", update, cask=True)
 
     # Linux installation
     if sys.platform == "linux":
