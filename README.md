@@ -4,6 +4,7 @@
 AniWorld Downloader is a command-line tool for downloading and streaming content from aniworld.to and s.to. Currently available for Windows, macOS and Linux, it supports LoadX, VOE, Vidmoly, Filemoon, Luluvdo, Doodstream, Vidoza, SpeedFiles and Streamtape.
 
 [![PyPI Downloads](https://static.pepy.tech/badge/aniworld)](https://pepy.tech/projects/aniworld)
+![PyPI Downloads](https://img.shields.io/pypi/dm/aniworld?label=downloads&color=blue)
 ![License](https://img.shields.io/pypi/l/aniworld?label=License&color=blue)
 
 ![AniWorld Downloader - Demo](https://github.com/phoenixthrush/AniWorld-Downloader/blob/next/.github/assets/demo.png?raw=true)
