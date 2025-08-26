@@ -29,7 +29,7 @@ python -m nuitka ^
     --assume-yes-for-downloads ^
     --include-package=aniworld ^
     --include-data-file="!JSON_PATH!=fake_useragent/data/browsers.jsonl" ^
-    --include-data-file=src/aniworld/ASCII.txt=ASCII.txt ^
+    --include-data-file=src/aniworld/ASCII.txt=aniworld/ASCII.txt ^
     --output-filename="aniworld-!VERSION!-windows_x64" ^
     --company-name="Phoenixthrush UwU" ^
     --product-name="AniWorld Downloader" ^
