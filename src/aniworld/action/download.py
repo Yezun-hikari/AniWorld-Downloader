@@ -29,6 +29,7 @@ def _build_ytdl_command(direct_link: str, output_path: str, anime: Anime) -> Lis
     command = [
         "yt-dlp",
         direct_link,
+        "--no-check-certificate",
         "--fragment-retries",
         "infinite",
         "--concurrent-fragments",
