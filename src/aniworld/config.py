@@ -189,7 +189,7 @@ LULUVDO_USER_AGENT = (
 
 def _get_provider_headers_d():
     return {
-        "Vidmoly": ['Referer: "https://vidmoly.to"'],
+        "Vidmoly": ['Referer: "https://vidmoly.net"'],
         "Doodstream": ['Referer: "https://dood.li/"'],
         "VOE": [f"User-Agent: {RANDOM_USER_AGENT}"],
         "LoadX": ["Accept: */*"],
@@ -208,7 +208,7 @@ def _get_provider_headers_d():
 
 def _get_provider_headers_w():
     return {
-        "Vidmoly": ['Referer: "https://vidmoly.to"'],
+        "Vidmoly": ['Referer: "https://vidmoly.net"'],
         "Doodstream": ['Referer: "https://dood.li/"'],
         "VOE": [f"User-Agent: {RANDOM_USER_AGENT}"],
         "Luluvdo": [f"User-Agent: {LULUVDO_USER_AGENT}"],
