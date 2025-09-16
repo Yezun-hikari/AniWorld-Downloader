@@ -82,6 +82,7 @@ logging.getLogger().addHandler(console_handler)
 logging.getLogger("urllib3.connectionpool").setLevel(logging.WARNING)
 logging.getLogger("charset_normalizer").setLevel(logging.WARNING)
 logging.getLogger().setLevel(logging.WARNING)
+logging.getLogger("bs4.dammit").setLevel(logging.ERROR)
 
 urllib3.disable_warnings(InsecureRequestWarning)
 
