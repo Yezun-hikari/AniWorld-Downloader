@@ -11,11 +11,11 @@ logger = logging.getLogger(__name__)
 PROVIDERS: Dict[str, Optional[str]] = {
     "doodstream": None,  # needs link
     "filemoon": "https://filemoon.to/e/eawuwyrd40an",
-    "loadx": "https://loadx.ws/video/f658d0548f56db68fb23c72a3c48d080",
+    "loadx": None,  # needs link
     "luluvdo": "https://luluvdo.com/embed/g1gaitimtoc1",
     "speedfiles": None,  # needs link
     "streamtape": None,  # needs link
-    "vidmoly": "https://vidmoly.to/embed-19xpz8qoujf9.html",
+    "vidmoly": "https://vidmoly.net/embed-19xpz8qoujf9.html",
     "vidoza": None,  # needs link
     "voe": "https://voe.sx/e/ayginbzzb6bi",
 }
