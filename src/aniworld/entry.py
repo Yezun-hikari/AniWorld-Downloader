@@ -73,6 +73,8 @@ def _collect_episode_links() -> List[str]:
         for link in links
     ]
 
+    links = [link.rstrip("/") for link in links]
+
     return generate_links(links, arguments)
 
 

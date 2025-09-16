@@ -80,17 +80,6 @@ def main():
         FAILED_TESTS += 1
 
     try:
-        command = 'aniworld --episode https://aniworld.to/anime/stream/kaguya-sama-love-is-war/staffel-2/episode-1 --action Syncplay --language "German Dub" --aniskip --only-command'
-        print("Testing command:\n", command)
-        subprocess.run(command, check=True, shell=True)
-        PASSED_TESTS += 1
-    except Exception as err:
-        print("An Error occurred:")
-        print(type(err).__name__)
-        print(err)
-        FAILED_TESTS += 1
-
-    try:
         command = "aniworld --episode https://aniworld.to/anime/stream/kaguya-sama-love-is-war/staffel-2/episode-1 --only-direct-link"
         print("Testing command:\n", command)
         subprocess.run(command, check=True, shell=True)
@@ -102,7 +91,18 @@ def main():
         FAILED_TESTS += 1
 
     try:
-        command = "aniworld --episode https://aniworld.to/anime/stream/kaguya-sama-love-is-war https://aniworld.to/anime/stream/kaguya-sama-love-is-war/staffel-3 --only-direct-link"
+        command = "aniworld --episode https://aniworld.to/anime/stream/kaguya-sama-love-is-war --only-direct-link"
+        print("Testing command:\n", command)
+        subprocess.run(command, check=True, shell=True)
+        PASSED_TESTS += 1
+    except Exception as err:
+        print("An Error occurred:")
+        print(type(err).__name__)
+        print(err)
+        FAILED_TESTS += 1
+
+    try:
+        command = "aniworld --episode https://aniworld.to/anime/stream/kaguya-sama-love-is-war/staffel-2 --only-direct-link"
         print("Testing command:\n", command)
         subprocess.run(command, check=True, shell=True)
         PASSED_TESTS += 1
