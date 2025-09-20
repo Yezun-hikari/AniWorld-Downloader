@@ -479,7 +479,7 @@ def get_season_episode_count(slug: str, link: str = ANIWORLD_TO) -> Dict[int, in
         Dictionary mapping season numbers to episode counts
     """
     try:
-        if not S_TO in link:
+        if S_TO not in link:
             base_url = f"{ANIWORLD_TO}/anime/stream/{slug}/"
         else:
             base_url = f"{S_TO}/serie/stream/{slug}/"
