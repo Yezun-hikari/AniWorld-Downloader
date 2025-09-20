@@ -30,6 +30,9 @@ python -m nuitka ^
     --include-package=aniworld ^
     --include-data-file="!JSON_PATH!=fake_useragent/data/browsers.jsonl" ^
     --include-data-file=src/aniworld/ASCII.txt=aniworld/ASCII.txt ^
+    --include-data-file=src/aniworld/aniskip/scripts/aniskip.lua=aniworld/aniskip/scripts/aniskip.lua ^
+    --include-data-file=src/aniworld/aniskip/scripts/autostart.lua=aniworld/aniskip/scripts/autostart.lua ^
+    --include-data-file=src/aniworld/aniskip/scripts/autoexit.lua=aniworld/aniskip/scripts/autoexit.lua ^
     --output-filename="aniworld-!VERSION!-windows_x64" ^
     --company-name="Phoenixthrush UwU" ^
     --product-name="AniWorld Downloader" ^

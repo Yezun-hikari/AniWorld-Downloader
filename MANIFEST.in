@@ -1,4 +1,4 @@
-include src/aniworld/aniskip/skip.lua
-include src/aniworld/aniskip/autostart.lua
-include src/aniworld/aniskip/autoexit.lua
+include src/aniworld/aniskip/scripts/aniskip.lua
+include src/aniworld/aniskip/scripts/autostart.lua
+include src/aniworld/aniskip/scripts/autoexit.lua
 include src/aniworld/ASCII.txt
