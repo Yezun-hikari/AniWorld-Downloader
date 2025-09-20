@@ -1242,8 +1242,14 @@ class Episode:
                             self.slug, self.link
                         )
 
-                    if self.movie_episode_count is None and self.slug:
-                        self.movie_episode_count = get_movie_episode_count(self.slug)
+                    if (
+                        self.movie_episode_count is None
+                        or self.movie_episode_count == 0
+                    ):
+                        if self.slug:
+                            self.movie_episode_count = get_movie_episode_count(
+                                self.slug
+                            )
 
                     # Clean up season episode count if movies exist
                     if (
