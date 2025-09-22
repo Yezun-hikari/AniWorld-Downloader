@@ -20,6 +20,8 @@ AniWorld Downloader is a command-line tool for downloading and streaming content
 - **Language Preferences**: Easily switch between German Dub, English Sub, or German Sub to suit your needs.
 - **Aniskip Support**: Automatically skip intros and outros for a smoother viewing experience.
 - **Group Watching with Syncplay**: Host synchronized anime sessions with friends using Syncplay integration.
+- **Web Interface**: Modern web UI for easy anime searching, downloading, and queue management.
+- **Docker Support**: Containerized deployment with Docker and Docker Compose for easy setup.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -125,11 +127,12 @@ pip --uninstall aniworld
 
 ## Usage
 
-AniWorld Downloader offers three versatile usage modes:
+AniWorld Downloader offers four versatile usage modes:
 
 1. **Interactive Menu**: Launch the tool and navigate through an intuitive menu to select and manage downloads or streams.
-2. **Command-Line Arguments**: Execute specific tasks directly by providing arguments, such as downloading a particular episode or setting preferences.
-3. **Python Library**: Integrate AniWorld Downloader into your Python projects to programmatically manage anime, series, or movie downloads.
+2. **Web Interface**: Modern web UI for easy searching, downloading, and queue management with real-time progress tracking.
+3. **Command-Line Arguments**: Execute specific tasks directly by providing arguments, such as downloading a particular episode or setting preferences.
+4. **Python Library**: Integrate AniWorld Downloader into your Python projects to programmatically manage anime, series, or movie downloads.
 
 Choose the method that best suits your workflow and enjoy a seamless experience!
 
@@ -139,6 +142,40 @@ To start the interactive menu, simply run:
 
 ```shell
 aniworld
+```
+
+### Web Interface
+
+Launch the modern web interface for easy searching, downloading, and queue management:
+
+```shell
+aniworld --web-ui
+```
+
+The web interface provides:
+- **Modern Search**: Search anime across aniworld.to and s.to with a sleek interface
+- **Episode Selection**: Visual episode picker with season/episode organization
+- **Download Queue**: Real-time download progress tracking
+- **User Authentication**: Optional multi-user support with admin controls
+- **Settings Management**: Configure providers, languages, and download preferences
+
+#### Web Interface Options
+
+```shell
+# Basic web interface (localhost only)
+aniworld --web-ui
+
+# Expose to network (accessible from other devices)
+aniworld --web-ui --web-expose
+
+# Enable authentication for multi-user support
+aniworld --web-ui --enable-web-auth
+
+# Custom port and disable browser auto-open
+aniworld --web-ui --web-port 3000 --no-browser
+
+# Web interface with custom download directory
+aniworld --web-ui --output-dir /path/to/downloads
 ```
 
 ### Command-Line Arguments Example
@@ -326,6 +363,49 @@ AniWorld Downloader depends on the following Python packages:
 - **`windows-curses`**: Required on Windows systems to enable terminal-based UI functionality.
 
 These dependencies are automatically installed when you set up AniWorld Downloader using `pip`.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Docker Deployment
+
+AniWorld Downloader can be easily deployed using Docker for containerized environments.
+
+### Using Docker Compose (Recommended)
+
+1. Clone the repository:
+   ```shell
+   git clone https://github.com/phoenixthrush/AniWorld-Downloader.git
+   cd AniWorld-Downloader
+   ```
+
+2. Build and start the container:
+   ```shell
+   docker-compose up -d --build
+   ```
+
+### Using Docker Directly
+
+```shell
+# Build the image
+docker build -t aniworld-downloader .
+
+# Run the container
+docker run -d \
+  --name aniworld-downloader \
+  -p 8080:8080 \
+  -v $(pwd)/downloads:/app/downloads \
+  -v $(pwd)/data:/app/data \
+  aniworld-downloader
+```
+
+### Docker Configuration
+
+The Docker container runs with:
+- **User Security**: Non-root user for enhanced security
+- **System Dependencies**: Includes ffmpeg for video processing
+- **Web Interface**: Enabled by default with authentication and network exposure
+- **Download Directory**: `/app/downloads` (mapped to host)
+- **Port**: 8080 (configurable via environment variables)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
