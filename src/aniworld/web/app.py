@@ -247,14 +247,14 @@ class WebApp:
                 return jsonify({'success': False, 'error': 'No JSON data received'}), 400
 
             # Debug logging
-            logging.warning(f"Received data: {data}")
+            logging.debug(f"Received data: {data}")
 
             username = data.get('username', '').strip()
             password = data.get('password', '').strip()
             is_admin = data.get('is_admin', False)
 
             # Debug logging
-            logging.warning(f"Processed - username: '{username}', password: '{password}', is_admin: {is_admin}")
+            logging.debug(f"Processed - username: '{username}', password: 'XXX', is_admin: {is_admin}")
 
             if not username or not password:
                 return jsonify({'success': False, 'error': f'Username and password required. Got username: "{username}", password: "{password}"'}), 400
@@ -550,8 +550,8 @@ class WebApp:
                 provider = data.get('provider', 'VOE')
 
                 # DEBUG: Log received parameters
-                logging.warning(f"WEB API RECEIVED - Language: '{language}', Provider: '{provider}'")
-                logging.warning(f"WEB API RECEIVED - Request data: {data}")
+                logging.debug(f"WEB API RECEIVED - Language: '{language}', Provider: '{provider}'")
+                logging.debug(f"WEB API RECEIVED - Request data: {data}")
 
                 # Get current user for queue tracking
                 current_user = None
