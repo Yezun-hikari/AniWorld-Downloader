@@ -254,6 +254,12 @@ def _add_web_ui_arguments(parser: argparse.ArgumentParser) -> None:
         action="store_true",
         help="Disable automatic browser opening when starting web interface.",
     )
+    web_opts.add_argument(
+        "-wE",
+        "--web-expose",
+        action="store_true",
+        help="Bind web interface to 0.0.0.0 instead of localhost for external access.",
+    )
 
 
 def _add_miscellaneous_arguments(parser: argparse.ArgumentParser) -> None:

@@ -121,8 +121,11 @@ class DownloadQueueManager:
             failed_downloads = 0
             current_episode_index = 0
 
-            # Get download directory
+            # Get download directory from arguments (which includes -o parameter)
+            from ..parser import arguments
             download_dir = str(getattr(config, 'DEFAULT_DOWNLOAD_PATH', os.path.expanduser('~/Downloads')))
+            if hasattr(arguments, 'output_dir') and arguments.output_dir is not None:
+                download_dir = str(arguments.output_dir)
 
             for anime in anime_list:
                 for episode in anime.episode_list:
@@ -157,27 +160,20 @@ class DownloadQueueManager:
                             import glob
                             from pathlib import Path
 
-                            # Get potential download directories
-                            possible_dirs = [
-                                Path(download_dir) / sanitize_filename(anime.title),
-                                Path(os.path.expanduser('~')) / 'Desktop' / sanitize_filename(anime.title),
-                                Path(os.path.expanduser('~')) / 'Downloads' / sanitize_filename(anime.title),
-                                Path('.') / sanitize_filename(anime.title)  # Current directory
-                            ]
+                            # Use the actual configured download directory
+                            anime_download_dir = Path(download_dir) / sanitize_filename(anime.title)
 
                             # Count files before download
                             files_before = 0
-                            for dir_path in possible_dirs:
-                                if dir_path.exists():
-                                    files_before += len(list(dir_path.glob('*')))
+                            if anime_download_dir.exists():
+                                files_before = len(list(anime_download_dir.glob('*')))
 
                             _execute_single_anime(temp_anime)
 
                             # Count files after download
                             files_after = 0
-                            for dir_path in possible_dirs:
-                                if dir_path.exists():
-                                    files_after += len(list(dir_path.glob('*')))
+                            if anime_download_dir.exists():
+                                files_after = len(list(anime_download_dir.glob('*')))
 
                             # Check if any new files were created
                             if files_after > files_before:

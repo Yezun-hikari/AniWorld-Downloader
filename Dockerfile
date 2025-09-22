@@ -47,4 +47,4 @@ USER aniworld
 EXPOSE 8080
 
 # Set default command to run with web interface options
-CMD ["aniworld", "-w", "-wA", "-wN", "-wP", "8080"]
+CMD ["aniworld", "-w", "-wA", "-wN", "-wE", "-wP", "8080", "-o", "/app/downloads"]

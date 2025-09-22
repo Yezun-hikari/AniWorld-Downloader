@@ -802,19 +802,32 @@ def create_app(host='127.0.0.1', port=5000, debug=False, arguments=None) -> WebA
 
 def start_web_interface(arguments=None, port=5000, debug=False):
     """Start the web interface with configurable settings."""
-    web_app = create_app(port=port, debug=debug, arguments=arguments)
+    # Determine host based on web_expose argument
+    host = '0.0.0.0' if getattr(arguments, 'web_expose', False) else '127.0.0.1'
+    web_app = create_app(host=host, port=port, debug=debug, arguments=arguments)
 
     # Print startup status
     auth_status = "Authentication ENABLED" if getattr(arguments, 'enable_web_auth', False) else "No Authentication (Local Mode)"
     browser_status = "Browser will open automatically" if not getattr(arguments, 'no_browser', False) else "Browser auto-open disabled"
+    expose_status = "ENABLED (0.0.0.0)" if getattr(arguments, 'web_expose', False) else "DISABLED (localhost only)"
+
+    # Get download path
+    download_path = str(config.DEFAULT_DOWNLOAD_PATH)
+    if arguments and hasattr(arguments, 'output_dir') and arguments.output_dir is not None:
+        download_path = str(arguments.output_dir)
+
+    # Show appropriate server address based on host
+    server_address = f"http://{host}:{port}" if host == '0.0.0.0' else f"http://localhost:{port}"
 
     print("\n" + "="*69)
     print("🌐 AniWorld Downloader Web Interface")
     print("="*69)
-    print(f"📍 Server Address: http://localhost:{port}")
+    print(f"📍 Server Address: {server_address}")
     print(f"🔐 Security Mode:  {auth_status}")
+    print(f"🌐 External Access: {expose_status}")
+    print(f"📁 Download Path:  {download_path}")
     print(f"🐞 Debug Mode:     {'ENABLED' if debug else 'DISABLED'}")
-    print(f"🛠️  Version:       {config.VERSION}")
+    print(f"🛠️ Version:        {config.VERSION}")
     print(f"🌏 Browser:        {browser_status}")
     print("="*69)
     print("💡 Access the web interface by opening the URL above in your browser")
