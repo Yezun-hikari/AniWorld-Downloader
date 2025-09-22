@@ -495,7 +495,7 @@ class WebApp:
 
                     # Create title like CLI does, but avoid double parentheses
                     if year and year != 'Unknown Year' and str(year) not in name:
-                        title = f"{name} ({year})"
+                        title = f"{name} {year}"
                     else:
                         title = name
 

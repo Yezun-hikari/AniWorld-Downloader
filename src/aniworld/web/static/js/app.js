@@ -587,8 +587,6 @@ document.addEventListener('DOMContentLoaded', function() {
             anime_title: currentDownloadData.anime
         };
 
-        console.log('REQUEST PAYLOAD BEING SENT:', JSON.stringify(requestPayload, null, 2));
-
         fetch('/api/download', {
             method: 'POST',
             headers: {
