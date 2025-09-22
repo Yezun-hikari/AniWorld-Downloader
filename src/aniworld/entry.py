@@ -176,16 +176,23 @@ def aniworld() -> None:
     """
     Main entry point for the AniWorld downloader.
 
-    This function handles three main execution modes:
-    1. Local episodes mode - plays local video files
-    2. Episode/file mode - processes specific episodes or episode files
-    3. Interactive mode - presents a menu for anime selection
+    This function handles four main execution modes:
+    1. Web UI mode - starts Flask web interface
+    2. Local episodes mode - plays local video files
+    3. Episode/file mode - processes specific episodes or episode files
+    4. Interactive mode - presents a menu for anime selection
 
     Raises:
         KeyboardInterrupt: When user interrupts execution with Ctrl+C
         Exception: Any other runtime errors are caught and handled gracefully
     """
     try:
+        # Handle web UI mode
+        if arguments.web_ui:
+            from .web.app import start_web_interface
+            start_web_interface(arguments, port=arguments.web_port, debug=arguments.debug)
+            return
+
         # Handle local episodes
         if arguments.local_episodes:
             _handle_local_episodes()

@@ -226,6 +226,24 @@ def _add_syncplay_arguments(parser: argparse.ArgumentParser) -> None:
     )
 
 
+def _add_web_ui_arguments(parser: argparse.ArgumentParser) -> None:
+    """Add Web UI related command-line arguments to the parser."""
+    web_opts = parser.add_argument_group("Web UI Options")
+    web_opts.add_argument(
+        "-w",
+        "--web-ui",
+        action="store_true",
+        help="Start Flask web interface instead of CLI.",
+    )
+    web_opts.add_argument(
+        "-wP",
+        "--web-port",
+        type=int,
+        default=5000,
+        help="Specify the port for the Flask web interface (default: 5000).",
+    )
+
+
 def _add_miscellaneous_arguments(parser: argparse.ArgumentParser) -> None:
     """Add miscellaneous command-line arguments to the parser."""
     misc_opts = parser.add_argument_group("Miscellaneous Options")
@@ -592,6 +610,7 @@ def parse_arguments() -> argparse.Namespace:
     _add_action_arguments(parser)
     _add_anime4k_arguments(parser)
     _add_syncplay_arguments(parser)
+    _add_web_ui_arguments(parser)
     _add_miscellaneous_arguments(parser)
 
     args = parser.parse_args()

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AniWorld Downloader - Web Interface</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="background-container">
+        <div class="cloud"></div>
+        <div class="cloud"></div>
+        <div class="cloud"></div>
+        <div class="cloud"></div>
+        <div class="cloud"></div>
+        <!-- Particle System -->
+        <div class="particles">
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+        </div>
+    </div>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <h1>AniWorld Downloader</h1>
+                <span class="version" id="version-display">Loading...</span>
+            </div>
+            <div class="nav-actions">
+                <a href="https://github.com/phoenixthrush/AniWorld-Downloader" target="_blank" class="nav-btn github-btn" title="View on GitHub">
+                    <i class="fab fa-github"></i>
+                </a>
+                <button id="theme-toggle" class="nav-btn theme-toggle" title="Toggle light/dark mode">
+                    <i id="theme-icon" class="fas fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <main>
+            <div class="search-section">
+                <h2>Search Anime</h2>
+                <div class="site-selection">
+                    <label class="site-option">
+                        <input type="radio" name="site" value="aniworld.to" id="site-aniworld">
+                        <span class="radio-label">AniWorld.to</span>
+                    </label>
+                    <label class="site-option">
+                        <input type="radio" name="site" value="s.to" id="site-sto">
+                        <span class="radio-label">S.to</span>
+                    </label>
+                    <label class="site-option">
+                        <input type="radio" name="site" value="both" id="site-both" checked>
+                        <span class="radio-label">Both</span>
+                    </label>
+                </div>
+                <div class="search-container">
+                    <input type="text" id="search-input" placeholder="Enter anime name..." class="search-input">
+                    <button id="search-btn" class="search-btn">Search</button>
+                </div>
+            </div>
+
+            <!-- Download Progress Section -->
+            <div class="progress-section" id="progress-section" style="display: none;">
+                <h3>Download Progress</h3>
+                <div class="progress-container">
+                    <div class="progress-header">
+                        <span id="progress-anime-title">Downloading...</span>
+                        <span id="progress-count">0/0 episodes</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="progress-bar">
+                            <div class="progress-fill" id="progress-fill"></div>
+                        </div>
+                        <span class="progress-percentage" id="progress-percentage">0%</span>
+                    </div>
+                    <div class="progress-details">
+                        <div class="current-episode" id="current-episode">Preparing download...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="results-section" id="results-section" style="display: none;">
+                <h3>Search Results</h3>
+                <div id="results-container" class="results-container">
+                    <!-- Search results will be populated here -->
+                </div>
+            </div>
+
+            <div class="loading-section" id="loading-section" style="display: none;">
+                <div class="loading-spinner"></div>
+                <p>Searching...</p>
+            </div>
+
+            <div class="empty-state" id="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <h3>Search for Anime</h3>
+                <p>Enter an anime name in the search box above to get started.</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- Download Confirmation Modal -->
+    <div id="download-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Confirm Download</h3>
+                <button id="close-download-modal" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="download-info">
+                    <p><strong>Anime:</strong> <span id="download-anime-title"></span></p>
+                    <p><strong>Download Path:</strong> <span id="download-path"></span> <i class="fas fa-info-circle path-info-icon" title="You can change the download path by using the --output-dir /your/custom/path parameter"></i></p>
+                </div>
+
+                <!-- Download Settings -->
+                <div class="download-settings">
+                    <div class="setting-group">
+                        <label for="language-select"><strong>Language:</strong></label>
+                        <select id="language-select" class="language-dropdown">
+                            <option value="">Loading languages...</option>
+                        </select>
+                    </div>
+                    <div class="setting-group">
+                        <label for="provider-select"><strong>Provider:</strong></label>
+                        <select id="provider-select" class="provider-dropdown">
+                            <option value="">Loading providers...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Episode Selection Tree -->
+                <div class="episode-selection">
+                    <div class="selection-header">
+                        <h4>Select Episodes</h4>
+                        <div class="selection-controls">
+                            <button id="select-all" class="control-btn">Select All</button>
+                            <button id="deselect-all" class="control-btn">Deselect All</button>
+                        </div>
+                    </div>
+
+                    <div class="episode-tree-loading" id="episode-tree-loading">
+                        <div class="loading-spinner-small"></div>
+                        <span>Loading episodes...</span>
+                    </div>
+
+                    <div class="episode-tree" id="episode-tree" style="display: none;">
+                        <!-- Episodes will be populated here dynamically -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="selected-count">
+                    <span id="selected-episode-count">0 episodes selected</span>
+                </div>
+                <div class="modal-actions">
+                    <button id="cancel-download" class="secondary-btn">Cancel</button>
+                    <button id="confirm-download" class="primary-btn">Start Download</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

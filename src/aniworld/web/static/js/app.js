@@ -1,0 +1,865 @@
+// AniWorld Downloader Web Interface JavaScript
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('AniWorld Downloader Web Interface loaded');
+
+    // Get UI elements
+    const versionDisplay = document.getElementById('version-display');
+    const searchInput = document.getElementById('search-input');
+    const searchBtn = document.getElementById('search-btn');
+    const resultsSection = document.getElementById('results-section');
+    const resultsContainer = document.getElementById('results-container');
+    const loadingSection = document.getElementById('loading-section');
+    const emptyState = document.getElementById('empty-state');
+
+    // Theme toggle elements
+    const themeToggle = document.getElementById('theme-toggle');
+    const themeIcon = document.getElementById('theme-icon');
+
+    // Download modal elements
+    const downloadModal = document.getElementById('download-modal');
+    const closeDownloadModal = document.getElementById('close-download-modal');
+    const cancelDownload = document.getElementById('cancel-download');
+    const confirmDownload = document.getElementById('confirm-download');
+    const selectAllBtn = document.getElementById('select-all');
+    const deselectAllBtn = document.getElementById('deselect-all');
+    const episodeTreeLoading = document.getElementById('episode-tree-loading');
+    const episodeTree = document.getElementById('episode-tree');
+    const selectedEpisodeCount = document.getElementById('selected-episode-count');
+    const providerSelect = document.getElementById('provider-select');
+    const languageSelect = document.getElementById('language-select');
+
+    // Progress elements
+    const progressSection = document.getElementById('progress-section');
+    const progressAnimeTitle = document.getElementById('progress-anime-title');
+    const progressCount = document.getElementById('progress-count');
+    const progressFill = document.getElementById('progress-fill');
+    const progressPercentage = document.getElementById('progress-percentage');
+    const currentEpisode = document.getElementById('current-episode');
+
+    // Current download data
+    let currentDownloadData = null;
+    let availableEpisodes = {};
+    let selectedEpisodes = new Set();
+    let progressInterval = null;
+    let availableProviders = [];
+
+    // Load version info and providers on page load
+    loadVersionInfo();
+    loadAvailableProviders();
+
+    // Initialize theme (default is dark mode)
+    initializeTheme();
+
+    // Search functionality
+    searchBtn.addEventListener('click', performSearch);
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            performSearch();
+        }
+    });
+
+    // Download modal functionality
+    closeDownloadModal.addEventListener('click', hideDownloadModal);
+    cancelDownload.addEventListener('click', hideDownloadModal);
+    confirmDownload.addEventListener('click', startDownload);
+    selectAllBtn.addEventListener('click', selectAllEpisodes);
+    deselectAllBtn.addEventListener('click', deselectAllEpisodes);
+
+    // Theme toggle functionality
+    themeToggle.addEventListener('click', toggleTheme);
+
+    // Close modal when clicking outside
+    downloadModal.addEventListener('click', function(e) {
+        if (e.target === downloadModal) {
+            hideDownloadModal();
+        }
+    });
+
+    function loadVersionInfo() {
+        fetch('/api/info')
+            .then(response => response.json())
+            .then(data => {
+                versionDisplay.textContent = `v${data.version}`;
+            })
+            .catch(error => {
+                console.error('Failed to load version info:', error);
+                versionDisplay.textContent = 'v?.?.?';
+            });
+    }
+
+    function loadAvailableProviders() {
+        // This will be called from showDownloadModal with site-specific logic
+        // Default providers for initial load (aniworld.to)
+        populateProviderDropdown('aniworld.to');
+    }
+
+    function populateProviderDropdown(site) {
+        if (!providerSelect) {
+            return;
+        }
+
+        // Define site-specific providers
+        let siteProviders = [];
+        if (site === 's.to') {
+            siteProviders = ['VOE'];
+        } else { // aniworld.to or default
+            siteProviders = ['VOE', 'Filemoon', 'Vidmoly'];
+        }
+
+        providerSelect.innerHTML = '';
+
+        siteProviders.forEach(provider => {
+            const option = document.createElement('option');
+            option.value = provider;
+            option.textContent = provider;
+            providerSelect.appendChild(option);
+        });
+
+        // Set default to VOE (should always be available)
+        providerSelect.value = 'VOE';
+
+        console.log(`Populated providers for ${site}:`, siteProviders);
+    }
+
+    function populateLanguageDropdown(site) {
+        if (!languageSelect) {
+            console.error('Language select element not found!');
+            return;
+        }
+
+        console.log('Populating language dropdown for site:', site);
+        languageSelect.innerHTML = '';
+
+        // Define site-specific languages based on actual runtime availability
+        let availableLanguages = [];
+        if (site === 's.to') {
+            // Based on runtime error: s.to only supports ['German Dub', 'English Dub']
+            availableLanguages = ['German Dub', 'English Dub'];
+        } else { // aniworld.to or default
+            availableLanguages = ['German Dub', 'English Sub', 'German Sub'];
+        }
+
+        availableLanguages.forEach(language => {
+            const option = document.createElement('option');
+            option.value = language;
+            option.textContent = language;
+            languageSelect.appendChild(option);
+        });
+
+        // Set default based on site - use setTimeout to ensure DOM is updated
+        setTimeout(() => {
+            if (site === 's.to') {
+                languageSelect.value = 'German Dub'; // s.to default
+                console.log('Set default language for s.to to:', languageSelect.value);
+                console.log('Verify s.to language value after setting:', languageSelect.value);
+            } else {
+                languageSelect.value = 'German Sub'; // aniworld default
+                console.log('Set default language for aniworld to:', languageSelect.value);
+                console.log('Verify aniworld language value after setting:', languageSelect.value);
+            }
+        }, 0);
+    }
+
+    function performSearch() {
+        const query = searchInput.value.trim();
+        if (!query) {
+            showNotification('Please enter a search term', 'error');
+            return;
+        }
+
+        // Get selected site
+        const selectedSite = document.querySelector('input[name="site"]:checked').value;
+
+        // Show loading state
+        showLoadingState();
+        searchBtn.disabled = true;
+        searchBtn.textContent = 'Searching...';
+
+        fetch('/api/search', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                query: query,
+                site: selectedSite
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displaySearchResults(data.results);
+            } else {
+                showNotification(data.error || 'Search failed', 'error');
+                showEmptyState();
+            }
+        })
+        .catch(error => {
+            console.error('Search error:', error);
+            showNotification('Search failed. Please try again.', 'error');
+            showEmptyState();
+        })
+        .finally(() => {
+            searchBtn.disabled = false;
+            searchBtn.textContent = 'Search';
+            hideLoadingState();
+        });
+    }
+
+    function displaySearchResults(results) {
+        if (!results || results.length === 0) {
+            showEmptyState();
+            return;
+        }
+
+        resultsContainer.innerHTML = '';
+
+        results.forEach(anime => {
+            const animeCard = createAnimeCard(anime);
+            resultsContainer.appendChild(animeCard);
+        });
+
+        showResultsSection();
+    }
+
+    function createAnimeCard(anime) {
+        const card = document.createElement('div');
+        card.className = 'anime-card';
+
+        // Handle cover image
+        let coverStyle = '';
+        if (anime.cover) {
+            let coverUrl = anime.cover;
+            // Make URL absolute if it's relative
+            if (!coverUrl.startsWith('http')) {
+                if (coverUrl.startsWith('//')) {
+                    coverUrl = 'https:' + coverUrl;
+                } else if (coverUrl.startsWith('/')) {
+                    // Determine base URL based on site
+                    const baseUrl = anime.site === 's.to' ? 'https://s.to' : 'https://aniworld.to';
+                    coverUrl = baseUrl + coverUrl;
+                } else {
+                    const baseUrl = anime.site === 's.to' ? 'https://s.to' : 'https://aniworld.to';
+                    coverUrl = baseUrl + '/' + coverUrl;
+                }
+            }
+
+            // Upgrade image resolution from 150x225 to 220x330 for better quality
+            coverUrl = coverUrl.replace("150x225", "220x330");
+
+            coverStyle = `style="background-image: url('${coverUrl}')"`;
+        }
+
+        card.innerHTML = `
+            <div class="anime-card-background" ${coverStyle}></div>
+            <div class="anime-card-content">
+                <div class="anime-title">${escapeHtml(anime.title)}</div>
+                <div class="anime-info">
+                    <strong>Site:</strong> ${escapeHtml(anime.site || 'aniworld.to')}<br>
+                    <strong>Slug:</strong> ${escapeHtml(anime.slug || 'Unknown')}<br>
+                    ${anime.description ? `<strong>Description:</strong> ${escapeHtml(anime.description)}<br>` : ''}
+                </div>
+                <div class="anime-actions">
+                    <button class="download-btn">
+                        Download
+                    </button>
+                </div>
+            </div>
+        `;
+
+        // Add event listener for the download button to avoid onclick string issues
+        const downloadBtn = card.querySelector('.download-btn');
+        downloadBtn.addEventListener('click', () => {
+            showDownloadModal(anime.title, 'Series', anime.url);
+        });
+
+        return card;
+    }
+
+    function showDownloadModal(animeTitle, episodeTitle, episodeUrl) {
+        // Detect site from URL
+        let detectedSite = 'aniworld.to'; // default
+        if (episodeUrl.includes('/serie/stream/') || episodeUrl.includes('186.2.175.5')) {
+            detectedSite = 's.to';
+        }
+
+        currentDownloadData = {
+            anime: animeTitle,
+            episode: episodeTitle,
+            url: episodeUrl,
+            site: detectedSite,
+            downloadPath: '/Downloads' // Default path - will be fetched from backend
+        };
+
+        // Reset selection state
+        selectedEpisodes.clear();
+        availableEpisodes = {};
+
+        // Populate modal
+        document.getElementById('download-anime-title').textContent = animeTitle;
+
+        // Populate language dropdown based on site
+        populateLanguageDropdown(detectedSite);
+
+        // Populate provider dropdown based on site
+        populateProviderDropdown(detectedSite);
+
+        // Show loading state for episodes
+        episodeTreeLoading.style.display = 'flex';
+        episodeTree.style.display = 'none';
+        updateSelectedCount();
+
+        // Fetch download path from backend
+        fetch('/api/download-path')
+            .then(response => response.json())
+            .then(data => {
+                currentDownloadData.downloadPath = data.path;
+                document.getElementById('download-path').textContent = data.path;
+            })
+            .catch(error => {
+                console.error('Failed to fetch download path:', error);
+                document.getElementById('download-path').textContent = 'Unknown';
+            });
+
+        // Fetch episodes for this series
+        fetch('/api/episodes', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                series_url: episodeUrl
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                availableEpisodes = data.episodes;
+                renderEpisodeTree();
+            } else {
+                showNotification(data.error || 'Failed to load episodes', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Failed to fetch episodes:', error);
+            showNotification('Failed to load episodes', 'error');
+        })
+        .finally(() => {
+            episodeTreeLoading.style.display = 'none';
+            episodeTree.style.display = 'block';
+        });
+
+        downloadModal.style.display = 'flex';
+    }
+
+    function hideDownloadModal() {
+        downloadModal.style.display = 'none';
+        currentDownloadData = null;
+        selectedEpisodes.clear();
+        availableEpisodes = {};
+    }
+
+    function renderEpisodeTree() {
+        episodeTree.innerHTML = '';
+
+        Object.keys(availableEpisodes).sort((a, b) => Number(a) - Number(b)).forEach(seasonNum => {
+            const season = availableEpisodes[seasonNum];
+
+            // Create season container
+            const seasonContainer = document.createElement('div');
+            seasonContainer.className = 'season-container';
+
+            // Season header with checkbox
+            const seasonHeader = document.createElement('div');
+            seasonHeader.className = 'season-header';
+
+            const seasonCheckbox = document.createElement('input');
+            seasonCheckbox.type = 'checkbox';
+            seasonCheckbox.className = 'season-checkbox';
+            seasonCheckbox.id = `season-${seasonNum}`;
+            seasonCheckbox.addEventListener('change', () => toggleSeason(seasonNum));
+
+            const seasonLabel = document.createElement('label');
+            seasonLabel.htmlFor = `season-${seasonNum}`;
+            seasonLabel.textContent = `Season ${seasonNum} (${season.length} episodes)`;
+            seasonLabel.className = 'season-label';
+
+            seasonHeader.appendChild(seasonCheckbox);
+            seasonHeader.appendChild(seasonLabel);
+
+            // Episodes container
+            const episodesContainer = document.createElement('div');
+            episodesContainer.className = 'episodes-container';
+
+            season.forEach(episode => {
+                const episodeItem = document.createElement('div');
+                episodeItem.className = 'episode-item-tree';
+
+                const episodeCheckbox = document.createElement('input');
+                episodeCheckbox.type = 'checkbox';
+                episodeCheckbox.className = 'episode-checkbox';
+                const episodeId = `${episode.season}-${episode.episode}`;
+                episodeCheckbox.id = `episode-${episodeId}`;
+                episodeCheckbox.addEventListener('change', () => toggleEpisode(episode, episodeCheckbox.checked));
+
+                const episodeLabel = document.createElement('label');
+                episodeLabel.htmlFor = `episode-${episodeId}`;
+                episodeLabel.textContent = episode.title;
+                episodeLabel.className = 'episode-label';
+
+                episodeItem.appendChild(episodeCheckbox);
+                episodeItem.appendChild(episodeLabel);
+                episodesContainer.appendChild(episodeItem);
+            });
+
+            seasonContainer.appendChild(seasonHeader);
+            seasonContainer.appendChild(episodesContainer);
+            episodeTree.appendChild(seasonContainer);
+        });
+
+        updateSelectedCount();
+    }
+
+    function toggleSeason(seasonNum) {
+        const season = availableEpisodes[seasonNum];
+        const seasonCheckbox = document.getElementById(`season-${seasonNum}`);
+        const isChecked = seasonCheckbox.checked;
+
+        season.forEach(episode => {
+            const episodeId = `${episode.season}-${episode.episode}`;
+            const episodeCheckbox = document.getElementById(`episode-${episodeId}`);
+
+            if (episodeCheckbox) {
+                episodeCheckbox.checked = isChecked;
+                toggleEpisode(episode, isChecked);
+            }
+        });
+    }
+
+    function toggleEpisode(episode, isSelected) {
+        const episodeKey = `${episode.season}-${episode.episode}`;
+
+        if (isSelected) {
+            selectedEpisodes.add(episodeKey);
+        } else {
+            selectedEpisodes.delete(episodeKey);
+        }
+
+        // Update season checkbox state
+        updateSeasonCheckboxState(episode.season);
+        updateSelectedCount();
+    }
+
+    function updateSeasonCheckboxState(seasonNum) {
+        const season = availableEpisodes[seasonNum];
+        const seasonCheckbox = document.getElementById(`season-${seasonNum}`);
+
+        if (!seasonCheckbox || !season) return;
+
+        const seasonEpisodes = season.map(ep => `${ep.season}-${ep.episode}`);
+        const selectedInSeason = seasonEpisodes.filter(key => selectedEpisodes.has(key));
+
+        if (selectedInSeason.length === seasonEpisodes.length) {
+            seasonCheckbox.checked = true;
+            seasonCheckbox.indeterminate = false;
+        } else if (selectedInSeason.length > 0) {
+            seasonCheckbox.checked = false;
+            seasonCheckbox.indeterminate = true;
+        } else {
+            seasonCheckbox.checked = false;
+            seasonCheckbox.indeterminate = false;
+        }
+    }
+
+    function selectAllEpisodes() {
+        Object.values(availableEpisodes).flat().forEach(episode => {
+            const episodeKey = `${episode.season}-${episode.episode}`;
+            const episodeCheckbox = document.getElementById(`episode-${episodeKey}`);
+
+            if (episodeCheckbox) {
+                episodeCheckbox.checked = true;
+                selectedEpisodes.add(episodeKey);
+            }
+        });
+
+        // Update all season checkboxes
+        Object.keys(availableEpisodes).forEach(seasonNum => {
+            updateSeasonCheckboxState(seasonNum);
+        });
+
+        updateSelectedCount();
+    }
+
+    function deselectAllEpisodes() {
+        selectedEpisodes.clear();
+
+        // Uncheck all checkboxes
+        document.querySelectorAll('.episode-checkbox, .season-checkbox').forEach(checkbox => {
+            checkbox.checked = false;
+            checkbox.indeterminate = false;
+        });
+
+        updateSelectedCount();
+    }
+
+    function updateSelectedCount() {
+        const count = selectedEpisodes.size;
+        selectedEpisodeCount.textContent = `${count} episode${count !== 1 ? 's' : ''} selected`;
+
+        // Enable/disable download button based on selection
+        confirmDownload.disabled = count === 0;
+    }
+
+    function startDownload() {
+        if (!currentDownloadData || selectedEpisodes.size === 0) {
+            showNotification('Please select at least one episode to download', 'error');
+            return;
+        }
+
+        // Show loading state
+        confirmDownload.disabled = true;
+        confirmDownload.textContent = 'Starting...';
+
+        // Collect selected episode URLs
+        const selectedEpisodeUrls = [];
+        selectedEpisodes.forEach(episodeKey => {
+            const [season, episode] = episodeKey.split('-').map(Number);
+            const episodeData = availableEpisodes[season]?.find(ep => ep.season === season && ep.episode === episode);
+            if (episodeData) {
+                selectedEpisodeUrls.push(episodeData.url);
+            }
+        });
+
+        // Get selected provider and language from dropdowns
+        const selectedProvider = providerSelect.value || 'VOE';
+
+        // Get language value without fallback first to see what's actually selected
+        const rawLanguageValue = languageSelect.value;
+
+        // Get language from dropdown - use site-appropriate fallback if empty
+        const selectedLanguage = rawLanguageValue || (currentDownloadData.site === 's.to' ? 'German Dub' : 'German Sub');
+
+        // Debug logging
+        console.log('Raw language value:', rawLanguageValue);
+        console.log('Selected language (final):', selectedLanguage);
+        console.log('Selected provider:', selectedProvider);
+        console.log('Site:', currentDownloadData.site);
+
+        // Validate that we have a real selection
+        if (!rawLanguageValue) {
+            console.warn('Warning: No language selected from dropdown, using fallback');
+        }
+
+        // Create request payload and log it
+        const requestPayload = {
+            episode_urls: selectedEpisodeUrls,
+            language: selectedLanguage,
+            provider: selectedProvider,
+            anime_title: currentDownloadData.anime
+        };
+
+        console.log('REQUEST PAYLOAD BEING SENT:', JSON.stringify(requestPayload, null, 2));
+
+        fetch('/api/download', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestPayload)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const count = selectedEpisodes.size;
+                showNotification(`Download started for ${count} episode${count !== 1 ? 's' : ''}`, 'success');
+                hideDownloadModal();
+                startProgressTracking();
+            } else {
+                showNotification(data.error || 'Download failed to start', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Download error:', error);
+            showNotification('Failed to start download', 'error');
+        })
+        .finally(() => {
+            confirmDownload.disabled = false;
+            confirmDownload.textContent = 'Start Download';
+        });
+    }
+
+    function showLoadingState() {
+        emptyState.style.display = 'none';
+        resultsSection.style.display = 'none';
+        loadingSection.style.display = 'block';
+    }
+
+    function hideLoadingState() {
+        loadingSection.style.display = 'none';
+    }
+
+    function showResultsSection() {
+        emptyState.style.display = 'none';
+        loadingSection.style.display = 'none';
+        resultsSection.style.display = 'block';
+    }
+
+    function showEmptyState() {
+        resultsSection.style.display = 'none';
+        loadingSection.style.display = 'none';
+        emptyState.style.display = 'block';
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function startProgressTracking() {
+        progressSection.style.display = 'block';
+
+        // Start polling for progress updates
+        progressInterval = setInterval(updateProgress, 1000);
+        updateProgress(); // Initial update
+    }
+
+    function updateProgress() {
+        fetch('/api/progress')
+            .then(response => response.json())
+            .then(data => {
+                if (data.active) {
+                    progressAnimeTitle.textContent = data.anime_title;
+                    progressCount.textContent = `${data.completed_episodes}/${data.total_episodes} episodes`;
+                    progressFill.style.width = `${data.percentage}%`;
+                    progressPercentage.textContent = `${data.percentage}%`;
+                    currentEpisode.textContent = data.current_episode;
+                } else {
+                    // Download completed or failed
+                    if (data.completed_episodes > 0) {
+                        progressCount.textContent = `${data.completed_episodes}/${data.total_episodes} episodes`;
+                        progressFill.style.width = '100%';
+                        progressPercentage.textContent = '100%';
+                    }
+                    currentEpisode.textContent = data.current_episode;
+
+                    // Stop polling after a delay to show completion
+                    setTimeout(() => {
+                        if (progressInterval) {
+                            clearInterval(progressInterval);
+                            progressInterval = null;
+                        }
+                    }, 3000);
+                }
+            })
+            .catch(error => {
+                console.error('Progress update error:', error);
+            });
+    }
+
+
+    // Theme functions
+    function initializeTheme() {
+        // Check if user has a saved theme preference, default to dark mode
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        setTheme(savedTheme);
+    }
+
+    function toggleTheme() {
+        console.log('Toggle theme clicked'); // Debug log
+        const currentTheme = document.body.getAttribute('data-theme') || 'light';
+        console.log('Current theme:', currentTheme); // Debug log
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        console.log('New theme:', newTheme); // Debug log
+        setTheme(newTheme);
+    }
+
+    function setTheme(theme) {
+        console.log('Setting theme to:', theme); // Debug log
+        if (theme === 'light') {
+            document.body.removeAttribute('data-theme');
+            themeIcon.className = 'fas fa-moon';
+            console.log('Switched to light mode'); // Debug log
+        } else {
+            document.body.setAttribute('data-theme', 'dark');
+            themeIcon.className = 'fas fa-sun';
+            console.log('Switched to dark mode'); // Debug log
+        }
+        localStorage.setItem('theme', theme);
+    }
+
+    // Make showDownloadModal globally accessible
+    window.showDownloadModal = showDownloadModal;
+});
+
+// Show notification function
+function showNotification(message, type = 'info') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+
+    // Style the notification
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        border-radius: 6px;
+        color: white;
+        font-weight: 500;
+        z-index: 1000;
+        animation: slideIn 0.3s ease-out;
+        max-width: 300px;
+        word-wrap: break-word;
+    `;
+
+    // Set background color based on type
+    switch(type) {
+        case 'success':
+            notification.style.background = '#48bb78';
+            break;
+        case 'error':
+            notification.style.background = '#f56565';
+            break;
+        default:
+            notification.style.background = '#4299e1';
+    }
+
+    // Add to page
+    document.body.appendChild(notification);
+
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease-in';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
+}
+
+// Show info modal function
+function showInfoModal(data) {
+    // Create modal overlay
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1001;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        animation: fadeIn 0.3s ease-out;
+    `;
+
+    // Create modal content
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        max-width: 500px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        animation: scaleIn 0.3s ease-out;
+    `;
+
+    modal.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2 style="color: #4a5568; margin: 0;">Application Info</h2>
+            <button id="close-modal" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #718096;">&times;</button>
+        </div>
+        <div style="color: #718096;">
+            <p><strong>Version:</strong> ${data.version || 'N/A'}</p>
+            <p><strong>Status:</strong> ${data.status || 'Running'}</p>
+            <p><strong>Uptime:</strong> ${data.uptime || 'N/A'}</p>
+            <p><strong>Mode:</strong> Web Interface</p>
+        </div>
+    `;
+
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    // Close modal functionality
+    const closeBtn = modal.querySelector('#close-modal');
+    const closeModal = () => {
+        overlay.style.animation = 'fadeOut 0.3s ease-in';
+        setTimeout(() => {
+            if (overlay.parentNode) {
+                overlay.parentNode.removeChild(overlay);
+            }
+        }, 300);
+    };
+
+    closeBtn.addEventListener('click', closeModal);
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+            closeModal();
+        }
+    });
+}
+
+// Add CSS animations
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    @keyframes slideOut {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    @keyframes fadeOut {
+        from {
+            opacity: 1;
+        }
+        to {
+            opacity: 0;
+        }
+    }
+
+    @keyframes scaleIn {
+        from {
+            transform: scale(0.8);
+            opacity: 0;
+        }
+        to {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+`;
+document.head.appendChild(style);
