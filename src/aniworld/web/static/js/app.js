@@ -39,6 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Current download data
     let currentDownloadData = null;
     let availableEpisodes = {};
+    let availableMovies = [];
     let selectedEpisodes = new Set();
     let progressInterval = null;
     let availableProviders = [];
@@ -364,6 +365,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             if (data.success) {
                 availableEpisodes = data.episodes;
+                availableMovies = data.movies || [];
                 renderEpisodeTree();
             } else {
                 showNotification(data.error || 'Failed to load episodes', 'error');
@@ -386,11 +388,13 @@ document.addEventListener('DOMContentLoaded', function() {
         currentDownloadData = null;
         selectedEpisodes.clear();
         availableEpisodes = {};
+        availableMovies = [];
     }
 
     function renderEpisodeTree() {
         episodeTree.innerHTML = '';
 
+        // Render seasons and episodes
         Object.keys(availableEpisodes).sort((a, b) => Number(a) - Number(b)).forEach(seasonNum => {
             const season = availableEpisodes[seasonNum];
 
@@ -446,6 +450,59 @@ document.addEventListener('DOMContentLoaded', function() {
             episodeTree.appendChild(seasonContainer);
         });
 
+        // Render movies section if available
+        if (availableMovies && availableMovies.length > 0) {
+            const moviesContainer = document.createElement('div');
+            moviesContainer.className = 'season-container';
+
+            // Movies header with checkbox
+            const moviesHeader = document.createElement('div');
+            moviesHeader.className = 'season-header';
+
+            const moviesCheckbox = document.createElement('input');
+            moviesCheckbox.type = 'checkbox';
+            moviesCheckbox.className = 'season-checkbox';
+            moviesCheckbox.id = 'movies-section';
+            moviesCheckbox.addEventListener('change', () => toggleMovies());
+
+            const moviesLabel = document.createElement('label');
+            moviesLabel.htmlFor = 'movies-section';
+            moviesLabel.textContent = `Movies (${availableMovies.length} movies)`;
+            moviesLabel.className = 'season-label';
+
+            moviesHeader.appendChild(moviesCheckbox);
+            moviesHeader.appendChild(moviesLabel);
+
+            // Movies items container
+            const moviesItemsContainer = document.createElement('div');
+            moviesItemsContainer.className = 'episodes-container';
+
+            availableMovies.forEach(movie => {
+                const movieItem = document.createElement('div');
+                movieItem.className = 'episode-item-tree';
+
+                const movieCheckbox = document.createElement('input');
+                movieCheckbox.type = 'checkbox';
+                movieCheckbox.className = 'episode-checkbox';
+                const movieId = `movie-${movie.movie}`;
+                movieCheckbox.id = `movie-${movieId}`;
+                movieCheckbox.addEventListener('change', () => toggleMovie(movie, movieCheckbox.checked));
+
+                const movieLabel = document.createElement('label');
+                movieLabel.htmlFor = `movie-${movieId}`;
+                movieLabel.textContent = movie.title;
+                movieLabel.className = 'episode-label';
+
+                movieItem.appendChild(movieCheckbox);
+                movieItem.appendChild(movieLabel);
+                moviesItemsContainer.appendChild(movieItem);
+            });
+
+            moviesContainer.appendChild(moviesHeader);
+            moviesContainer.appendChild(moviesItemsContainer);
+            episodeTree.appendChild(moviesContainer);
+        }
+
         updateSelectedCount();
     }
 
@@ -500,7 +557,57 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    function toggleMovies() {
+        const moviesCheckbox = document.getElementById('movies-section');
+        const isChecked = moviesCheckbox.checked;
+
+        availableMovies.forEach(movie => {
+            const movieId = `movie-${movie.movie}`;
+            const movieCheckbox = document.getElementById(`movie-${movieId}`);
+
+            if (movieCheckbox) {
+                movieCheckbox.checked = isChecked;
+                toggleMovie(movie, isChecked);
+            }
+        });
+    }
+
+    function toggleMovie(movie, isSelected) {
+        const movieKey = `movie-${movie.movie}`;
+
+        if (isSelected) {
+            selectedEpisodes.add(movieKey);
+        } else {
+            selectedEpisodes.delete(movieKey);
+        }
+
+        // Update movies section checkbox state
+        updateMoviesCheckboxState();
+        updateSelectedCount();
+    }
+
+    function updateMoviesCheckboxState() {
+        const moviesCheckbox = document.getElementById('movies-section');
+
+        if (!moviesCheckbox || !availableMovies || availableMovies.length === 0) return;
+
+        const movieKeys = availableMovies.map(movie => `movie-${movie.movie}`);
+        const selectedMovies = movieKeys.filter(key => selectedEpisodes.has(key));
+
+        if (selectedMovies.length === movieKeys.length) {
+            moviesCheckbox.checked = true;
+            moviesCheckbox.indeterminate = false;
+        } else if (selectedMovies.length > 0) {
+            moviesCheckbox.checked = false;
+            moviesCheckbox.indeterminate = true;
+        } else {
+            moviesCheckbox.checked = false;
+            moviesCheckbox.indeterminate = false;
+        }
+    }
+
     function selectAllEpisodes() {
+        // Select all episodes
         Object.values(availableEpisodes).flat().forEach(episode => {
             const episodeKey = `${episode.season}-${episode.episode}`;
             const episodeCheckbox = document.getElementById(`episode-${episodeKey}`);
@@ -511,10 +618,24 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
+        // Select all movies
+        availableMovies.forEach(movie => {
+            const movieKey = `movie-${movie.movie}`;
+            const movieCheckbox = document.getElementById(`movie-${movieKey}`);
+
+            if (movieCheckbox) {
+                movieCheckbox.checked = true;
+                selectedEpisodes.add(movieKey);
+            }
+        });
+
         // Update all season checkboxes
         Object.keys(availableEpisodes).forEach(seasonNum => {
             updateSeasonCheckboxState(seasonNum);
         });
+
+        // Update movies checkbox
+        updateMoviesCheckboxState();
 
         updateSelectedCount();
     }
@@ -533,7 +654,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateSelectedCount() {
         const count = selectedEpisodes.size;
-        selectedEpisodeCount.textContent = `${count} episode${count !== 1 ? 's' : ''} selected`;
+
+        // Count episodes and movies separately for better display
+        const episodeCount = Array.from(selectedEpisodes).filter(key => !key.startsWith('movie-')).length;
+        const movieCount = Array.from(selectedEpisodes).filter(key => key.startsWith('movie-')).length;
+
+        let countText = '';
+        if (episodeCount > 0 && movieCount > 0) {
+            countText = `${episodeCount} episode${episodeCount !== 1 ? 's' : ''} and ${movieCount} movie${movieCount !== 1 ? 's' : ''} selected`;
+        } else if (episodeCount > 0) {
+            countText = `${episodeCount} episode${episodeCount !== 1 ? 's' : ''} selected`;
+        } else if (movieCount > 0) {
+            countText = `${movieCount} movie${movieCount !== 1 ? 's' : ''} selected`;
+        } else {
+            countText = 'No items selected';
+        }
+
+        selectedEpisodeCount.textContent = countText;
 
         // Enable/disable download button based on selection
         confirmDownload.disabled = count === 0;
@@ -541,7 +678,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function startDownload() {
         if (!currentDownloadData || selectedEpisodes.size === 0) {
-            showNotification('Please select at least one episode to download', 'error');
+            showNotification('Please select at least one episode or movie to download', 'error');
             return;
         }
 
@@ -549,13 +686,23 @@ document.addEventListener('DOMContentLoaded', function() {
         confirmDownload.disabled = true;
         confirmDownload.textContent = 'Starting...';
 
-        // Collect selected episode URLs
+        // Collect selected episode and movie URLs
         const selectedEpisodeUrls = [];
         selectedEpisodes.forEach(episodeKey => {
-            const [season, episode] = episodeKey.split('-').map(Number);
-            const episodeData = availableEpisodes[season]?.find(ep => ep.season === season && ep.episode === episode);
-            if (episodeData) {
-                selectedEpisodeUrls.push(episodeData.url);
+            if (episodeKey.startsWith('movie-')) {
+                // Handle movie
+                const movieNum = episodeKey.split('-')[1];
+                const movieData = availableMovies.find(movie => movie.movie == movieNum);
+                if (movieData) {
+                    selectedEpisodeUrls.push(movieData.url);
+                }
+            } else {
+                // Handle episode
+                const [season, episode] = episodeKey.split('-').map(Number);
+                const episodeData = availableEpisodes[season]?.find(ep => ep.season === season && ep.episode === episode);
+                if (episodeData) {
+                    selectedEpisodeUrls.push(episodeData.url);
+                }
             }
         });
 

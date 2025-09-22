@@ -651,8 +651,8 @@ class WebApp:
 
                 # Create wrapper function to handle all logic
                 def get_episodes_for_series(series_url):
-                    """Wrapper function using existing functions to get episodes"""
-                    from ..common import get_season_episode_count
+                    """Wrapper function using existing functions to get episodes and movies"""
+                    from ..common import get_season_episode_count, get_movie_episode_count
                     from ..entry import _detect_site_from_url
                     from .. import config
 
@@ -686,6 +686,20 @@ class WebApp:
                                     'url': f"{base_url}/{stream_path}/{slug}/staffel-{season_num}/episode-{ep_num}"
                                 })
 
+                    # Get movies if this is from aniworld.to (movies only available there)
+                    movies = []
+                    if base_url == config.ANIWORLD_TO:
+                        try:
+                            movie_count = get_movie_episode_count(slug)
+                            for movie_num in range(1, movie_count + 1):
+                                movies.append({
+                                    'movie': movie_num,
+                                    'title': f"Movie {movie_num}",
+                                    'url': f"{base_url}/{stream_path}/{slug}/filme/film-{movie_num}"
+                                })
+                        except Exception as e:
+                            logging.warning(f"Failed to get movie count for {slug}: {e}")
+
                     # Fallback if no seasons found
                     if not episodes_by_season:
                         episodes_by_season[1] = [{
@@ -695,11 +709,11 @@ class WebApp:
                             'url': f"{base_url}/{stream_path}/{slug}/staffel-1/episode-1"
                         }]
 
-                    return episodes_by_season, slug
+                    return episodes_by_season, movies, slug
 
                 # Use the wrapper function
                 try:
-                    episodes_by_season, slug = get_episodes_for_series(series_url)
+                    episodes_by_season, movies, slug = get_episodes_for_series(series_url)
                 except ValueError as e:
                     return jsonify({
                         'success': False,
@@ -715,6 +729,7 @@ class WebApp:
                 return jsonify({
                     'success': True,
                     'episodes': episodes_by_season,
+                    'movies': movies,
                     'slug': slug
                 })
 
