@@ -29,13 +29,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const providerSelect = document.getElementById('provider-select');
     const languageSelect = document.getElementById('language-select');
 
-    // Progress elements
-    const progressSection = document.getElementById('progress-section');
-    const progressAnimeTitle = document.getElementById('progress-anime-title');
-    const progressCount = document.getElementById('progress-count');
-    const progressFill = document.getElementById('progress-fill');
-    const progressPercentage = document.getElementById('progress-percentage');
-    const currentEpisode = document.getElementById('current-episode');
+    // Queue elements
+    const queueSection = document.getElementById('queue-section');
+    const activeDownloads = document.getElementById('active-downloads');
+    const completedDownloads = document.getElementById('completed-downloads');
+    const activeQueueList = document.getElementById('active-queue-list');
+    const completedQueueList = document.getElementById('completed-queue-list');
 
     // Current download data
     let currentDownloadData = null;
@@ -46,35 +45,56 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Load version info and providers on page load
     loadVersionInfo();
+
+    // Check for active downloads on page load
+    checkQueueStatus();
     loadAvailableProviders();
 
     // Initialize theme (default is dark mode)
     initializeTheme();
 
     // Search functionality
-    searchBtn.addEventListener('click', performSearch);
-    searchInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            performSearch();
-        }
-    });
+    if (searchBtn) {
+        searchBtn.addEventListener('click', performSearch);
+    }
+    if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+    }
 
     // Download modal functionality
-    closeDownloadModal.addEventListener('click', hideDownloadModal);
-    cancelDownload.addEventListener('click', hideDownloadModal);
-    confirmDownload.addEventListener('click', startDownload);
-    selectAllBtn.addEventListener('click', selectAllEpisodes);
-    deselectAllBtn.addEventListener('click', deselectAllEpisodes);
+    if (closeDownloadModal) {
+        closeDownloadModal.addEventListener('click', hideDownloadModal);
+    }
+    if (cancelDownload) {
+        cancelDownload.addEventListener('click', hideDownloadModal);
+    }
+    if (confirmDownload) {
+        confirmDownload.addEventListener('click', startDownload);
+    }
+    if (selectAllBtn) {
+        selectAllBtn.addEventListener('click', selectAllEpisodes);
+    }
+    if (deselectAllBtn) {
+        deselectAllBtn.addEventListener('click', deselectAllEpisodes);
+    }
 
-    // Theme toggle functionality
-    themeToggle.addEventListener('click', toggleTheme);
+    // Theme toggle functionality (only if element exists)
+    if (themeToggle) {
+        themeToggle.addEventListener('click', toggleTheme);
+    }
 
     // Close modal when clicking outside
-    downloadModal.addEventListener('click', function(e) {
-        if (e.target === downloadModal) {
-            hideDownloadModal();
-        }
-    });
+    if (downloadModal) {
+        downloadModal.addEventListener('click', function(e) {
+            if (e.target === downloadModal) {
+                hideDownloadModal();
+            }
+        });
+    }
 
     function loadVersionInfo() {
         fetch('/api/info')
@@ -186,8 +206,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 site: selectedSite
             })
         })
-        .then(response => response.json())
+        .then(response => {
+            if (response.status === 401) {
+                // Authentication required - redirect to login
+                window.location.href = '/login';
+                return;
+            }
+            return response.json();
+        })
         .then(data => {
+            if (!data) return; // Handle redirect case
             if (data.success) {
                 displaySearchResults(data.results);
             } else {
@@ -574,7 +602,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const count = selectedEpisodes.size;
                 showNotification(`Download started for ${count} episode${count !== 1 ? 's' : ''}`, 'success');
                 hideDownloadModal();
-                startProgressTracking();
+                startQueueTracking();
             } else {
                 showNotification(data.error || 'Download failed to start', 'error');
             }
@@ -617,45 +645,108 @@ document.addEventListener('DOMContentLoaded', function() {
         return div.innerHTML;
     }
 
-    function startProgressTracking() {
-        progressSection.style.display = 'block';
-
-        // Start polling for progress updates
-        progressInterval = setInterval(updateProgress, 1000);
-        updateProgress(); // Initial update
+    function startQueueTracking() {
+        // Start polling for queue status updates
+        progressInterval = setInterval(updateQueueDisplay, 2000); // Poll every 2 seconds
+        updateQueueDisplay(); // Initial update
     }
 
-    function updateProgress() {
-        fetch('/api/progress')
+    function checkQueueStatus() {
+        // Check queue status on page load to show any active downloads
+        fetch('/api/queue-status')
             .then(response => response.json())
             .then(data => {
-                if (data.active) {
-                    progressAnimeTitle.textContent = data.anime_title;
-                    progressCount.textContent = `${data.completed_episodes}/${data.total_episodes} episodes`;
-                    progressFill.style.width = `${data.percentage}%`;
-                    progressPercentage.textContent = `${data.percentage}%`;
-                    currentEpisode.textContent = data.current_episode;
-                } else {
-                    // Download completed or failed
-                    if (data.completed_episodes > 0) {
-                        progressCount.textContent = `${data.completed_episodes}/${data.total_episodes} episodes`;
-                        progressFill.style.width = '100%';
-                        progressPercentage.textContent = '100%';
-                    }
-                    currentEpisode.textContent = data.current_episode;
+                if (data.success && data.queue) {
+                    const activeItems = data.queue.active || [];
+                    const completedItems = data.queue.completed || [];
 
-                    // Stop polling after a delay to show completion
-                    setTimeout(() => {
+                    if (activeItems.length > 0 || completedItems.length > 0) {
+                        // There are downloads to show, start tracking
+                        startQueueTracking();
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Initial queue status check error:', error);
+            });
+    }
+
+    function updateQueueDisplay() {
+        fetch('/api/queue-status')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.queue) {
+                    const activeItems = data.queue.active || [];
+                    const completedItems = data.queue.completed || [];
+
+                    // Show/hide queue section based on content
+                    if (activeItems.length > 0 || completedItems.length > 0) {
+                        queueSection.style.display = 'block';
+
+                        // Update active downloads
+                        if (activeItems.length > 0) {
+                            activeDownloads.style.display = 'block';
+                            updateQueueList(activeQueueList, activeItems, 'active');
+                        } else {
+                            activeDownloads.style.display = 'none';
+                        }
+
+                        // Update completed downloads
+                        if (completedItems.length > 0) {
+                            completedDownloads.style.display = 'block';
+                            updateQueueList(completedQueueList, completedItems, 'completed');
+                        } else {
+                            completedDownloads.style.display = 'none';
+                        }
+                    } else {
+                        // No downloads to show
+                        queueSection.style.display = 'none';
                         if (progressInterval) {
                             clearInterval(progressInterval);
                             progressInterval = null;
                         }
-                    }, 3000);
+                    }
                 }
             })
             .catch(error => {
-                console.error('Progress update error:', error);
+                console.error('Queue status update error:', error);
             });
+    }
+
+    function updateQueueList(container, items, type) {
+        container.innerHTML = '';
+
+        items.forEach(item => {
+            const queueItem = document.createElement('div');
+            queueItem.className = 'queue-item';
+
+            const progress = item.progress_percentage || 0;
+            const showProgressBar = item.status === 'downloading' || item.status === 'queued';
+
+            queueItem.innerHTML = `
+                <div class="queue-item-header">
+                    <div class="queue-item-title">${escapeHtml(item.anime_title)}</div>
+                    <div class="queue-item-status ${item.status}">${item.status}</div>
+                </div>
+                ${showProgressBar ? `
+                <div class="queue-item-progress">
+                    <div class="queue-progress-bar">
+                        <div class="queue-progress-fill" style="width: ${progress}%"></div>
+                    </div>
+                    <div class="queue-progress-text">${item.completed_episodes}/${item.total_episodes}</div>
+                </div>
+                ` : `
+                <div class="queue-item-progress">
+                    <div class="queue-progress-text">${item.completed_episodes}/${item.total_episodes} episodes</div>
+                </div>
+                `}
+                <div class="queue-item-details">
+                    ${escapeHtml(item.current_episode || (item.status === 'completed' ? 'Download completed' : 'Waiting in queue'))}
+                </div>
+            `;
+
+            container.appendChild(queueItem);
+        });
     }
 
 
@@ -679,11 +770,15 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Setting theme to:', theme); // Debug log
         if (theme === 'light') {
             document.body.removeAttribute('data-theme');
-            themeIcon.className = 'fas fa-moon';
+            if (themeIcon) {
+                themeIcon.className = 'fas fa-moon';
+            }
             console.log('Switched to light mode'); // Debug log
         } else {
             document.body.setAttribute('data-theme', 'dark');
-            themeIcon.className = 'fas fa-sun';
+            if (themeIcon) {
+                themeIcon.className = 'fas fa-sun';
+            }
             console.log('Switched to dark mode'); // Debug log
         }
         localStorage.setItem('theme', theme);

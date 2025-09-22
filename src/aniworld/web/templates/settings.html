@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - AniWorld Downloader</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="background-container">
+        <div class="cloud"></div>
+        <div class="cloud"></div>
+        <div class="cloud"></div>
+        <div class="cloud"></div>
+        <div class="cloud"></div>
+        <!-- Particle System -->
+        <div class="particles">
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+        </div>
+    </div>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <h1>AniWorld Downloader - Settings</h1>
+                <span class="version" id="version-display">Loading...</span>
+            </div>
+            <div class="nav-actions">
+                <a href="{{ url_for('index') }}" class="nav-btn" title="Back to Main">
+                    <i class="fas fa-home"></i>
+                </a>
+                <div class="user-dropdown">
+                    <button class="nav-btn user-btn" id="user-dropdown-btn" title="User Settings">
+                        <i class="fas fa-user"></i>
+                        <span class="username">{{ user.username }}</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="dropdown-menu" id="user-dropdown-menu">
+                        <button class="dropdown-item" id="theme-toggle-dropdown">
+                            <i id="theme-icon-dropdown" class="fas fa-moon"></i> Toggle Theme
+                        </button>
+                        <button class="dropdown-item logout-btn" id="logout-btn">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="settings-container">
+            <!-- User Info Section -->
+            <div class="settings-section">
+                <h2><i class="fas fa-user"></i> User Information</h2>
+                <div class="user-info">
+                    <p><strong>Username:</strong> {{ user.username }}</p>
+                    <p><strong>Role:</strong> {{ 'Original Administrator' if user.is_original_admin else ('Administrator' if user.is_admin else 'User') }}</p>
+                </div>
+            </div>
+
+            <!-- Change Password Section -->
+            <div class="settings-section">
+                <h2><i class="fas fa-key"></i> Change Password</h2>
+
+                <form id="changePasswordForm" class="password-form">
+                    <div class="form-row-password">
+                        <div class="form-group">
+                            <label for="currentPassword">Current Password</label>
+                            <input type="password" id="currentPassword" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="newPassword">New Password</label>
+                            <input type="password" id="newPassword" required minlength="6">
+                        </div>
+                        <div class="form-group">
+                            <label for="confirmNewPassword">Confirm New Password</label>
+                            <input type="password" id="confirmNewPassword" required>
+                        </div>
+                        <div class="form-group button-group">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Change Password
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Admin User Management Section -->
+            {% if user.is_admin %}
+            <div class="settings-section">
+                <h2><i class="fas fa-users"></i> User Management</h2>
+
+                <!-- Add User Form -->
+                <div class="add-user-form">
+                    <h3>Add New User</h3>
+                    <form id="addUserForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="newUsername">Username</label>
+                                <input type="text" id="newUsername" required minlength="3">
+                            </div>
+                            <div class="form-group">
+                                <label for="newUserPassword">Password</label>
+                                <input type="password" id="newUserPassword" required minlength="6">
+                            </div>
+                            <div class="form-group checkbox-group">
+                                <label>
+                                    <input type="checkbox" id="newIsAdmin"> Administrator
+                                </label>
+                            </div>
+                            <div class="form-group button-group">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-user-plus"></i> Add User
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Users List -->
+                <div class="users-list">
+                    <h3>Existing Users</h3>
+                    <div class="table-container">
+                        <table class="users-table">
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Role</th>
+                                    <th>Created</th>
+                                    <th>Last Login</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody">
+                                {% for u in users %}
+                                <tr data-user-id="{{ u.id }}">
+                                    <td>{{ u.username }}</td>
+                                    <td>
+                                        <span class="role-badge {{ 'original-admin' if u.is_original_admin else ('admin' if u.is_admin else 'user') }}">
+                                            {{ 'Original Admin' if u.is_original_admin else ('Admin' if u.is_admin else 'User') }}
+                                        </span>
+                                    </td>
+                                    <td>{{ u.created_at[:19] if u.created_at else 'N/A' }}</td>
+                                    <td>{{ u.last_login[:19] if u.last_login else 'Never' }}</td>
+                                    <td>
+                                        {% if u.id != user.id and not u.is_original_admin %}
+                                        <button class="btn btn-sm btn-danger delete-user" data-user-id="{{ u.id }}" data-username="{{ u.username }}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                        {% elif u.is_original_admin %}
+                                        <span class="text-muted">(Protected)</span>
+                                        {% else %}
+                                        <span class="text-muted">(Current User)</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Success/Error Messages -->
+    <div id="message-container" class="message-container"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Theme handling
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.body.setAttribute('data-theme', savedTheme);
+
+            // Load version info
+            loadVersionInfo();
+
+            // User dropdown functionality
+            const userDropdownBtn = document.getElementById('user-dropdown-btn');
+            const userDropdownMenu = document.getElementById('user-dropdown-menu');
+            const themeToggleDropdown = document.getElementById('theme-toggle-dropdown');
+            const themeIconDropdown = document.getElementById('theme-icon-dropdown');
+
+            if (userDropdownBtn && userDropdownMenu) {
+                userDropdownBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    userDropdownMenu.classList.toggle('show');
+                });
+
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function() {
+                    userDropdownMenu.classList.remove('show');
+                });
+
+                // Prevent dropdown from closing when clicking inside it
+                userDropdownMenu.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            }
+
+            // Theme toggle in dropdown
+            if (themeToggleDropdown && themeIconDropdown) {
+                updateDropdownThemeIcon(savedTheme);
+
+                themeToggleDropdown.addEventListener('click', function() {
+                    const currentTheme = document.body.getAttribute('data-theme');
+                    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+                    document.body.setAttribute('data-theme', newTheme);
+                    localStorage.setItem('theme', newTheme);
+                    updateDropdownThemeIcon(newTheme);
+                });
+
+                function updateDropdownThemeIcon(theme) {
+                    if (theme === 'dark') {
+                        themeIconDropdown.className = 'fas fa-sun';
+                    } else {
+                        themeIconDropdown.className = 'fas fa-moon';
+                    }
+                }
+            }
+
+            async function loadVersionInfo() {
+                try {
+                    const response = await fetch('/api/info');
+                    const data = await response.json();
+
+                    const versionDisplay = document.getElementById('version-display');
+                    if (versionDisplay && data.version) {
+                        versionDisplay.textContent = `v${data.version}`;
+                    }
+                } catch (error) {
+                    console.error('Failed to load version info:', error);
+                }
+            }
+
+            // Change password form
+            const changePasswordForm = document.getElementById('changePasswordForm');
+            if (changePasswordForm) {
+                changePasswordForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+
+                    const currentPassword = document.getElementById('currentPassword').value;
+                    const newPassword = document.getElementById('newPassword').value;
+                    const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+
+                    if (newPassword !== confirmNewPassword) {
+                        showMessage('New passwords do not match', 'error');
+                        return;
+                    }
+
+                    if (newPassword.length < 6) {
+                        showMessage('New password must be at least 6 characters long', 'error');
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch('/api/change-password', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                current_password: currentPassword,
+                                new_password: newPassword
+                            })
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            showMessage(data.message, 'success');
+                            changePasswordForm.reset();
+                        } else {
+                            showMessage(data.error, 'error');
+                        }
+                    } catch (error) {
+                        showMessage('Failed to change password: ' + error.message, 'error');
+                    }
+                });
+            }
+
+            // Logout functionality
+            document.getElementById('logout-btn').addEventListener('click', async function() {
+                try {
+                    const response = await fetch('/logout', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    });
+
+                    const data = await response.json();
+                    if (data.success) {
+                        window.location.href = data.redirect;
+                    }
+                } catch (error) {
+                    showMessage('Logout failed: ' + error.message, 'error');
+                }
+            });
+
+            // Add user form
+            const addUserForm = document.getElementById('addUserForm');
+            if (addUserForm) {
+                addUserForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+
+                    const username = document.getElementById('newUsername').value;
+                    const password = document.getElementById('newUserPassword').value;
+                    const isAdmin = document.getElementById('newIsAdmin').checked;
+
+                    try {
+                        const response = await fetch('/api/users', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ username, password, is_admin: isAdmin })
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            showMessage(data.message, 'success');
+                            addUserForm.reset();
+                            loadUsers(); // Refresh the users list
+                        } else {
+                            showMessage(data.error, 'error');
+                        }
+                    } catch (error) {
+                        showMessage('Failed to add user: ' + error.message, 'error');
+                    }
+                });
+            }
+
+            // Delete user functionality
+            document.addEventListener('click', async function(e) {
+                if (e.target.closest('.delete-user')) {
+                    const button = e.target.closest('.delete-user');
+                    const userId = button.dataset.userId;
+                    const username = button.dataset.username;
+
+                    if (confirm(`Are you sure you want to delete user "${username}"?`)) {
+                        try {
+                            const response = await fetch(`/api/users/${userId}`, {
+                                method: 'DELETE'
+                            });
+
+                            const data = await response.json();
+
+                            if (data.success) {
+                                showMessage(data.message, 'success');
+                                loadUsers(); // Refresh the users list
+                            } else {
+                                showMessage(data.error, 'error');
+                            }
+                        } catch (error) {
+                            showMessage('Failed to delete user: ' + error.message, 'error');
+                        }
+                    }
+                }
+            });
+
+            // Load users function
+            async function loadUsers() {
+                try {
+                    const response = await fetch('/api/users');
+                    const data = await response.json();
+
+                    if (data.success) {
+                        updateUsersTable(data.users);
+                    }
+                } catch (error) {
+                    console.error('Failed to load users:', error);
+                }
+            }
+
+            function updateUsersTable(users) {
+                const tbody = document.getElementById('usersTableBody');
+                const currentUserId = {{ user.id }};
+
+                tbody.innerHTML = users.map(u => `
+                    <tr data-user-id="${u.id}">
+                        <td>${u.username}</td>
+                        <td>
+                            <span class="role-badge ${u.is_original_admin ? 'original-admin' : (u.is_admin ? 'admin' : 'user')}">
+                                ${u.is_original_admin ? 'Original Admin' : (u.is_admin ? 'Admin' : 'User')}
+                            </span>
+                        </td>
+                        <td>${u.created_at ? u.created_at.substring(0, 19) : 'N/A'}</td>
+                        <td>${u.last_login ? u.last_login.substring(0, 19) : 'Never'}</td>
+                        <td>
+                            ${u.id !== currentUserId && !u.is_original_admin ?
+                                `<button class="btn btn-sm btn-danger delete-user" data-user-id="${u.id}" data-username="${u.username}">
+                                    <i class="fas fa-trash"></i>
+                                </button>` :
+                                (u.is_original_admin ? '<span class="text-muted">(Protected)</span>' : '<span class="text-muted">(Current User)</span>')
+                            }
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            function showMessage(message, type) {
+                const container = document.getElementById('message-container');
+                const messageEl = document.createElement('div');
+                messageEl.className = `message ${type}`;
+                messageEl.innerHTML = `
+                    <span>${message}</span>
+                    <button class="message-close">&times;</button>
+                `;
+
+                container.appendChild(messageEl);
+
+                // Auto-remove after 5 seconds
+                setTimeout(() => {
+                    if (messageEl.parentNode) {
+                        messageEl.parentNode.removeChild(messageEl);
+                    }
+                }, 5000);
+
+                // Manual close
+                messageEl.querySelector('.message-close').addEventListener('click', () => {
+                    if (messageEl.parentNode) {
+                        messageEl.parentNode.removeChild(messageEl);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

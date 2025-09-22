@@ -242,6 +242,18 @@ def _add_web_ui_arguments(parser: argparse.ArgumentParser) -> None:
         default=5000,
         help="Specify the port for the Flask web interface (default: 5000).",
     )
+    web_opts.add_argument(
+        "-wA",
+        "--enable-web-auth",
+        action="store_true",
+        help="Enable authentication for web interface with user management.",
+    )
+    web_opts.add_argument(
+        "-wN",
+        "--no-browser",
+        action="store_true",
+        help="Disable automatic browser opening when starting web interface.",
+    )
 
 
 def _add_miscellaneous_arguments(parser: argparse.ArgumentParser) -> None:

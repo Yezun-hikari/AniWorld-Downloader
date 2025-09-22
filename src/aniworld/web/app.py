@@ -5,10 +5,15 @@ Flask web application for AniWorld Downloader
 import logging
 import os
 import time
+import threading
+import webbrowser
 from datetime import datetime
-from flask import Flask, render_template, jsonify
+from functools import wraps
+from flask import Flask, render_template, jsonify, request, session, redirect, url_for
 
 from .. import config
+from .database import UserDatabase
+from .download_manager import get_download_manager
 
 
 class WebApp:
@@ -30,21 +35,19 @@ class WebApp:
         self.arguments = arguments
         self.start_time = time.time()
 
+        # Authentication settings
+        self.auth_enabled = getattr(arguments, 'enable_web_auth', False) if arguments else False
+        self.db = UserDatabase() if self.auth_enabled else UserDatabase()
+
+        # Download manager
+        self.download_manager = get_download_manager(self.db)
+
         # Create Flask app
         self.app = self._create_app()
 
         # Setup routes
         self._setup_routes()
 
-        # Download progress tracking
-        self.download_progress = {
-            'active': False,
-            'anime_title': '',
-            'total_episodes': 0,
-            'completed_episodes': 0,
-            'current_episode': '',
-            'start_time': None
-        }
 
     def _create_app(self) -> Flask:
         """Create and configure Flask application."""
@@ -63,15 +66,269 @@ class WebApp:
 
         return app
 
+    def _require_api_auth(self, f):
+        """Decorator to require authentication for API routes."""
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if not self.auth_enabled:
+                return f(*args, **kwargs)
+
+            session_token = request.cookies.get('session_token')
+            if not session_token:
+                return jsonify({'error': 'Authentication required'}), 401
+
+            user = self.db.get_user_by_session(session_token)
+            if not user:
+                return jsonify({'error': 'Invalid session'}), 401
+
+            return f(*args, **kwargs)
+
+        return decorated_function
+
+    def _require_auth(self, f):
+        """Decorator to require authentication for routes."""
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if not self.auth_enabled:
+                return f(*args, **kwargs)
+
+            # Check for session token in cookies
+            session_token = request.cookies.get('session_token')
+            if not session_token:
+                return redirect(url_for('login'))
+
+            user = self.db.get_user_by_session(session_token)
+            if not user:
+                return redirect(url_for('login'))
+
+            # Store user info in Flask session for templates
+            session['user'] = user
+            return f(*args, **kwargs)
+
+        return decorated_function
+
+    def _require_admin(self, f):
+        """Decorator to require admin privileges for routes."""
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if not self.auth_enabled:
+                return f(*args, **kwargs)
+
+            session_token = request.cookies.get('session_token')
+            if not session_token:
+                return redirect(url_for('login'))
+
+            user = self.db.get_user_by_session(session_token)
+            if not user or not user['is_admin']:
+                return jsonify({'error': 'Admin access required'}), 403
+
+            session['user'] = user
+            return f(*args, **kwargs)
+
+        return decorated_function
+
     def _setup_routes(self):
         """Setup Flask routes."""
 
         @self.app.route('/')
+        @self._require_auth
         def index():
             """Main page route."""
-            return render_template('index.html')
+            if self.auth_enabled:
+                # Check if this is first-time setup
+                if not self.db.has_users():
+                    return redirect(url_for('setup'))
+
+                # Get current user info for template
+                session_token = request.cookies.get('session_token')
+                user = self.db.get_user_by_session(session_token)
+                return render_template('index.html', user=user, auth_enabled=True)
+            else:
+                return render_template('index.html', auth_enabled=False)
+
+        @self.app.route('/login', methods=['GET', 'POST'])
+        def login():
+            """Login page route."""
+            if not self.auth_enabled:
+                return redirect(url_for('index'))
+
+            # If no users exist, redirect to setup
+            if not self.db.has_users():
+                return redirect(url_for('setup'))
+
+            if request.method == 'POST':
+                data = request.get_json()
+                username = data.get('username', '').strip()
+                password = data.get('password', '')
+
+                if not username or not password:
+                    return jsonify({'success': False, 'error': 'Username and password required'}), 400
+
+                user = self.db.verify_user(username, password)
+                if user:
+                    session_token = self.db.create_session(user['id'])
+                    response = jsonify({'success': True, 'redirect': url_for('index')})
+                    response.set_cookie('session_token', session_token, httponly=True, secure=False, max_age=30*24*60*60)
+                    return response
+                else:
+                    return jsonify({'success': False, 'error': 'Invalid credentials'}), 401
+
+            return render_template('login.html')
+
+        @self.app.route('/logout', methods=['POST'])
+        def logout():
+            """Logout route."""
+            if not self.auth_enabled:
+                return redirect(url_for('index'))
+
+            session_token = request.cookies.get('session_token')
+            if session_token:
+                self.db.delete_session(session_token)
+
+            response = jsonify({'success': True, 'redirect': url_for('login')})
+            response.set_cookie('session_token', '', expires=0)
+            return response
+
+        @self.app.route('/setup', methods=['GET', 'POST'])
+        def setup():
+            """First-time setup route for creating admin user."""
+            if not self.auth_enabled:
+                return redirect(url_for('index'))
+
+            if self.db.has_users():
+                return redirect(url_for('index'))
+
+            if request.method == 'POST':
+                data = request.get_json()
+                username = data.get('username', '').strip()
+                password = data.get('password', '')
+
+                if not username or not password:
+                    return jsonify({'success': False, 'error': 'Username and password required'}), 400
+
+                if len(password) < 6:
+                    return jsonify({'success': False, 'error': 'Password must be at least 6 characters'}), 400
+
+                if self.db.create_user(username, password, is_admin=True, is_original_admin=True):
+                    return jsonify({'success': True, 'message': 'Admin user created successfully', 'redirect': url_for('login')})
+                else:
+                    return jsonify({'success': False, 'error': 'Failed to create user'}), 500
+
+            return render_template('setup.html')
+
+        @self.app.route('/settings')
+        @self._require_auth
+        def settings():
+            """Settings page route."""
+            if not self.auth_enabled:
+                return redirect(url_for('index'))
+
+            session_token = request.cookies.get('session_token')
+            user = self.db.get_user_by_session(session_token)
+            users = self.db.get_all_users() if user['is_admin'] else []
+
+            return render_template('settings.html', user=user, users=users)
+
+        # User management API routes
+        @self.app.route('/api/users', methods=['GET'])
+        @self._require_admin
+        def api_get_users():
+            """Get all users (admin only)."""
+            users = self.db.get_all_users()
+            return jsonify({'success': True, 'users': users})
+
+        @self.app.route('/api/users', methods=['POST'])
+        @self._require_admin
+        def api_create_user():
+            """Create new user (admin only)."""
+            data = request.get_json()
+
+            if not data:
+                return jsonify({'success': False, 'error': 'No JSON data received'}), 400
+
+            # Debug logging
+            logging.warning(f"Received data: {data}")
+
+            username = data.get('username', '').strip()
+            password = data.get('password', '').strip()
+            is_admin = data.get('is_admin', False)
+
+            # Debug logging
+            logging.warning(f"Processed - username: '{username}', password: '{password}', is_admin: {is_admin}")
+
+            if not username or not password:
+                return jsonify({'success': False, 'error': f'Username and password required. Got username: "{username}", password: "{password}"'}), 400
+
+            if len(password) < 6:
+                return jsonify({'success': False, 'error': 'Password must be at least 6 characters'}), 400
+
+            if self.db.create_user(username, password, is_admin):
+                return jsonify({'success': True, 'message': 'User created successfully'})
+            else:
+                return jsonify({'success': False, 'error': 'Failed to create user (username may already exist)'}), 400
+
+        @self.app.route('/api/users/<int:user_id>', methods=['DELETE'])
+        @self._require_admin
+        def api_delete_user(user_id):
+            """Delete user (admin only)."""
+            # Get user info to check if it's the original admin
+            users = self.db.get_all_users()
+            user_to_delete = next((u for u in users if u['id'] == user_id), None)
+
+            if user_to_delete and user_to_delete.get('is_original_admin'):
+                return jsonify({'success': False, 'error': 'Cannot delete the original admin user'}), 400
+
+            if self.db.delete_user(user_id):
+                return jsonify({'success': True, 'message': 'User deleted successfully'})
+            else:
+                return jsonify({'success': False, 'error': 'Failed to delete user'}), 400
+
+        @self.app.route('/api/users/<int:user_id>', methods=['PUT'])
+        @self._require_admin
+        def api_update_user(user_id):
+            """Update user (admin only)."""
+            data = request.get_json()
+            username = data.get('username', '').strip() if data.get('username') else None
+            password = data.get('password', '') if data.get('password') else None
+            is_admin = data.get('is_admin') if 'is_admin' in data else None
+
+            if password and len(password) < 6:
+                return jsonify({'success': False, 'error': 'Password must be at least 6 characters'}), 400
+
+            if self.db.update_user(user_id, username, password, is_admin):
+                return jsonify({'success': True, 'message': 'User updated successfully'})
+            else:
+                return jsonify({'success': False, 'error': 'Failed to update user'}), 400
+
+        @self.app.route('/api/change-password', methods=['POST'])
+        @self._require_api_auth
+        def api_change_password():
+            """Change user password."""
+            if not self.auth_enabled:
+                return jsonify({'success': False, 'error': 'Authentication not enabled'}), 400
+
+            session_token = request.cookies.get('session_token')
+            user = self.db.get_user_by_session(session_token)
+            if not user:
+                return jsonify({'success': False, 'error': 'Invalid session'}), 401
+
+            data = request.get_json()
+            current_password = data.get('current_password', '')
+            new_password = data.get('new_password', '')
+
+            if not current_password or not new_password:
+                return jsonify({'success': False, 'error': 'Current and new passwords are required'}), 400
+
+            if len(new_password) < 6:
+                return jsonify({'success': False, 'error': 'New password must be at least 6 characters'}), 400
+
+            if self.db.change_password(user['id'], current_password, new_password):
+                return jsonify({'success': True, 'message': 'Password changed successfully'})
+            else:
+                return jsonify({'success': False, 'error': 'Failed to change password. Current password may be incorrect.'}), 400
 
         @self.app.route('/api/test')
+        @self._require_api_auth
         def api_test():
             """API test endpoint."""
             return jsonify({
@@ -82,6 +339,7 @@ class WebApp:
             })
 
         @self.app.route('/api/info')
+        @self._require_api_auth
         def api_info():
             """API info endpoint."""
             uptime_seconds = int(time.time() - self.start_time)
@@ -111,6 +369,7 @@ class WebApp:
             })
 
         @self.app.route('/api/search', methods=['POST'])
+        @self._require_api_auth
         def api_search():
             """Search for anime endpoint."""
             try:
@@ -267,6 +526,7 @@ class WebApp:
                 }), 500
 
         @self.app.route('/api/download', methods=['POST'])
+        @self._require_api_auth
         def api_download():
             """Start download endpoint."""
             try:
@@ -293,171 +553,56 @@ class WebApp:
                 logging.warning(f"WEB API RECEIVED - Language: '{language}', Provider: '{provider}'")
                 logging.warning(f"WEB API RECEIVED - Request data: {data}")
 
-                # Import necessary modules - use existing high-level functions
-                from ..execute import execute
-                from ..entry import _group_episodes_by_series
+                # Get current user for queue tracking
+                current_user = None
+                if self.auth_enabled:
+                    session_token = request.cookies.get('session_token')
+                    current_user = self.db.get_user_by_session(session_token)
 
-                # Use existing function to group episodes by series and create Anime objects
+                # Determine anime title
+                anime_title = data.get('anime_title', 'Unknown Anime')
+
+                # Calculate total episodes by checking episode URLs
+                from ..entry import _group_episodes_by_series
                 try:
                     anime_list = _group_episodes_by_series(episode_urls)
-
-                    # Apply language, provider, and action to all anime objects
-                    for anime in anime_list:
-                        anime.language = language
-                        anime.provider = provider
-                        anime.action = "Download"
-                        # Set language and provider on episodes too
-                        for episode in anime.episode_list:
-                            episode._selected_language = language
-                            episode._selected_provider = provider
-
+                    total_episodes = sum(len(anime.episode_list) for anime in anime_list)
                 except Exception as e:
                     logging.error(f"Failed to process episode URLs: {e}")
-                    anime_list = []
-
-                if not anime_list:
                     return jsonify({
                         'success': False,
                         'error': 'No valid anime objects could be created from provided URLs'
                     }), 400
 
-                # Initialize progress tracking
-                anime_title = data.get('anime_title', 'Unknown Anime')
-                total_anime = len(anime_list)
-                self.download_progress.update({
-                    'active': True,
-                    'anime_title': anime_title,
-                    'total_episodes': total_anime,
-                    'completed_episodes': 0,
-                    'current_episode': 'Starting download...',
-                    'start_time': time.time()
-                })
+                if total_episodes == 0:
+                    return jsonify({
+                        'success': False,
+                        'error': 'No valid anime objects could be created from provided URLs'
+                    }), 400
 
-                # Create wrapper function for download
-                def download_anime_wrapper(anime_list, progress_callback=None):
-                    """Wrapper function for downloading anime using existing functions"""
-                    from ..execute import execute
-                    import os
-                    from .. import config
-                    from .. import parser
+                # Add to download queue
+                queue_id = self.download_manager.add_download(
+                    anime_title=anime_title,
+                    episode_urls=episode_urls,
+                    language=language,
+                    provider=provider,
+                    total_episodes=total_episodes,
+                    created_by=current_user['id'] if current_user else None
+                )
 
-                    # Update the global arguments with our output directory if specified
-                    original_output_dir = None
-                    if (self.arguments and
-                        hasattr(self.arguments, 'output_dir') and
-                        self.arguments.output_dir is not None):
-                        # Save the original value to restore later
-                        original_output_dir = getattr(parser.arguments, 'output_dir', None)
-                        parser.arguments.output_dir = self.arguments.output_dir
-                        download_dir = str(self.arguments.output_dir)
-                    else:
-                        download_dir = str(getattr(config, 'DEFAULT_DOWNLOAD_PATH', os.path.expanduser('~/Downloads')))
-
-                    successful_downloads = 0
-                    failed_downloads = 0
-
-                    try:
-                        for i, anime in enumerate(anime_list):
-                            episode = anime.episode_list[0] if anime.episode_list else None
-                            episode_info = ""
-                            if episode:
-                                episode_info = f" Episode {episode.episode} (Season {episode.season})"
-
-                            if progress_callback:
-                                progress_callback(i, f"Downloading{episode_info}")
-
-                            try:
-                                # Check if files exist before download
-                                import glob
-                                from pathlib import Path
-                                from ..action.common import sanitize_filename
-
-                                # Create expected file pattern
-                                sanitized_title = sanitize_filename(anime.title)
-                                anime_dir = Path(download_dir) / sanitized_title
-
-                                # Count files before download
-                                files_before = 0
-                                if anime_dir.exists():
-                                    files_before = len(list(anime_dir.glob('*')))
-
-                                # Execute the download
-                                from ..execute import _execute_single_anime
-                                _execute_single_anime(anime)
-
-                                # Count files after download
-                                files_after = 0
-                                if anime_dir.exists():
-                                    files_after = len(list(anime_dir.glob('*')))
-
-                                # Check if any new files were created
-                                if files_after > files_before:
-                                    successful_downloads += 1
-                                    logging.info(f"Download completed for {episode_info}")
-                                else:
-                                    failed_downloads += 1
-                                    logging.warning(f"Download failed for {episode_info} - no files created (language/provider unavailable)")
-
-                            except Exception as episode_err:
-                                failed_downloads += 1
-                                logging.error(f"Download failed for {episode_info}: {episode_err}")
-
-                        # Determine final status with better error messages
-                        if successful_downloads == 0 and failed_downloads > 0:
-                            if failed_downloads == 1:
-                                error_msg = f'Download failed: The selected language/provider combination is not available for this episode.'
-                            else:
-                                error_msg = f'Download failed: No episodes downloaded. The selected language/provider combination is not available for any of the {failed_downloads} episode(s).'
-                            if progress_callback:
-                                progress_callback(0, error_msg, True)
-                            result = False
-                        elif failed_downloads > 0:
-                            warning_msg = f'Partially completed: {successful_downloads} of {successful_downloads + failed_downloads} episode(s) downloaded. {failed_downloads} failed due to language/provider unavailability.'
-                            if progress_callback:
-                                progress_callback(successful_downloads, warning_msg, True)
-                            result = True
-                        else:
-                            if progress_callback:
-                                progress_callback(len(anime_list), f'Completed! Successfully downloaded {successful_downloads} episode(s)', True)
-                            logging.info(f"Download completed for {successful_downloads} episode(s)")
-                            result = True
-
-                    except Exception as download_err:
-                        logging.error(f"Download wrapper failed: {download_err}")
-                        if progress_callback:
-                            progress_callback(0, f'Download failed: {str(download_err)}', True)
-                        result = False
-
-                    finally:
-                        # Restore original arguments if we modified them
-                        if original_output_dir is not None:
-                            parser.arguments.output_dir = original_output_dir
-
-                    return result
-
-                # Start download in background thread
-                import threading
-
-                def download_task():
-                    def progress_update(completed, message, completed_flag=False):
-                        self.download_progress.update({
-                            'current_episode': message,
-                            'completed_episodes': completed,
-                            'active': not completed_flag
-                        })
-
-                    download_anime_wrapper(anime_list, progress_update)
-
-                thread = threading.Thread(target=download_task)
-                thread.daemon = True
-                thread.start()
+                if not queue_id:
+                    return jsonify({
+                        'success': False,
+                        'error': 'Failed to add download to queue'
+                    }), 500
 
                 return jsonify({
                     'success': True,
-                    'message': f'Download started for {total_anime} episode(s)',
-                    'episode_count': total_anime,
+                    'message': f'Download added to queue: {total_episodes} episode(s)',
+                    'episode_count': total_episodes,
                     'language': language,
-                    'provider': provider
+                    'provider': provider,
+                    'queue_id': queue_id
                 })
 
             except Exception as err:
@@ -467,7 +612,9 @@ class WebApp:
                     'error': f'Failed to start download: {str(err)}'
                 }), 500
 
+
         @self.app.route('/api/download-path')
+        @self._require_api_auth
         def api_download_path():
             """Get download path endpoint."""
             try:
@@ -488,6 +635,7 @@ class WebApp:
                 }), 500
 
         @self.app.route('/api/episodes', methods=['POST'])
+        @self._require_api_auth
         def api_episodes():
             """Get episodes for a series endpoint."""
             try:
@@ -577,17 +725,31 @@ class WebApp:
                     'error': f'Failed to fetch episodes: {str(err)}'
                 }), 500
 
-        @self.app.route('/api/progress')
-        def api_progress():
-            """Get download progress endpoint."""
-            return jsonify({
-                'active': self.download_progress['active'],
-                'anime_title': self.download_progress['anime_title'],
-                'total_episodes': self.download_progress['total_episodes'],
-                'completed_episodes': self.download_progress['completed_episodes'],
-                'current_episode': self.download_progress['current_episode'],
-                'percentage': round((self.download_progress['completed_episodes'] / max(1, self.download_progress['total_episodes'])) * 100, 1) if self.download_progress['total_episodes'] > 0 else 0
-            })
+        @self.app.route('/api/queue-status')
+        @self._require_api_auth
+        def api_queue_status():
+            """Get download queue status endpoint."""
+            try:
+                from .download_manager import get_download_manager
+                download_manager = get_download_manager(self.db)
+
+                if download_manager:
+                    queue_status = download_manager.get_queue_status()
+                    return jsonify({
+                        'success': True,
+                        'queue': queue_status
+                    })
+                else:
+                    return jsonify({
+                        'success': True,
+                        'queue': {'active': [], 'completed': []}
+                    })
+            except Exception as e:
+                logging.error(f"Failed to get queue status: {e}")
+                return jsonify({
+                    'success': False,
+                    'error': 'Failed to get queue status'
+                }), 500
 
     def _format_uptime(self, seconds: int) -> str:
         """Format uptime in human readable format."""
@@ -641,6 +803,43 @@ def create_app(host='127.0.0.1', port=5000, debug=False, arguments=None) -> WebA
 def start_web_interface(arguments=None, port=5000, debug=False):
     """Start the web interface with configurable settings."""
     web_app = create_app(port=port, debug=debug, arguments=arguments)
+
+    # Print startup status
+    auth_status = "Authentication ENABLED" if getattr(arguments, 'enable_web_auth', False) else "No Authentication (Local Mode)"
+    browser_status = "Browser will open automatically" if not getattr(arguments, 'no_browser', False) else "Browser auto-open disabled"
+
+    print("\n" + "="*69)
+    print("🌐 AniWorld Downloader Web Interface")
+    print("="*69)
+    print(f"📍 Server Address: http://localhost:{port}")
+    print(f"🔐 Security Mode:  {auth_status}")
+    print(f"🐞 Debug Mode:     {'ENABLED' if debug else 'DISABLED'}")
+    print(f"🛠️  Version:       {config.VERSION}")
+    print(f"🌏 Browser:        {browser_status}")
+    print("="*69)
+    print("💡 Access the web interface by opening the URL above in your browser")
+    if getattr(arguments, 'enable_web_auth', False):
+        print("💡 First visit will prompt you to create an admin account")
+    print("💡 Press Ctrl+C to stop the server")
+    print("="*69 + "\n")
+
+    # Open browser automatically unless disabled
+    if not getattr(arguments, 'no_browser', False):
+        def open_browser():
+            # Wait a moment for the server to start
+            time.sleep(1.5)
+            url = f"http://localhost:{port}"
+            logging.info(f"Opening browser at {url}")
+            try:
+                webbrowser.open(url)
+            except Exception as e:
+                logging.warning(f"Could not open browser automatically: {e}")
+
+        # Start browser opening in a separate thread
+        browser_thread = threading.Thread(target=open_browser)
+        browser_thread.daemon = True
+        browser_thread.start()
+
     web_app.run()
 
 
