@@ -126,7 +126,30 @@
                 <p>Searching...</p>
             </div>
 
-            <div class="empty-state" id="empty-state">
+            <div class="home-content" id="home-content">
+                <div class="loading-section" id="home-loading">
+                    <div class="loading-spinner"></div>
+                    <p>Loading popular and new anime...</p>
+                </div>
+
+                <div class="popular-new-sections" id="popular-new-sections" style="display: none;">
+                    <div class="anime-section" id="popular-section">
+                        <h3><i class="fas fa-fire"></i> Popular Anime</h3>
+                        <div class="anime-grid" id="popular-anime-grid">
+                            <!-- Popular anime will be populated here -->
+                        </div>
+                    </div>
+
+                    <div class="anime-section" id="new-section">
+                        <h3><i class="fas fa-star"></i> New Anime</h3>
+                        <div class="anime-grid" id="new-anime-grid">
+                            <!-- New anime will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="empty-state" id="empty-state" style="display: none;">
                 <div class="empty-icon">
                     <i class="fas fa-search"></i>
                 </div>

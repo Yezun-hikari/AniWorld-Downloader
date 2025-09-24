@@ -11,6 +11,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const resultsContainer = document.getElementById('results-container');
     const loadingSection = document.getElementById('loading-section');
     const emptyState = document.getElementById('empty-state');
+    const homeContent = document.getElementById('home-content');
+    const homeLoading = document.getElementById('home-loading');
+    const popularNewSections = document.getElementById('popular-new-sections');
+    const popularAnimeGrid = document.getElementById('popular-anime-grid');
+    const newAnimeGrid = document.getElementById('new-anime-grid');
 
     // Theme toggle elements
     const themeToggle = document.getElementById('theme-toggle');
@@ -50,6 +55,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Check for active downloads on page load
     checkQueueStatus();
     loadAvailableProviders();
+
+    // Load popular and new anime on page load
+    loadPopularAndNewAnime();
 
     // Initialize theme (default is dark mode)
     initializeTheme();
@@ -185,7 +193,8 @@ document.addEventListener('DOMContentLoaded', function() {
     function performSearch() {
         const query = searchInput.value.trim();
         if (!query) {
-            showNotification('Please enter a search term', 'error');
+            // If search is empty, show home content again
+            showHomeContent();
             return;
         }
 
@@ -763,6 +772,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function showLoadingState() {
+        homeContent.style.display = 'none';
         emptyState.style.display = 'none';
         resultsSection.style.display = 'none';
         loadingSection.style.display = 'block';
@@ -773,15 +783,24 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function showResultsSection() {
+        homeContent.style.display = 'none';
         emptyState.style.display = 'none';
         loadingSection.style.display = 'none';
         resultsSection.style.display = 'block';
     }
 
     function showEmptyState() {
+        homeContent.style.display = 'none';
         resultsSection.style.display = 'none';
         loadingSection.style.display = 'none';
         emptyState.style.display = 'block';
+    }
+
+    function showHomeContent() {
+        resultsSection.style.display = 'none';
+        loadingSection.style.display = 'none';
+        emptyState.style.display = 'none';
+        homeContent.style.display = 'block';
     }
 
     function escapeHtml(text) {
@@ -892,6 +911,105 @@ document.addEventListener('DOMContentLoaded', function() {
 
             container.appendChild(queueItem);
         });
+    }
+
+    function loadPopularAndNewAnime() {
+        console.log('Loading popular and new anime...');
+
+        // Show loading state for home content
+        homeLoading.style.display = 'block';
+        popularNewSections.style.display = 'none';
+
+        fetch('/api/popular-new')
+            .then(response => {
+                if (response.status === 401) {
+                    window.location.href = '/login';
+                    return;
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data) return;
+
+                if (data.success) {
+                    displayPopularAndNewAnime(data.popular || [], data.new || []);
+                } else {
+                    console.error('Failed to load popular/new anime:', data.error);
+                    showEmptyState();
+                }
+            })
+            .catch(error => {
+                console.error('Error loading popular/new anime:', error);
+                showEmptyState();
+            })
+            .finally(() => {
+                homeLoading.style.display = 'none';
+            });
+    }
+
+    function displayPopularAndNewAnime(popularAnime, newAnime) {
+        // Clear existing content
+        popularAnimeGrid.innerHTML = '';
+        newAnimeGrid.innerHTML = '';
+
+        // Populate popular anime (limit to 8)
+        popularAnime.slice(0, 8).forEach(anime => {
+            const animeCard = createHomeAnimeCard(anime);
+            popularAnimeGrid.appendChild(animeCard);
+        });
+
+        // Populate new anime (limit to 8)
+        newAnime.slice(0, 8).forEach(anime => {
+            const animeCard = createHomeAnimeCard(anime);
+            newAnimeGrid.appendChild(animeCard);
+        });
+
+        // Show the sections
+        popularNewSections.style.display = 'block';
+        showHomeContent();
+    }
+
+    function createHomeAnimeCard(anime) {
+        const card = document.createElement('div');
+        card.className = 'home-anime-card';
+
+        const defaultCover = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDIwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjMzMzIi8+CjxwYXRoIGQ9Ik0xMDAgMTUwTDEyMCAxNzBMMTAwIDE5MFY3MGwyMCAyMEwxMDAgMTEwVjE1MFoiIGZpbGw9IiM2NjYiLz4KPC9zdmc+';
+
+        // Replace image size from 150x225 to 220x330 for higher resolution
+        let coverUrl = anime.cover || defaultCover;
+        if (coverUrl.includes('_150x225.png')) {
+            coverUrl = coverUrl.replace('_150x225.png', '_220x330.png');
+        }
+
+        // Truncate title at word boundaries to stay under 68 characters total
+        let displayTitle = anime.name;
+        if (displayTitle.length > 65) { // Leave room for "..." (3 chars)
+            // Find the last space before character 65
+            let truncateAt = displayTitle.lastIndexOf(' ', 65);
+            if (truncateAt === -1 || truncateAt < 30) {
+                // If no space found or space is too early, just cut at 65
+                truncateAt = 65;
+            }
+            displayTitle = displayTitle.substring(0, truncateAt) + '...';
+        }
+
+        card.innerHTML = `
+            <div class="home-anime-cover">
+                <img src="${coverUrl}" alt="${escapeHtml(anime.name)}" loading="lazy"
+                     onerror="this.src='${defaultCover}'">
+            </div>
+            <div class="home-anime-title" title="${escapeHtml(anime.name)}">
+                ${escapeHtml(displayTitle)}
+            </div>
+        `;
+
+        // Add click handler to search for this anime
+        card.addEventListener('click', () => {
+            searchInput.value = anime.name;
+            performSearch();
+        });
+
+        return card;
     }
 
 

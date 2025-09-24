@@ -777,6 +777,25 @@ class WebApp:
                     'error': 'Failed to get queue status'
                 }), 500
 
+        @self.app.route('/api/popular-new')
+        @self._require_api_auth
+        def api_popular_new():
+            """Get popular and new anime endpoint."""
+            try:
+                from ..search import fetch_popular_and_new_anime
+                anime_data = fetch_popular_and_new_anime()
+                return jsonify({
+                    'success': True,
+                    'popular': anime_data.get('popular', []),
+                    'new': anime_data.get('new', [])
+                })
+            except Exception as e:
+                logging.error(f"Failed to fetch popular/new anime: {e}")
+                return jsonify({
+                    'success': False,
+                    'error': f'Failed to fetch popular/new anime: {str(e)}'
+                }), 500
+
     def _format_uptime(self, seconds: int) -> str:
         """Format uptime in human readable format."""
         if seconds < 60:

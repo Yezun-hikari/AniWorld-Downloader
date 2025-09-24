@@ -7,6 +7,8 @@ import re
 from typing import List, Dict, Optional, Union
 from functools import lru_cache
 
+from bs4 import BeautifulSoup
+
 import curses
 import requests
 
@@ -170,6 +172,100 @@ def fetch_anime_list(url: str) -> List[Dict]:
     except requests.RequestException as err:
         logging.error("Failed to fetch anime list: %s", err)
         raise ValueError("Could not fetch anime data from server") from err
+
+
+def fetch_popular_and_new_anime() -> Dict[str, List[Dict[str, str]]]:
+    """
+    Fetch HTML from AniWorld homepage for popular and new anime parsing.
+
+    Extracts anime titles and cover URLs from "Beliebt bei AniWorld" and "Neue Animes" sections.
+
+    Returns:
+        Dictionary with 'popular' and 'new' keys containing lists of anime data
+    """
+    try:
+        response = requests.get(ANIWORLD_TO, timeout=DEFAULT_REQUEST_TIMEOUT)
+        response.raise_for_status()
+
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+        result = {'popular': [], 'new': []}
+
+        # Extract popular anime section
+        popular_section = soup.find('h2', string=lambda text: text and 'beliebt' in text.lower())
+        if popular_section:
+            popular_carousel = popular_section.find_parent().find_next_sibling('div', class_='previews')
+            if popular_carousel:
+                result['popular'] = extract_anime_from_carousel(popular_carousel)
+
+        # Extract new anime section
+        new_section = soup.find('h2', string=lambda text: text and 'neue' in text.lower() and 'anime' in text.lower())
+        if new_section:
+            new_carousel = new_section.find_parent().find_next_sibling('div', class_='previews')
+            if new_carousel:
+                result['new'] = extract_anime_from_carousel(new_carousel)
+
+        return result
+
+    except requests.RequestException as err:
+        logging.error("Failed to fetch AniWorld homepage: %s", err)
+        raise ValueError("Could not fetch homepage data") from err
+
+
+def extract_anime_from_carousel(carousel_div):
+    """
+    Extract anime data from a carousel div section.
+
+    Args:
+        carousel_div: BeautifulSoup element containing the carousel
+
+    Returns:
+        List of dictionaries with 'name' and 'cover' keys
+    """
+    anime_list = []
+
+    # Find all cover list items
+    cover_items = carousel_div.find_all('div', class_='coverListItem')
+
+    for item in cover_items:
+        try:
+            # Extract name from h3 tag or title attribute
+            name = None
+            h3_tag = item.find('h3')
+            if h3_tag:
+                name = h3_tag.get_text(strip=True)
+                # Remove any trailing dots or special characters
+                name = name.split(' •')[0].strip()
+
+            # Fallback to title attribute from link
+            if not name:
+                link = item.find('a')
+                if link and link.get('title'):
+                    title_text = link.get('title')
+                    # Extract name before "alle Folgen ansehen" or similar text
+                    name = title_text.split(' alle Folgen')[0].split(' jetzt online')[0].strip()
+
+            # Extract cover URL from img tag
+            cover = None
+            img_tag = item.find('img')
+            if img_tag:
+                # Try data-src first (lazy loading), then src
+                cover = img_tag.get('data-src') or img_tag.get('src')
+                # Make absolute URL if relative
+                if cover and cover.startswith('/'):
+                    cover = ANIWORLD_TO + cover
+
+            if name and cover:
+                anime_list.append({
+                    'name': name,
+                    'cover': cover
+                })
+
+        except Exception as e:
+            # Skip this item if extraction fails
+            continue
+
+    return anime_list
 
 
 def _handle_konami_code(entered_keys: List[str], key_input: str) -> List[str]:
