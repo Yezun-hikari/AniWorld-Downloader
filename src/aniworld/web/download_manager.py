@@ -6,19 +6,27 @@ Handles global download queue processing and status tracking
 import threading
 import time
 import logging
-from typing import Optional
+from typing import Optional, Dict, List
+from datetime import datetime
 from .database import UserDatabase
 
 
 class DownloadQueueManager:
-    """Manages the global download queue processing"""
+    """Manages the global download queue processing with in-memory storage"""
 
-    def __init__(self, database: UserDatabase):
-        self.db = database
+    def __init__(self, database: Optional[UserDatabase] = None):
+        self.db = database  # Only used for user auth, not download storage
         self.is_processing = False
         self.current_download_id = None
         self.worker_thread = None
         self._stop_event = threading.Event()
+
+        # In-memory download queue storage
+        self._next_id = 1
+        self._queue_lock = threading.Lock()
+        self._active_downloads = {}  # id -> download_job dict
+        self._completed_downloads = []  # list of completed download jobs (keep last N)
+        self._max_completed_history = 10
 
     def start_queue_processor(self):
         """Start the background queue processor"""
@@ -40,7 +48,29 @@ class DownloadQueueManager:
 
     def add_download(self, anime_title: str, episode_urls: list, language: str, provider: str, total_episodes: int, created_by: int = None) -> int:
         """Add a download to the queue"""
-        queue_id = self.db.add_to_download_queue(anime_title, episode_urls, language, provider, total_episodes, created_by)
+        with self._queue_lock:
+            queue_id = self._next_id
+            self._next_id += 1
+
+            download_job = {
+                'id': queue_id,
+                'anime_title': anime_title,
+                'episode_urls': episode_urls,
+                'language': language,
+                'provider': provider,
+                'total_episodes': total_episodes,
+                'completed_episodes': 0,
+                'status': 'queued',
+                'current_episode': '',
+                'progress_percentage': 0.0,
+                'error_message': '',
+                'created_by': created_by,
+                'created_at': datetime.now(),
+                'started_at': None,
+                'completed_at': None
+            }
+
+            self._active_downloads[queue_id] = download_job
 
         # Start processor if not running
         if not self.is_processing:
@@ -50,14 +80,48 @@ class DownloadQueueManager:
 
     def get_queue_status(self):
         """Get current queue status"""
-        return self.db.get_download_queue_status()
+        with self._queue_lock:
+            active_downloads = []
+            for download in self._active_downloads.values():
+                if download['status'] in ['queued', 'downloading']:
+                    # Format for API compatibility
+                    active_downloads.append({
+                        'id': download['id'],
+                        'anime_title': download['anime_title'],
+                        'total_episodes': download['total_episodes'],
+                        'completed_episodes': download['completed_episodes'],
+                        'status': download['status'],
+                        'current_episode': download['current_episode'],
+                        'progress_percentage': download['progress_percentage'],
+                        'error_message': download['error_message'],
+                        'created_at': download['created_at'].isoformat() if download['created_at'] else None
+                    })
+
+            completed_downloads = []
+            for download in self._completed_downloads[-1:]:  # Get last completed
+                completed_downloads.append({
+                    'id': download['id'],
+                    'anime_title': download['anime_title'],
+                    'total_episodes': download['total_episodes'],
+                    'completed_episodes': download['completed_episodes'],
+                    'status': download['status'],
+                    'current_episode': download['current_episode'],
+                    'progress_percentage': download['progress_percentage'],
+                    'error_message': download['error_message'],
+                    'completed_at': download['completed_at'].isoformat() if download['completed_at'] else None
+                })
+
+            return {
+                'active': active_downloads,
+                'completed': completed_downloads
+            }
 
     def _process_queue(self):
         """Background worker that processes the download queue"""
         while self.is_processing and not self._stop_event.is_set():
             try:
                 # Get next job
-                job = self.db.get_next_queued_download()
+                job = self._get_next_queued_download()
 
                 if job:
                     self.current_download_id = job['id']
@@ -77,7 +141,7 @@ class DownloadQueueManager:
 
         try:
             # Mark as downloading
-            self.db.update_download_status(queue_id, 'downloading', current_episode='Starting download...')
+            self._update_download_status(queue_id, 'downloading', current_episode='Starting download...')
 
             # Import necessary modules
             from ..entry import _group_episodes_by_series
@@ -92,7 +156,7 @@ class DownloadQueueManager:
             anime_list = _group_episodes_by_series(job['episode_urls'])
 
             if not anime_list:
-                self.db.update_download_status(queue_id, 'failed', error_message='Failed to process episode URLs')
+                self._update_download_status(queue_id, 'failed', error_message='Failed to process episode URLs')
                 return
 
             # Apply settings to anime objects
@@ -107,11 +171,11 @@ class DownloadQueueManager:
             # Calculate actual total episodes after processing URLs
             actual_total_episodes = sum(len(anime.episode_list) for anime in anime_list)
 
-            # Update total episodes count in database if different from original
+            # Update total episodes count if different from original
             if actual_total_episodes != job['total_episodes']:
-                self.db.update_download_status(
+                self._update_download_status(
                     queue_id,
-                    'queued',
+                    'downloading',  # Keep as downloading since we're about to start
                     total_episodes=actual_total_episodes,
                     current_episode=f'Found {actual_total_episodes} valid episode(s) to download'
                 )
@@ -135,7 +199,7 @@ class DownloadQueueManager:
                     episode_info = f"{anime.title} - Episode {episode.episode} (Season {episode.season})"
 
                     # Update progress
-                    self.db.update_download_status(
+                    self._update_download_status(
                         queue_id,
                         'downloading',
                         completed_episodes=current_episode_index,
@@ -206,7 +270,7 @@ class DownloadQueueManager:
                 status = 'completed'
                 error_msg = f'Successfully downloaded {successful_downloads} episode(s).'
 
-            self.db.update_download_status(
+            self._update_download_status(
                 queue_id,
                 status,
                 completed_episodes=successful_downloads,
@@ -216,19 +280,68 @@ class DownloadQueueManager:
 
         except Exception as e:
             logging.error(f"Download job {queue_id} failed: {e}")
-            self.db.update_download_status(
+            self._update_download_status(
                 queue_id,
                 'failed',
                 error_message=f'Download failed: {str(e)}'
             )
 
+    def _get_next_queued_download(self):
+        """Get the next download job in the queue"""
+        with self._queue_lock:
+            for download in self._active_downloads.values():
+                if download['status'] == 'queued':
+                    return download
+            return None
+
+    def _update_download_status(self, queue_id: int, status: str, completed_episodes: int = None, current_episode: str = None, error_message: str = None, total_episodes: int = None):
+        """Update the status of a download job"""
+        with self._queue_lock:
+            if queue_id not in self._active_downloads:
+                return False
+
+            download = self._active_downloads[queue_id]
+            download['status'] = status
+
+            if completed_episodes is not None:
+                download['completed_episodes'] = completed_episodes
+                # Calculate progress percentage
+                total = download['total_episodes']
+                download['progress_percentage'] = (completed_episodes / total * 100) if total > 0 else 0
+
+            if current_episode is not None:
+                download['current_episode'] = current_episode
+
+            if error_message is not None:
+                download['error_message'] = error_message
+
+            if total_episodes is not None:
+                download['total_episodes'] = total_episodes
+
+            # Update timestamps based on status
+            if status == 'downloading' and download['started_at'] is None:
+                download['started_at'] = datetime.now()
+            elif status in ['completed', 'failed']:
+                download['completed_at'] = datetime.now()
+
+                # Move to completed list and remove from active
+                self._completed_downloads.append(download.copy())
+                # Keep only recent completed downloads
+                if len(self._completed_downloads) > self._max_completed_history:
+                    self._completed_downloads = self._completed_downloads[-self._max_completed_history:]
+
+                # Remove from active downloads
+                del self._active_downloads[queue_id]
+
+            return True
+
 
 # Global instance
 _download_manager = None
 
-def get_download_manager(database: UserDatabase = None) -> DownloadQueueManager:
+def get_download_manager(database: Optional[UserDatabase] = None) -> DownloadQueueManager:
     """Get or create the global download manager instance"""
     global _download_manager
-    if _download_manager is None and database:
+    if _download_manager is None:
         _download_manager = DownloadQueueManager(database)
     return _download_manager

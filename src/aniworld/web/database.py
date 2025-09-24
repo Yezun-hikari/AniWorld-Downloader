@@ -8,19 +8,33 @@ import secrets
 import sqlite3
 from datetime import datetime
 from typing import Optional, Dict, List
+from pathlib import Path
+
+
+def get_database_path() -> str:
+    """Get the persistent database path based on OS"""
+    if os.name == 'nt':  # Windows
+        appdata = os.environ.get('APPDATA', os.path.expanduser('~'))
+        db_dir = os.path.join(appdata, 'aniworld')
+    else:  # Unix/Linux/macOS
+        db_dir = os.path.expanduser('~/.local/share/aniworld')
+
+    # Ensure directory exists
+    Path(db_dir).mkdir(parents=True, exist_ok=True)
+    return os.path.join(db_dir, 'aniworld.db')
 
 
 class UserDatabase:
     """SQLite database manager for user authentication"""
 
-    def __init__(self, db_path: str = "aniworld.db"):
+    def __init__(self, db_path: Optional[str] = None):
         """
         Initialize the user database.
 
         Args:
-            db_path: Path to the SQLite database file
+            db_path: Path to the SQLite database file (if None, uses system location)
         """
-        self.db_path = db_path
+        self.db_path = db_path or get_database_path()
         self._init_database()
 
     def _init_database(self) -> None:
@@ -54,27 +68,7 @@ class UserDatabase:
                 )
             """)
 
-            # Create download queue table
-            cursor.execute("""
-                CREATE TABLE IF NOT EXISTS download_queue (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    anime_title TEXT NOT NULL,
-                    episode_urls TEXT NOT NULL,
-                    language TEXT NOT NULL,
-                    provider TEXT NOT NULL,
-                    total_episodes INTEGER NOT NULL,
-                    completed_episodes INTEGER DEFAULT 0,
-                    status TEXT NOT NULL DEFAULT 'queued',
-                    current_episode TEXT DEFAULT '',
-                    progress_percentage REAL DEFAULT 0,
-                    error_message TEXT DEFAULT '',
-                    created_by INTEGER,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    started_at TIMESTAMP,
-                    completed_at TIMESTAMP,
-                    FOREIGN KEY (created_by) REFERENCES users (id) ON DELETE SET NULL
-                )
-            """)
+            # Note: download_queue table removed - download status now handled in memory
 
             conn.commit()
 
@@ -437,174 +431,5 @@ class UserDatabase:
         except Exception:
             pass
 
-    # Download Queue Management Methods
-    def add_to_download_queue(self, anime_title: str, episode_urls: list, language: str, provider: str, total_episodes: int, created_by: int = None) -> int:
-        """Add a new download job to the queue."""
-        try:
-            import json
-            with sqlite3.connect(self.db_path) as conn:
-                cursor = conn.cursor()
-                cursor.execute("""
-                    INSERT INTO download_queue (anime_title, episode_urls, language, provider, total_episodes, created_by)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                """, (anime_title, json.dumps(episode_urls), language, provider, total_episodes, created_by))
-                conn.commit()
-                return cursor.lastrowid
-        except Exception:
-            return None
-
-    def get_next_queued_download(self):
-        """Get the next download job in the queue."""
-        try:
-            import json
-            with sqlite3.connect(self.db_path) as conn:
-                cursor = conn.cursor()
-                cursor.execute("""
-                    SELECT id, anime_title, episode_urls, language, provider, total_episodes
-                    FROM download_queue
-                    WHERE status = 'queued'
-                    ORDER BY created_at ASC
-                    LIMIT 1
-                """)
-                row = cursor.fetchone()
-                if row:
-                    return {
-                        'id': row[0],
-                        'anime_title': row[1],
-                        'episode_urls': json.loads(row[2]),
-                        'language': row[3],
-                        'provider': row[4],
-                        'total_episodes': row[5]
-                    }
-                return None
-        except Exception:
-            return None
-
-    def update_download_status(self, queue_id: int, status: str, completed_episodes: int = None, current_episode: str = None, error_message: str = None, total_episodes: int = None):
-        """Update the status of a download job."""
-        try:
-            with sqlite3.connect(self.db_path) as conn:
-                cursor = conn.cursor()
-
-                updates = ["status = ?"]
-                params = [status]
-
-                if completed_episodes is not None:
-                    updates.append("completed_episodes = ?")
-                    params.append(completed_episodes)
-
-                if current_episode is not None:
-                    updates.append("current_episode = ?")
-                    params.append(current_episode)
-
-                if error_message is not None:
-                    updates.append("error_message = ?")
-                    params.append(error_message)
-
-                if total_episodes is not None:
-                    updates.append("total_episodes = ?")
-                    params.append(total_episodes)
-
-                # Update timestamps based on status
-                if status == 'downloading':
-                    updates.append("started_at = CURRENT_TIMESTAMP")
-                elif status in ['completed', 'failed']:
-                    updates.append("completed_at = CURRENT_TIMESTAMP")
-
-                # Calculate progress percentage
-                if completed_episodes is not None:
-                    # Get total episodes for this job
-                    cursor.execute("SELECT total_episodes FROM download_queue WHERE id = ?", (queue_id,))
-                    total = cursor.fetchone()
-                    if total:
-                        percentage = (completed_episodes / total[0]) * 100 if total[0] > 0 else 0
-                        updates.append("progress_percentage = ?")
-                        params.append(percentage)
-
-                params.append(queue_id)
-
-                cursor.execute(f"""
-                    UPDATE download_queue SET {', '.join(updates)}
-                    WHERE id = ?
-                """, params)
-                conn.commit()
-                return cursor.rowcount > 0
-        except Exception:
-            return False
-
-    def get_download_queue_status(self):
-        """Get the current status of all downloads (active + last 3 completed)."""
-        try:
-            with sqlite3.connect(self.db_path) as conn:
-                cursor = conn.cursor()
-
-                # Get active downloads (queued, downloading)
-                cursor.execute("""
-                    SELECT id, anime_title, total_episodes, completed_episodes, status,
-                           current_episode, progress_percentage, error_message, created_at
-                    FROM download_queue
-                    WHERE status IN ('queued', 'downloading')
-                    ORDER BY created_at ASC
-                """)
-                active_downloads = []
-                for row in cursor.fetchall():
-                    active_downloads.append({
-                        'id': row[0],
-                        'anime_title': row[1],
-                        'total_episodes': row[2],
-                        'completed_episodes': row[3],
-                        'status': row[4],
-                        'current_episode': row[5],
-                        'progress_percentage': row[6],
-                        'error_message': row[7],
-                        'created_at': row[8]
-                    })
-
-                # Get last completed download
-                cursor.execute("""
-                    SELECT id, anime_title, total_episodes, completed_episodes, status,
-                           current_episode, progress_percentage, error_message, completed_at
-                    FROM download_queue
-                    WHERE status IN ('completed', 'failed')
-                    ORDER BY completed_at DESC
-                    LIMIT 1
-                """)
-                completed_downloads = []
-                for row in cursor.fetchall():
-                    completed_downloads.append({
-                        'id': row[0],
-                        'anime_title': row[1],
-                        'total_episodes': row[2],
-                        'completed_episodes': row[3],
-                        'status': row[4],
-                        'current_episode': row[5],
-                        'progress_percentage': row[6],
-                        'error_message': row[7],
-                        'completed_at': row[8]
-                    })
-
-                return {
-                    'active': active_downloads,
-                    'completed': completed_downloads
-                }
-        except Exception:
-            return {'active': [], 'completed': []}
-
-    def cleanup_old_downloads(self, keep_completed: int = 10):
-        """Clean up old completed downloads, keeping only the most recent ones."""
-        try:
-            with sqlite3.connect(self.db_path) as conn:
-                cursor = conn.cursor()
-                cursor.execute("""
-                    DELETE FROM download_queue
-                    WHERE status IN ('completed', 'failed')
-                    AND id NOT IN (
-                        SELECT id FROM download_queue
-                        WHERE status IN ('completed', 'failed')
-                        ORDER BY completed_at DESC
-                        LIMIT ?
-                    )
-                """, (keep_completed,))
-                conn.commit()
-        except Exception:
-            pass
+    # Download Queue Management Methods - Removed
+    # Download status is now handled in memory by DownloadQueueManager

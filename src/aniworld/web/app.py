@@ -37,7 +37,7 @@ class WebApp:
 
         # Authentication settings
         self.auth_enabled = getattr(arguments, 'enable_web_auth', False) if arguments else False
-        self.db = UserDatabase() if self.auth_enabled else UserDatabase()
+        self.db = UserDatabase() if self.auth_enabled else None
 
         # Download manager
         self.download_manager = get_download_manager(self.db)
@@ -73,6 +73,9 @@ class WebApp:
             if not self.auth_enabled:
                 return f(*args, **kwargs)
 
+            if not self.db:
+                return jsonify({'error': 'Authentication database not available'}), 500
+
             session_token = request.cookies.get('session_token')
             if not session_token:
                 return jsonify({'error': 'Authentication required'}), 401
@@ -91,6 +94,9 @@ class WebApp:
         def decorated_function(*args, **kwargs):
             if not self.auth_enabled:
                 return f(*args, **kwargs)
+
+            if not self.db:
+                return redirect(url_for('login'))
 
             # Check for session token in cookies
             session_token = request.cookies.get('session_token')
@@ -114,6 +120,9 @@ class WebApp:
             if not self.auth_enabled:
                 return f(*args, **kwargs)
 
+            if not self.db:
+                return jsonify({'error': 'Authentication database not available'}), 500
+
             session_token = request.cookies.get('session_token')
             if not session_token:
                 return redirect(url_for('login'))
@@ -134,7 +143,7 @@ class WebApp:
         @self._require_auth
         def index():
             """Main page route."""
-            if self.auth_enabled:
+            if self.auth_enabled and self.db:
                 # Check if this is first-time setup
                 if not self.db.has_users():
                     return redirect(url_for('setup'))
@@ -149,7 +158,7 @@ class WebApp:
         @self.app.route('/login', methods=['GET', 'POST'])
         def login():
             """Login page route."""
-            if not self.auth_enabled:
+            if not self.auth_enabled or not self.db:
                 return redirect(url_for('index'))
 
             # If no users exist, redirect to setup
@@ -178,7 +187,7 @@ class WebApp:
         @self.app.route('/logout', methods=['POST'])
         def logout():
             """Logout route."""
-            if not self.auth_enabled:
+            if not self.auth_enabled or not self.db:
                 return redirect(url_for('index'))
 
             session_token = request.cookies.get('session_token')
@@ -192,7 +201,7 @@ class WebApp:
         @self.app.route('/setup', methods=['GET', 'POST'])
         def setup():
             """First-time setup route for creating admin user."""
-            if not self.auth_enabled:
+            if not self.auth_enabled or not self.db:
                 return redirect(url_for('index'))
 
             if self.db.has_users():
@@ -220,12 +229,12 @@ class WebApp:
         @self._require_auth
         def settings():
             """Settings page route."""
-            if not self.auth_enabled:
+            if not self.auth_enabled or not self.db:
                 return redirect(url_for('index'))
 
             session_token = request.cookies.get('session_token')
             user = self.db.get_user_by_session(session_token)
-            users = self.db.get_all_users() if user['is_admin'] else []
+            users = self.db.get_all_users() if user and user['is_admin'] else []
 
             return render_template('settings.html', user=user, users=users)
 
@@ -234,6 +243,8 @@ class WebApp:
         @self._require_admin
         def api_get_users():
             """Get all users (admin only)."""
+            if not self.db:
+                return jsonify({'success': False, 'error': 'Authentication not available'}), 500
             users = self.db.get_all_users()
             return jsonify({'success': True, 'users': users})
 
@@ -262,6 +273,9 @@ class WebApp:
             if len(password) < 6:
                 return jsonify({'success': False, 'error': 'Password must be at least 6 characters'}), 400
 
+            if not self.db:
+                return jsonify({'success': False, 'error': 'Authentication not available'}), 500
+
             if self.db.create_user(username, password, is_admin):
                 return jsonify({'success': True, 'message': 'User created successfully'})
             else:
@@ -271,6 +285,9 @@ class WebApp:
         @self._require_admin
         def api_delete_user(user_id):
             """Delete user (admin only)."""
+            if not self.db:
+                return jsonify({'success': False, 'error': 'Authentication not available'}), 500
+
             # Get user info to check if it's the original admin
             users = self.db.get_all_users()
             user_to_delete = next((u for u in users if u['id'] == user_id), None)
@@ -295,6 +312,9 @@ class WebApp:
             if password and len(password) < 6:
                 return jsonify({'success': False, 'error': 'Password must be at least 6 characters'}), 400
 
+            if not self.db:
+                return jsonify({'success': False, 'error': 'Authentication not available'}), 500
+
             if self.db.update_user(user_id, username, password, is_admin):
                 return jsonify({'success': True, 'message': 'User updated successfully'})
             else:
@@ -304,7 +324,7 @@ class WebApp:
         @self._require_api_auth
         def api_change_password():
             """Change user password."""
-            if not self.auth_enabled:
+            if not self.auth_enabled or not self.db:
                 return jsonify({'success': False, 'error': 'Authentication not enabled'}), 400
 
             session_token = request.cookies.get('session_token')
@@ -555,7 +575,7 @@ class WebApp:
 
                 # Get current user for queue tracking
                 current_user = None
-                if self.auth_enabled:
+                if self.auth_enabled and self.db:
                     session_token = request.cookies.get('session_token')
                     current_user = self.db.get_user_by_session(session_token)
 
@@ -745,20 +765,11 @@ class WebApp:
         def api_queue_status():
             """Get download queue status endpoint."""
             try:
-                from .download_manager import get_download_manager
-                download_manager = get_download_manager(self.db)
-
-                if download_manager:
-                    queue_status = download_manager.get_queue_status()
-                    return jsonify({
-                        'success': True,
-                        'queue': queue_status
-                    })
-                else:
-                    return jsonify({
-                        'success': True,
-                        'queue': {'active': [], 'completed': []}
-                    })
+                queue_status = self.download_manager.get_queue_status()
+                return jsonify({
+                    'success': True,
+                    'queue': queue_status
+                })
             except Exception as e:
                 logging.error(f"Failed to get queue status: {e}")
                 return jsonify({
