@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Get UI elements
     const versionDisplay = document.getElementById('version-display');
+    const navTitle = document.getElementById('nav-title');
     const searchInput = document.getElementById('search-input');
     const searchBtn = document.getElementById('search-btn');
     const resultsSection = document.getElementById('results-section');
@@ -94,6 +95,20 @@ document.addEventListener('DOMContentLoaded', function() {
     // Theme toggle functionality (only if element exists)
     if (themeToggle) {
         themeToggle.addEventListener('click', toggleTheme);
+    }
+
+    // Navbar title click functionality
+    if (navTitle) {
+        navTitle.addEventListener('click', function() {
+            // Clear search input
+            if (searchInput) {
+                searchInput.value = '';
+            }
+            // Show home content (original state)
+            showHomeContent();
+            // Reload popular and new anime
+            loadPopularAndNewAnime();
+        });
     }
 
     // Close modal when clicking outside
