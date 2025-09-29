@@ -187,23 +187,34 @@ def fetch_popular_and_new_anime() -> Dict[str, List[Dict[str, str]]]:
         response = requests.get(ANIWORLD_TO, timeout=DEFAULT_REQUEST_TIMEOUT)
         response.raise_for_status()
 
-        soup = BeautifulSoup(response.text, 'html.parser')
+        soup = BeautifulSoup(response.text, "html.parser")
 
-        result = {'popular': [], 'new': []}
+        result = {"popular": [], "new": []}
 
         # Extract popular anime section
-        popular_section = soup.find('h2', string=lambda text: text and 'beliebt' in text.lower())
+        popular_section = soup.find(
+            "h2", string=lambda text: text and "beliebt" in text.lower()
+        )
         if popular_section:
-            popular_carousel = popular_section.find_parent().find_next_sibling('div', class_='previews')
+            popular_carousel = popular_section.find_parent().find_next_sibling(
+                "div", class_="previews"
+            )
             if popular_carousel:
-                result['popular'] = extract_anime_from_carousel(popular_carousel)
+                result["popular"] = extract_anime_from_carousel(popular_carousel)
 
         # Extract new anime section
-        new_section = soup.find('h2', string=lambda text: text and 'neue' in text.lower() and 'anime' in text.lower())
+        new_section = soup.find(
+            "h2",
+            string=lambda text: text
+            and "neue" in text.lower()
+            and "anime" in text.lower(),
+        )
         if new_section:
-            new_carousel = new_section.find_parent().find_next_sibling('div', class_='previews')
+            new_carousel = new_section.find_parent().find_next_sibling(
+                "div", class_="previews"
+            )
             if new_carousel:
-                result['new'] = extract_anime_from_carousel(new_carousel)
+                result["new"] = extract_anime_from_carousel(new_carousel)
 
         return result
 
@@ -225,43 +236,44 @@ def extract_anime_from_carousel(carousel_div):
     anime_list = []
 
     # Find all cover list items
-    cover_items = carousel_div.find_all('div', class_='coverListItem')
+    cover_items = carousel_div.find_all("div", class_="coverListItem")
 
     for item in cover_items:
         try:
             # Extract name from h3 tag or title attribute
             name = None
-            h3_tag = item.find('h3')
+            h3_tag = item.find("h3")
             if h3_tag:
                 name = h3_tag.get_text(strip=True)
                 # Remove any trailing dots or special characters
-                name = name.split(' •')[0].strip()
+                name = name.split(" •")[0].strip()
 
             # Fallback to title attribute from link
             if not name:
-                link = item.find('a')
-                if link and link.get('title'):
-                    title_text = link.get('title')
+                link = item.find("a")
+                if link and link.get("title"):
+                    title_text = link.get("title")
                     # Extract name before "alle Folgen ansehen" or similar text
-                    name = title_text.split(' alle Folgen')[0].split(' jetzt online')[0].strip()
+                    name = (
+                        title_text.split(" alle Folgen")[0]
+                        .split(" jetzt online")[0]
+                        .strip()
+                    )
 
             # Extract cover URL from img tag
             cover = None
-            img_tag = item.find('img')
+            img_tag = item.find("img")
             if img_tag:
                 # Try data-src first (lazy loading), then src
-                cover = img_tag.get('data-src') or img_tag.get('src')
+                cover = img_tag.get("data-src") or img_tag.get("src")
                 # Make absolute URL if relative
-                if cover and cover.startswith('/'):
+                if cover and cover.startswith("/"):
                     cover = ANIWORLD_TO + cover
 
             if name and cover:
-                anime_list.append({
-                    'name': name,
-                    'cover': cover
-                })
+                anime_list.append({"name": name, "cover": cover})
 
-        except Exception as e:
+        except Exception:
             # Skip this item if extraction fails
             continue
 

@@ -190,7 +190,10 @@ def aniworld() -> None:
         # Handle web UI mode
         if arguments.web_ui:
             from .web.app import start_web_interface
-            start_web_interface(arguments, port=arguments.web_port, debug=arguments.debug)
+
+            start_web_interface(
+                arguments, port=arguments.web_port, debug=arguments.debug
+            )
             return
 
         # Handle local episodes

@@ -391,12 +391,16 @@ class Anime:
                 # Get the first episode link for reference
                 first_episode_link = None
                 if self.episode_list:
-                    first_episode_link = getattr(self.episode_list[0], 'link', None)
+                    first_episode_link = getattr(self.episode_list[0], "link", None)
 
                 if not first_episode_link and self.episode_list:
                     # Try to construct a link from first episode data
                     first_ep = self.episode_list[0]
-                    if first_ep.slug and first_ep.season is not None and first_ep.episode is not None:
+                    if (
+                        first_ep.slug
+                        and first_ep.season is not None
+                        and first_ep.episode is not None
+                    ):
                         if first_ep.season == 0:
                             first_episode_link = f"{self.base_url}/{self.stream_path}/{first_ep.slug}/filme/film-{first_ep.episode}"
                         else:
@@ -404,7 +408,9 @@ class Anime:
 
                 # Fetch shared data
                 self._shared_season_episode_count = get_season_episode_count(
-                    self.slug, first_episode_link or f"{self.base_url}/{self.stream_path}/{self.slug}"
+                    self.slug,
+                    first_episode_link
+                    or f"{self.base_url}/{self.stream_path}/{self.slug}",
                 )
                 self._shared_movie_episode_count = get_movie_episode_count(self.slug)
 
@@ -412,7 +418,10 @@ class Anime:
                 for episode in self.episode_list:
                     if not episode.season_episode_count:
                         episode.season_episode_count = self._shared_season_episode_count
-                    if episode.movie_episode_count is None or episode.movie_episode_count == 0:
+                    if (
+                        episode.movie_episode_count is None
+                        or episode.movie_episode_count == 0
+                    ):
                         episode.movie_episode_count = self._shared_movie_episode_count
 
         except Exception as err:

@@ -6,22 +6,21 @@ import hashlib
 import os
 import secrets
 import sqlite3
-from datetime import datetime
 from typing import Optional, Dict, List
 from pathlib import Path
 
 
 def get_database_path() -> str:
     """Get the persistent database path based on OS"""
-    if os.name == 'nt':  # Windows
-        appdata = os.environ.get('APPDATA', os.path.expanduser('~'))
-        db_dir = os.path.join(appdata, 'aniworld')
+    if os.name == "nt":  # Windows
+        appdata = os.environ.get("APPDATA", os.path.expanduser("~"))
+        db_dir = os.path.join(appdata, "aniworld")
     else:  # Unix/Linux/macOS
-        db_dir = os.path.expanduser('~/.local/share/aniworld')
+        db_dir = os.path.expanduser("~/.local/share/aniworld")
 
     # Ensure directory exists
     Path(db_dir).mkdir(parents=True, exist_ok=True)
-    return os.path.join(db_dir, 'aniworld.db')
+    return os.path.join(db_dir, "aniworld.db")
 
 
 class UserDatabase:
@@ -85,7 +84,13 @@ class UserDatabase:
         """
         return hashlib.sha256((password + salt).encode()).hexdigest()
 
-    def create_user(self, username: str, password: str, is_admin: bool = False, is_original_admin: bool = False) -> bool:
+    def create_user(
+        self,
+        username: str,
+        password: str,
+        is_admin: bool = False,
+        is_original_admin: bool = False,
+    ) -> bool:
         """
         Create a new user.
 
@@ -104,10 +109,13 @@ class UserDatabase:
 
             with sqlite3.connect(self.db_path) as conn:
                 cursor = conn.cursor()
-                cursor.execute("""
+                cursor.execute(
+                    """
                     INSERT INTO users (username, password_hash, salt, is_admin, is_original_admin)
                     VALUES (?, ?, ?, ?, ?)
-                """, (username, password_hash, salt, is_admin, is_original_admin))
+                """,
+                    (username, password_hash, salt, is_admin, is_original_admin),
+                )
                 conn.commit()
                 return True
 
@@ -131,10 +139,13 @@ class UserDatabase:
         try:
             with sqlite3.connect(self.db_path) as conn:
                 cursor = conn.cursor()
-                cursor.execute("""
+                cursor.execute(
+                    """
                     SELECT id, username, password_hash, salt, is_admin, is_original_admin
                     FROM users WHERE username = ?
-                """, (username,))
+                """,
+                    (username,),
+                )
 
                 row = cursor.fetchone()
                 if not row:
@@ -145,17 +156,20 @@ class UserDatabase:
                 # Verify password
                 if self._hash_password(password, salt) == stored_hash:
                     # Update last login
-                    cursor.execute("""
+                    cursor.execute(
+                        """
                         UPDATE users SET last_login = CURRENT_TIMESTAMP
                         WHERE id = ?
-                    """, (user_id,))
+                    """,
+                        (user_id,),
+                    )
                     conn.commit()
 
                     return {
-                        'id': user_id,
-                        'username': username,
-                        'is_admin': bool(is_admin),
-                        'is_original_admin': bool(is_original_admin)
+                        "id": user_id,
+                        "username": username,
+                        "is_admin": bool(is_admin),
+                        "is_original_admin": bool(is_original_admin),
                     }
 
                 return None
@@ -184,10 +198,13 @@ class UserDatabase:
             """)
 
             # Create new session (expires in 30 days)
-            cursor.execute("""
+            cursor.execute(
+                """
                 INSERT INTO sessions (session_token, user_id, expires_at)
                 VALUES (?, ?, datetime('now', '+30 days'))
-            """, (session_token, user_id))
+            """,
+                (session_token, user_id),
+            )
 
             conn.commit()
 
@@ -206,20 +223,23 @@ class UserDatabase:
         try:
             with sqlite3.connect(self.db_path) as conn:
                 cursor = conn.cursor()
-                cursor.execute("""
+                cursor.execute(
+                    """
                     SELECT u.id, u.username, u.is_admin, u.is_original_admin
                     FROM users u
                     JOIN sessions s ON u.id = s.user_id
                     WHERE s.session_token = ? AND s.expires_at > CURRENT_TIMESTAMP
-                """, (session_token,))
+                """,
+                    (session_token,),
+                )
 
                 row = cursor.fetchone()
                 if row:
                     return {
-                        'id': row[0],
-                        'username': row[1],
-                        'is_admin': bool(row[2]),
-                        'is_original_admin': bool(row[3])
+                        "id": row[0],
+                        "username": row[1],
+                        "is_admin": bool(row[2]),
+                        "is_original_admin": bool(row[3]),
                     }
 
                 return None
@@ -240,9 +260,12 @@ class UserDatabase:
         try:
             with sqlite3.connect(self.db_path) as conn:
                 cursor = conn.cursor()
-                cursor.execute("""
+                cursor.execute(
+                    """
                     DELETE FROM sessions WHERE session_token = ?
-                """, (session_token,))
+                """,
+                    (session_token,),
+                )
                 conn.commit()
                 return cursor.rowcount > 0
 
@@ -266,14 +289,16 @@ class UserDatabase:
 
                 users = []
                 for row in cursor.fetchall():
-                    users.append({
-                        'id': row[0],
-                        'username': row[1],
-                        'is_admin': bool(row[2]),
-                        'is_original_admin': bool(row[3]),
-                        'created_at': row[4],
-                        'last_login': row[5]
-                    })
+                    users.append(
+                        {
+                            "id": row[0],
+                            "username": row[1],
+                            "is_admin": bool(row[2]),
+                            "is_original_admin": bool(row[3]),
+                            "created_at": row[4],
+                            "last_login": row[5],
+                        }
+                    )
 
                 return users
 
@@ -300,7 +325,13 @@ class UserDatabase:
         except Exception:
             return False
 
-    def update_user(self, user_id: int, username: str = None, password: str = None, is_admin: bool = None) -> bool:
+    def update_user(
+        self,
+        user_id: int,
+        username: str = None,
+        password: str = None,
+        is_admin: bool = None,
+    ) -> bool:
         """
         Update user information.
 
@@ -340,10 +371,13 @@ class UserDatabase:
 
                 params.append(user_id)
 
-                cursor.execute(f"""
-                    UPDATE users SET {', '.join(updates)}
+                cursor.execute(
+                    f"""
+                    UPDATE users SET {", ".join(updates)}
                     WHERE id = ?
-                """, params)
+                """,
+                    params,
+                )
 
                 conn.commit()
                 return cursor.rowcount > 0
@@ -371,7 +405,9 @@ class UserDatabase:
         except Exception:
             return False
 
-    def change_password(self, user_id: int, current_password: str, new_password: str) -> bool:
+    def change_password(
+        self, user_id: int, current_password: str, new_password: str
+    ) -> bool:
         """
         Change a user's password.
 
@@ -388,9 +424,12 @@ class UserDatabase:
                 cursor = conn.cursor()
 
                 # Get current password hash and salt
-                cursor.execute("""
+                cursor.execute(
+                    """
                     SELECT password_hash, salt FROM users WHERE id = ?
-                """, (user_id,))
+                """,
+                    (user_id,),
+                )
 
                 row = cursor.fetchone()
                 if not row:
@@ -407,10 +446,13 @@ class UserDatabase:
                 new_hash = self._hash_password(new_password, new_salt)
 
                 # Update password
-                cursor.execute("""
+                cursor.execute(
+                    """
                     UPDATE users SET password_hash = ?, salt = ?
                     WHERE id = ?
-                """, (new_hash, new_salt, user_id))
+                """,
+                    (new_hash, new_salt, user_id),
+                )
 
                 conn.commit()
                 return cursor.rowcount > 0

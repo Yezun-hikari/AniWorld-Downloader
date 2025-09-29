@@ -2,7 +2,7 @@ import re
 import logging
 import sys
 from pathlib import Path
-from typing import List, Optional, Callable
+from typing import Optional, Callable
 import yt_dlp
 
 from ..models import Anime
@@ -50,31 +50,33 @@ def _get_output_filename(anime: Anime, episode, sanitized_title: str) -> str:
     return f"{sanitized_title} - S{episode.season:02}E{episode.episode:03} - ({anime.language}).mp4"
 
 
-def _build_ytdl_options(output_path: str, anime: Anime, progress_hook: Optional[Callable] = None) -> dict:
+def _build_ytdl_options(
+    output_path: str, anime: Anime, progress_hook: Optional[Callable] = None
+) -> dict:
     """Build yt-dlp options dictionary with all necessary parameters."""
     options = {
-        'nocheckcertificate': True,
-        'fragment_retries': float('inf'),
-        'concurrent_fragment_downloads': 4,
-        'outtmpl': output_path,
-        'quiet': False,  # Allow progress hooks to work
-        'no_warnings': True,
-        'logger': _create_quiet_logger(),  # Custom logger to suppress most output
+        "nocheckcertificate": True,
+        "fragment_retries": float("inf"),
+        "concurrent_fragment_downloads": 4,
+        "outtmpl": output_path,
+        "quiet": False,  # Allow progress hooks to work
+        "no_warnings": True,
+        "logger": _create_quiet_logger(),  # Custom logger to suppress most output
     }
 
     # Add provider-specific headers
     if anime.provider in PROVIDER_HEADERS_D:
         headers = {}
         for header in PROVIDER_HEADERS_D[anime.provider]:
-            if ':' in header:
-                key, value = header.split(':', 1)
+            if ":" in header:
+                key, value = header.split(":", 1)
                 headers[key.strip()] = value.strip()
         if headers:
-            options['http_headers'] = headers
+            options["http_headers"] = headers
 
     # Add progress hook if provided
     if progress_hook:
-        options['progress_hooks'] = [progress_hook]
+        options["progress_hooks"] = [progress_hook]
 
     return options
 
@@ -116,7 +118,7 @@ class CliProgressBar:
 
     def update(self, d):
         """Update progress based on yt-dlp progress data."""
-        if d['status'] == 'downloading':
+        if d["status"] == "downloading":
             if not self.downloading:
                 print(f"Starting download: {self.episode_title}")
                 self.downloading = True
@@ -125,60 +127,71 @@ class CliProgressBar:
             percentage = 0.0
 
             # Method 1: _percent_str field
-            percent_str = d.get('_percent_str')
+            percent_str = d.get("_percent_str")
             if percent_str:
                 try:
-                    percentage = float(percent_str.replace('%', ''))
+                    percentage = float(percent_str.replace("%", ""))
                 except (ValueError, TypeError):
                     pass
 
             # Method 2: Calculate from downloaded/total bytes
             if percentage == 0.0:
-                downloaded = d.get('downloaded_bytes', 0)
-                total = d.get('total_bytes', 0)
+                downloaded = d.get("downloaded_bytes", 0)
+                total = d.get("total_bytes", 0)
                 if total and total > 0:
                     percentage = (downloaded / total) * 100
 
             # Method 3: Use fragment info if available
             if percentage == 0.0:
-                fragment_index = d.get('fragment_index', 0)
-                fragment_count = d.get('fragment_count', 0)
+                fragment_index = d.get("fragment_index", 0)
+                fragment_count = d.get("fragment_count", 0)
                 if fragment_count and fragment_count > 0:
                     percentage = (fragment_index / fragment_count) * 100
 
             # Get speed and ETA with cleaning
-            speed_str = d.get('_speed_str', 'N/A')
-            eta_str = d.get('_eta_str', 'N/A')
+            speed_str = d.get("_speed_str", "N/A")
+            eta_str = d.get("_eta_str", "N/A")
 
             # Clean ANSI color codes
             import re
-            if speed_str != 'N/A' and speed_str:
-                speed_str = re.sub(r'\x1b\[[0-9;]*m', '', str(speed_str)).strip()
+
+            if speed_str != "N/A" and speed_str:
+                speed_str = re.sub(r"\x1b\[[0-9;]*m", "", str(speed_str)).strip()
             else:
-                speed_str = 'N/A'
-            if eta_str != 'N/A' and eta_str:
-                eta_str = re.sub(r'\x1b\[[0-9;]*m', '', str(eta_str)).strip()
+                speed_str = "N/A"
+            if eta_str != "N/A" and eta_str:
+                eta_str = re.sub(r"\x1b\[[0-9;]*m", "", str(eta_str)).strip()
             else:
-                eta_str = 'N/A'
+                eta_str = "N/A"
 
             # Create progress bar
             bar_width = 40
             filled_width = int(bar_width * percentage / 100)
-            bar = '█' * filled_width + '░' * (bar_width - filled_width)
+            bar = "█" * filled_width + "░" * (bar_width - filled_width)
 
             # Only update if percentage changed significantly to reduce flickering
             if abs(percentage - self.last_percentage) >= 0.5:
-                sys.stdout.write(f'\r[{bar}] {percentage:.1f}% | Speed: {speed_str} | ETA: {eta_str}  ')
+                sys.stdout.write(
+                    f"\r[{bar}] {percentage:.1f}% | Speed: {speed_str} | ETA: {eta_str}  "
+                )
                 sys.stdout.flush()
                 self.last_percentage = percentage
 
-        elif d['status'] == 'finished':
-            print(f'\rDownload completed successfully!                                                    ')
-        elif d['status'] == 'error':
-            print(f'\rDownload failed: {d.get("error", "Unknown error")}')
+        elif d["status"] == "finished":
+            print(
+                "\rDownload completed successfully!                                                    "
+            )
+        elif d["status"] == "error":
+            print(f"\rDownload failed: {d.get('error', 'Unknown error')}")
 
 
-def _execute_download(direct_link: str, output_path: Path, anime: Anime, episode_title: str = "", web_progress_callback: Optional[Callable] = None) -> bool:
+def _execute_download(
+    direct_link: str,
+    output_path: Path,
+    anime: Anime,
+    episode_title: str = "",
+    web_progress_callback: Optional[Callable] = None,
+) -> bool:
     """Execute download using yt-dlp Python API with progress tracking."""
     try:
         # Create CLI progress bar
@@ -215,7 +228,7 @@ def _execute_download(direct_link: str, output_path: Path, anime: Anime, episode
         return False
     except KeyboardInterrupt:
         logging.info("Download interrupted by user")
-        print(f"\n⏹️ Download interrupted by user")
+        print("\n⏹️ Download interrupted by user")
         _cleanup_partial_files(output_path.parent)
         raise
     except Exception as e:
@@ -254,7 +267,7 @@ def download(anime: Anime, web_progress_callback: Optional[Callable] = None) -> 
 
         # Handle command only mode - build equivalent yt-dlp command for display
         if arguments.only_command:
-            options = _build_ytdl_options(str(output_path), anime)
+            _options = _build_ytdl_options(str(output_path), anime)
             # Convert back to command format for display
             command = ["yt-dlp", direct_link]
             command.extend(["--no-check-certificate"])
@@ -268,9 +281,13 @@ def download(anime: Anime, web_progress_callback: Optional[Callable] = None) -> 
                 for header in PROVIDER_HEADERS_D[anime.provider]:
                     command.extend(["--add-header", header])
 
-            print(f"\n{anime.title} - S{episode.season}E{episode.episode} - ({anime.language}):")
+            print(
+                f"\n{anime.title} - S{episode.season}E{episode.episode} - ({anime.language}):"
+            )
             print(" ".join(command))
             continue
 
         # Execute download
-        _execute_download(direct_link, output_path, anime, episode_title, web_progress_callback)
+        _execute_download(
+            direct_link, output_path, anime, episode_title, web_progress_callback
+        )

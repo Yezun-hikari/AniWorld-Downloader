@@ -139,7 +139,8 @@
     color: var(--text-primary);
     cursor: pointer;
     transition: all 0.3s ease;
-    height: 40px; /* Ensure consistent height */
+    height: 40px;
+    /* Ensure consistent height */
     box-sizing: border-box;
 }
 
@@ -267,26 +268,33 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 48px; /* Match button height (padding + content) */
+    height: 48px;
+    /* Match button height (padding + content) */
 }
 
 .form-row .form-group:nth-child(1),
 .form-row .form-group:nth-child(2) {
-    width: 250px; /* Fixed width for input groups */
+    width: 250px;
+    /* Fixed width for input groups */
 }
 
 .form-row .form-group.checkbox-group {
-    width: 120px; /* Fixed width for checkbox */
+    width: 120px;
+    /* Fixed width for checkbox */
 }
 
 .form-row .form-group.button-group {
-    margin-left: auto; /* Push button to the right */
-    width: auto; /* Auto width for button */
+    margin-left: auto;
+    /* Push button to the right */
+    width: auto;
+    /* Auto width for button */
 }
 
 .form-group.button-group .btn {
-    width: auto; /* Don't stretch the button */
-    white-space: nowrap; /* Keep text on one line */
+    width: auto;
+    /* Don't stretch the button */
+    white-space: nowrap;
+    /* Keep text on one line */
 }
 
 .form-group.checkbox-group label {
@@ -317,7 +325,8 @@
     background: var(--input-bg);
     color: var(--text-primary);
     font-size: 1rem;
-    width: 100%; /* Use full width of grid column */
+    width: 100%;
+    /* Use full width of grid column */
 }
 
 /* Custom styled checkbox */
@@ -519,6 +528,7 @@ body[data-theme="dark"] .role-badge.original-admin {
         transform: translateX(100%);
         opacity: 0;
     }
+
     to {
         transform: translateX(0);
         opacity: 1;
@@ -880,12 +890,15 @@ body[data-theme="dark"] .particle:nth-child(10) {
         transform: translateY(100vh) translateX(0px) rotate(0deg);
         opacity: 0;
     }
+
     10% {
         opacity: 1;
     }
+
     90% {
         opacity: 1;
     }
+
     100% {
         transform: translateY(-10vh) translateX(50px) rotate(360deg);
         opacity: 0;
@@ -894,35 +907,91 @@ body[data-theme="dark"] .particle:nth-child(10) {
 
 /* Cloud animation keyframes */
 @keyframes float1 {
-    0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
-    33% { transform: translate(30px, -30px) rotate(5deg); }
-    66% { transform: translate(-20px, 20px) rotate(-3deg); }
+
+    0%,
+    100% {
+        transform: translate(0px, 0px) rotate(0deg);
+    }
+
+    33% {
+        transform: translate(30px, -30px) rotate(5deg);
+    }
+
+    66% {
+        transform: translate(-20px, 20px) rotate(-3deg);
+    }
 }
 
 @keyframes float2 {
-    0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
-    25% { transform: translate(-25px, -15px) rotate(-2deg); }
-    50% { transform: translate(35px, -25px) rotate(4deg); }
-    75% { transform: translate(-15px, 30px) rotate(-6deg); }
+
+    0%,
+    100% {
+        transform: translate(0px, 0px) rotate(0deg);
+    }
+
+    25% {
+        transform: translate(-25px, -15px) rotate(-2deg);
+    }
+
+    50% {
+        transform: translate(35px, -25px) rotate(4deg);
+    }
+
+    75% {
+        transform: translate(-15px, 30px) rotate(-6deg);
+    }
 }
 
 @keyframes float3 {
-    0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
-    50% { transform: translate(-40px, -40px) rotate(8deg); }
+
+    0%,
+    100% {
+        transform: translate(0px, 0px) rotate(0deg);
+    }
+
+    50% {
+        transform: translate(-40px, -40px) rotate(8deg);
+    }
 }
 
 @keyframes float4 {
-    0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
-    20% { transform: translate(20px, -30px) rotate(3deg); }
-    40% { transform: translate(-30px, -15px) rotate(-4deg); }
-    60% { transform: translate(25px, 25px) rotate(2deg); }
-    80% { transform: translate(-15px, 35px) rotate(-5deg); }
+
+    0%,
+    100% {
+        transform: translate(0px, 0px) rotate(0deg);
+    }
+
+    20% {
+        transform: translate(20px, -30px) rotate(3deg);
+    }
+
+    40% {
+        transform: translate(-30px, -15px) rotate(-4deg);
+    }
+
+    60% {
+        transform: translate(25px, 25px) rotate(2deg);
+    }
+
+    80% {
+        transform: translate(-15px, 35px) rotate(-5deg);
+    }
 }
 
 @keyframes float5 {
-    0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
-    40% { transform: translate(-35px, 20px) rotate(-7deg); }
-    60% { transform: translate(20px, -25px) rotate(5deg); }
+
+    0%,
+    100% {
+        transform: translate(0px, 0px) rotate(0deg);
+    }
+
+    40% {
+        transform: translate(-35px, 20px) rotate(-7deg);
+    }
+
+    60% {
+        transform: translate(20px, -25px) rotate(5deg);
+    }
 }
 
 /* Navbar Styles */
@@ -995,7 +1064,8 @@ body[data-theme="dark"] .particle:nth-child(10) {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    height: 40px; /* Match user-btn height */
+    height: 40px;
+    /* Match user-btn height */
     box-sizing: border-box;
 }
 
@@ -1199,13 +1269,33 @@ body[data-theme="dark"] .results-section {
     animation: slideInUp 0.6s ease-out forwards;
 }
 
-.anime-card:nth-child(1) { animation-delay: 0.1s; }
-.anime-card:nth-child(2) { animation-delay: 0.2s; }
-.anime-card:nth-child(3) { animation-delay: 0.3s; }
-.anime-card:nth-child(4) { animation-delay: 0.4s; }
-.anime-card:nth-child(5) { animation-delay: 0.5s; }
-.anime-card:nth-child(6) { animation-delay: 0.6s; }
-.anime-card:nth-child(n+7) { animation-delay: 0.7s; }
+.anime-card:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.anime-card:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.anime-card:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.anime-card:nth-child(4) {
+    animation-delay: 0.4s;
+}
+
+.anime-card:nth-child(5) {
+    animation-delay: 0.5s;
+}
+
+.anime-card:nth-child(6) {
+    animation-delay: 0.6s;
+}
+
+.anime-card:nth-child(n+7) {
+    animation-delay: 0.7s;
+}
 
 .anime-card-background {
     position: absolute;
@@ -1417,15 +1507,18 @@ body[data-theme="dark"] .results-section {
     transition: color 0.3s ease;
 }
 
-.active-downloads, .completed-downloads {
+.active-downloads,
+.completed-downloads {
     margin-bottom: 1rem;
 }
 
-.active-downloads:last-child, .completed-downloads:last-child {
+.active-downloads:last-child,
+.completed-downloads:last-child {
     margin-bottom: 0;
 }
 
-.active-downloads h4, .completed-downloads h4 {
+.active-downloads h4,
+.completed-downloads h4 {
     color: var(--text-secondary);
     margin-bottom: 0.75rem;
     font-size: 0.95rem;
@@ -1514,9 +1607,12 @@ body[data-theme="dark"] .results-section {
 }
 
 .queue-progress-bar {
-    flex: 1;  /* Take available space */
-    max-width: calc(100% - 180px);  /* Leave space for text, then remove 10% */
-    width: 90%;  /* Use 90% of available width */
+    flex: 1;
+    /* Take available space */
+    max-width: calc(100% - 180px);
+    /* Leave space for text, then remove 10% */
+    width: 90%;
+    /* Use 90% of available width */
     height: 6px;
     background: var(--progress-bg);
     border-radius: 3px;
@@ -1561,9 +1657,12 @@ body[data-theme="dark"] .queue-progress-fill {
 .episode-progress .queue-progress-bar {
     height: 4px;
     background: var(--progress-bg-secondary, #f7fafc);
-    flex: 1;  /* Take available space */
-    max-width: calc(100% - 180px);  /* Leave space for text, then remove 10% - same as main progress bar */
-    width: 90%;  /* Use 90% of available width - same as main progress bar */
+    flex: 1;
+    /* Take available space */
+    max-width: calc(100% - 180px);
+    /* Leave space for text, then remove 10% - same as main progress bar */
+    width: 90%;
+    /* Use 90% of available width - same as main progress bar */
 }
 
 .episode-progress-fill {
@@ -1581,9 +1680,12 @@ body[data-theme="dark"] .queue-progress-fill {
 body[data-theme="dark"] .episode-progress .queue-progress-bar {
     background: #0d1117;
     border: 1px solid #30363d;
-    flex: 1;  /* Take available space */
-    max-width: calc(100% - 180px);  /* Leave space for text, then remove 10% - same as main progress bar */
-    width: 90%;  /* Use 90% of available width - same as main progress bar */
+    flex: 1;
+    /* Take available space */
+    max-width: calc(100% - 180px);
+    /* Leave space for text, then remove 10% - same as main progress bar */
+    width: 90%;
+    /* Use 90% of available width - same as main progress bar */
 }
 
 body[data-theme="dark"] .episode-progress-fill {
@@ -1621,8 +1723,13 @@ body[data-theme="dark"] .episode-progress-text {
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 /* Empty State */
@@ -1775,7 +1882,7 @@ body[data-theme="dark"] .episode-progress-text {
 }
 
 .setting-group label {
-    min-width: 80px;
+    min-width: 85px;
     color: var(--text-secondary);
     font-weight: 500;
     transition: color 0.3s ease;
@@ -1973,7 +2080,8 @@ body[data-theme="dark"] .episode-progress-text {
 }
 
 /* Button Styles */
-.primary-btn, .secondary-btn {
+.primary-btn,
+.secondary-btn {
     padding: 12px 24px;
     border: none;
     border-radius: 6px;
@@ -2087,15 +2195,21 @@ body[data-theme="dark"] .episode-progress-text {
         flex-direction: column;
     }
 
-    .primary-btn, .secondary-btn {
+    .primary-btn,
+    .secondary-btn {
         width: 100%;
     }
 }
 
 /* Animations */
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 @keyframes scaleIn {
@@ -2103,6 +2217,7 @@ body[data-theme="dark"] .episode-progress-text {
         transform: scale(0.8);
         opacity: 0;
     }
+
     to {
         transform: scale(1);
         opacity: 1;
@@ -2110,9 +2225,17 @@ body[data-theme="dark"] .episode-progress-text {
 }
 
 @keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+
+    100% {
+        transform: scale(1);
+    }
 }
 
 @keyframes slideInUp {
@@ -2120,6 +2243,7 @@ body[data-theme="dark"] .episode-progress-text {
         opacity: 0;
         transform: translateY(30px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -2127,18 +2251,26 @@ body[data-theme="dark"] .episode-progress-text {
 }
 
 @keyframes bounce {
-    0%, 20%, 60%, 100% {
+
+    0%,
+    20%,
+    60%,
+    100% {
         transform: translateY(0);
     }
+
     40% {
         transform: translateY(-10px);
     }
+
     80% {
         transform: translateY(-5px);
     }
 }
 
-.primary-btn:active, .secondary-btn:active, .download-btn:active {
+.primary-btn:active,
+.secondary-btn:active,
+.download-btn:active {
     animation: pulse 0.2s ease-in-out;
 }
 
