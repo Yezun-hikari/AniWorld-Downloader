@@ -137,6 +137,13 @@ class Anime:
         self._description_german_cache = description_german
         self._description_english_cache = description_english
 
+        # Shared anime-level data cache for episodes
+        self._shared_season_episode_count = None
+        self._shared_movie_episode_count = None
+
+        # Populate shared data for episodes to avoid duplicate requests
+        self._populate_shared_episode_data()
+
     def _extract_slug_from_episodes(
         self, episode_list: List["Episode"]
     ) -> Optional[str]:
@@ -374,6 +381,43 @@ class Anime:
 
         return " ".join(words[:max_words]) + " [...]"
 
+    def _populate_shared_episode_data(self) -> None:
+        """
+        Populate shared anime-level data once to be used by all episodes.
+        This prevents each episode from making duplicate HTTP requests.
+        """
+        try:
+            if self.slug and not self._shared_season_episode_count:
+                # Get the first episode link for reference
+                first_episode_link = None
+                if self.episode_list:
+                    first_episode_link = getattr(self.episode_list[0], 'link', None)
+
+                if not first_episode_link and self.episode_list:
+                    # Try to construct a link from first episode data
+                    first_ep = self.episode_list[0]
+                    if first_ep.slug and first_ep.season is not None and first_ep.episode is not None:
+                        if first_ep.season == 0:
+                            first_episode_link = f"{self.base_url}/{self.stream_path}/{first_ep.slug}/filme/film-{first_ep.episode}"
+                        else:
+                            first_episode_link = f"{self.base_url}/{self.stream_path}/{first_ep.slug}/staffel-{first_ep.season}/episode-{first_ep.episode}"
+
+                # Fetch shared data
+                self._shared_season_episode_count = get_season_episode_count(
+                    self.slug, first_episode_link or f"{self.base_url}/{self.stream_path}/{self.slug}"
+                )
+                self._shared_movie_episode_count = get_movie_episode_count(self.slug)
+
+                # Share this data with all episodes
+                for episode in self.episode_list:
+                    if not episode.season_episode_count:
+                        episode.season_episode_count = self._shared_season_episode_count
+                    if episode.movie_episode_count is None or episode.movie_episode_count == 0:
+                        episode.movie_episode_count = self._shared_movie_episode_count
+
+        except Exception as err:
+            logging.error("Error populating shared episode data: %s", err)
+
     def to_json(self) -> str:
         """
         Convert anime to JSON string representation.
@@ -558,9 +602,14 @@ class Episode:
         self._html_cache = html
         self._provider_cache = None
         self._language_cache = None
+        self._basic_details_filled = False
+        self._full_details_filled = False
 
-        # Auto-populate details
-        self.auto_fill_details()
+        # Only auto-populate essential details if link is provided
+        if self.link:
+            self._auto_fill_basic_details()
+        else:
+            self._basic_details_filled = True
 
     @property
     def html(self) -> requests.models.Response:
@@ -933,6 +982,9 @@ class Episode:
             Redirect link or None if not available
         """
         try:
+            # Ensure we have provider data loaded
+            self.auto_fill_details()
+
             lang_key = self._get_language_key_from_name(self._selected_language)
 
             # Check if selected provider and language combination exists
@@ -1155,13 +1207,13 @@ class Episode:
             )
             return None
 
-    def auto_fill_details(self) -> None:
+    def _auto_fill_basic_details(self) -> None:
         """
-        Automatically fill episode details from available information.
+        Fill only essential details needed for link construction without expensive operations.
+        """
+        if self._basic_details_filled:
+            return
 
-        This method constructs missing information like links, extracts metadata
-        from HTML, and populates provider/language information.
-        """
         try:
             # Construct link if missing but have components
             if (
@@ -1181,7 +1233,7 @@ class Episode:
                         f"staffel-{self.season}/episode-{self.episode}"
                     )
 
-            # Extract components from link if missing
+            # Extract components from link if missing (no HTTP requests)
             if self.link:
                 if not self.slug:
                     try:
@@ -1203,7 +1255,25 @@ class Episode:
                     except ValueError as err:
                         logging.warning("Could not extract episode: %s", err)
 
-            # Fetch and populate metadata if link is available
+            self._basic_details_filled = True
+
+        except Exception as err:
+            logging.error("Critical error in _auto_fill_basic_details: %s", err)
+            self._basic_details_filled = True
+
+    def auto_fill_details(self) -> None:
+        """
+        Automatically fill episode details from available information.
+        This is now called lazily only when needed.
+        """
+        if self._full_details_filled:
+            return
+
+        try:
+            # First ensure basic details are filled
+            self._auto_fill_basic_details()
+
+            # Fetch and populate metadata if link is available (expensive operations)
             if self.link:
                 try:
                     # Get anime title if missing
@@ -1236,44 +1306,14 @@ class Episode:
                     if not self.provider_name and self.provider:
                         self.provider_name = list(self.provider.keys())
 
-                    # Get season/episode counts if missing
-                    if not self.season_episode_count and self.slug:
-                        self.season_episode_count = get_season_episode_count(
-                            self.slug, self.link
-                        )
-
-                    if (
-                        self.movie_episode_count is None
-                        or self.movie_episode_count == 0
-                    ):
-                        if self.slug:
-                            self.movie_episode_count = get_movie_episode_count(
-                                self.slug
-                            )
-
-                    # Clean up season episode count if movies exist
-                    if (
-                        self.movie_episode_count
-                        and self.movie_episode_count > 0
-                        and self.season_episode_count
-                    ):
-                        # Remove season 0 if it exists and equals movie count
-                        last_season = (
-                            max(self.season_episode_count.keys())
-                            if self.season_episode_count
-                            else None
-                        )
-                        if (
-                            last_season is not None
-                            and self.season_episode_count.get(last_season) == 0
-                        ):
-                            del self.season_episode_count[last_season]
-
                 except Exception as err:
                     logging.error("Error auto-filling episode details: %s", err)
 
+            self._full_details_filled = True
+
         except Exception as err:
             logging.error("Critical error in auto_fill_details: %s", err)
+            self._full_details_filled = True
 
     def validate_configuration(self) -> List[str]:
         """

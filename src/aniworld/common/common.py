@@ -24,6 +24,9 @@ from ..config import (
     SYNCPLAY_PATH,
 )
 
+# Global cache for season/movie counts to avoid duplicate requests
+_ANIME_DATA_CACHE = {}
+
 
 # Constants
 PACKAGE_MANAGERS = {
@@ -469,7 +472,7 @@ def _parse_season_episodes(soup: BeautifulSoup, season: int) -> int:
 
 def get_season_episode_count(slug: str, link: str = ANIWORLD_TO) -> Dict[int, int]:
     """
-    Get episode count for each season of an anime.
+    Get episode count for each season of an anime with caching.
 
     Args:
         slug: Anime slug from URL
@@ -478,6 +481,11 @@ def get_season_episode_count(slug: str, link: str = ANIWORLD_TO) -> Dict[int, in
     Returns:
         Dictionary mapping season numbers to episode counts
     """
+    # Check cache first
+    cache_key = f"seasons_{slug}"
+    if cache_key in _ANIME_DATA_CACHE:
+        return _ANIME_DATA_CACHE[cache_key]
+
     try:
         if S_TO not in link:
             base_url = f"{ANIWORLD_TO}/anime/stream/{slug}/"
@@ -500,16 +508,20 @@ def get_season_episode_count(slug: str, link: str = ANIWORLD_TO) -> Dict[int, in
                 logging.warning("Failed to get episodes for season %d: %s", season, err)
                 episode_counts[season] = 0
 
+        # Cache the result
+        _ANIME_DATA_CACHE[cache_key] = episode_counts
         return episode_counts
 
     except Exception as err:
         logging.error("Failed to get season episode count for %s: %s", slug, err)
+        # Cache empty result to avoid repeated failures
+        _ANIME_DATA_CACHE[cache_key] = {}
         return {}
 
 
 def get_movie_episode_count(slug: str) -> int:
     """
-    Get movie count for an anime.
+    Get movie count for an anime with caching.
 
     Args:
         slug: Anime slug from URL
@@ -517,6 +529,11 @@ def get_movie_episode_count(slug: str) -> int:
     Returns:
         Number of movies available
     """
+    # Check cache first
+    cache_key = f"movies_{slug}"
+    if cache_key in _ANIME_DATA_CACHE:
+        return _ANIME_DATA_CACHE[cache_key]
+
     try:
         movie_page_url = f"{ANIWORLD_TO}/anime/stream/{slug}/filme"
         response = _make_request(movie_page_url)
@@ -539,10 +556,15 @@ def get_movie_episode_count(slug: str) -> int:
             else:
                 break
 
-        return max(movie_indices) if movie_indices else 0
+        result = max(movie_indices) if movie_indices else 0
+        # Cache the result
+        _ANIME_DATA_CACHE[cache_key] = result
+        return result
 
     except Exception as err:
         logging.error("Failed to get movie count for %s: %s", slug, err)
+        # Cache failure result
+        _ANIME_DATA_CACHE[cache_key] = 0
         return 0
 
 
