@@ -1012,7 +1012,7 @@ def start_web_interface(arguments=None, port=5000, debug=False):
     print(f"🌐 External Access:  {expose_status}")
     print(f"📁 Download Path:    {download_path}")
     print(f"🐞 Debug Mode:       {'ENABLED' if debug else 'DISABLED'}")
-    print(f"🛠️ Version:          {config.VERSION}")
+    print(f"📦 Version:          {config.VERSION}")
     print(f"🌏 Browser:          {browser_status}")
     print("=" * 69)
     print("💡 Access the web interface by opening the URL above in your browser")
