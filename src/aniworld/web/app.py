@@ -766,6 +766,8 @@ class WebApp:
             """Get download queue status endpoint."""
             try:
                 queue_status = self.download_manager.get_queue_status()
+
+
                 return jsonify({
                     'success': True,
                     'queue': queue_status

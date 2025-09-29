@@ -899,8 +899,15 @@ document.addEventListener('DOMContentLoaded', function() {
             const queueItem = document.createElement('div');
             queueItem.className = 'queue-item';
 
-            const progress = item.progress_percentage || 0;
+            const overallProgress = item.progress_percentage || 0;
+            const episodeProgress = item.current_episode_progress || 0;
             const showProgressBar = item.status === 'downloading' || item.status === 'queued';
+            const isDownloading = item.status === 'downloading';
+
+
+            // Create the HTML content
+            const overallProgressClamped = Math.max(0, Math.min(100, overallProgress));
+            const episodeProgressClamped = Math.max(0, Math.min(100, episodeProgress));
 
             queueItem.innerHTML = `
                 <div class="queue-item-header">
@@ -910,10 +917,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 ${showProgressBar ? `
                 <div class="queue-item-progress">
                     <div class="queue-progress-bar">
-                        <div class="queue-progress-fill" style="width: ${progress}%"></div>
+                        <div class="queue-progress-fill" style="width: ${overallProgressClamped}%; transition: width 0.3s ease;"></div>
                     </div>
-                    <div class="queue-progress-text">${item.completed_episodes}/${item.total_episodes}</div>
+                    <div class="queue-progress-text">${overallProgressClamped.toFixed(1)}% | ${item.completed_episodes}/${item.total_episodes} episodes</div>
                 </div>
+                ${isDownloading ? `
+                <div class="queue-item-progress episode-progress">
+                    <div class="queue-progress-bar">
+                        <div class="queue-progress-fill episode-progress-fill" style="width: ${episodeProgressClamped}%; transition: width 0.3s ease;"></div>
+                    </div>
+                    <div class="queue-progress-text episode-progress-text">Current Episode: ${episodeProgressClamped.toFixed(1)}%</div>
+                </div>
+                ` : ''}
                 ` : `
                 <div class="queue-item-progress">
                     <div class="queue-progress-text">${item.completed_episodes}/${item.total_episodes} episodes</div>

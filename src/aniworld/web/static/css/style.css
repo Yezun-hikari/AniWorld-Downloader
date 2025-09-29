@@ -1514,7 +1514,9 @@ body[data-theme="dark"] .results-section {
 }
 
 .queue-progress-bar {
-    flex: 1;
+    flex: 1;  /* Take available space */
+    max-width: calc(100% - 180px);  /* Leave space for text, then remove 10% */
+    width: 90%;  /* Use 90% of available width */
     height: 6px;
     background: var(--progress-bg);
     border-radius: 3px;
@@ -1549,6 +1551,48 @@ body[data-theme="dark"] .queue-progress-fill {
     min-width: 60px;
     text-align: right;
     transition: color 0.3s ease;
+}
+
+/* Episode-specific progress bar styles */
+.episode-progress {
+    margin-top: 0.5rem;
+}
+
+.episode-progress .queue-progress-bar {
+    height: 4px;
+    background: var(--progress-bg-secondary, #f7fafc);
+    flex: 1;  /* Take available space */
+    max-width: calc(100% - 180px);  /* Leave space for text, then remove 10% - same as main progress bar */
+    width: 90%;  /* Use 90% of available width - same as main progress bar */
+}
+
+.episode-progress-fill {
+    background: #4299e1 !important;
+    box-shadow: 0 0 4px rgba(66, 153, 225, 0.3) !important;
+}
+
+.episode-progress-text {
+    font-size: 0.8rem !important;
+    color: var(--text-quaternary, #a0aec0) !important;
+    min-width: 120px !important;
+}
+
+/* Dark mode episode progress */
+body[data-theme="dark"] .episode-progress .queue-progress-bar {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    flex: 1;  /* Take available space */
+    max-width: calc(100% - 180px);  /* Leave space for text, then remove 10% - same as main progress bar */
+    width: 90%;  /* Use 90% of available width - same as main progress bar */
+}
+
+body[data-theme="dark"] .episode-progress-fill {
+    background: #58a6ff !important;
+    box-shadow: 0 0 6px rgba(88, 166, 255, 0.4) !important;
+}
+
+body[data-theme="dark"] .episode-progress-text {
+    color: #8b949e !important;
 }
 
 .queue-item-details {
