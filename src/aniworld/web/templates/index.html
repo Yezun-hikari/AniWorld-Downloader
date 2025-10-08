@@ -129,21 +129,33 @@
             <div class="home-content" id="home-content">
                 <div class="loading-section" id="home-loading">
                     <div class="loading-spinner"></div>
-                    <p>Loading popular and new anime...</p>
+                    <p>Loading popular and new media...</p>
                 </div>
 
                 <div class="popular-new-sections" id="popular-new-sections" style="display: none;">
+                    <!-- Site Filter for Popular/New Media -->
+                    <div class="media-site-filter">
+                        <label class="site-option">
+                            <input type="radio" name="media-site" value="aniworld.to" id="media-site-aniworld">
+                            <span class="radio-label">AniWorld.to</span>
+                        </label>
+                        <label class="site-option">
+                            <input type="radio" name="media-site" value="s.to" id="media-site-sto">
+                            <span class="radio-label">S.to</span>
+                        </label>
+                    </div>
+
                     <div class="anime-section" id="popular-section">
-                        <h3><i class="fas fa-fire"></i> Popular Anime</h3>
-                        <div class="anime-grid" id="popular-anime-grid">
-                            <!-- Popular anime will be populated here -->
+                        <h3><i class="fas fa-fire"></i> Popular Media</h3>
+                        <div class="anime-grid" id="popular-media-grid">
+                            <!-- Popular media will be populated here -->
                         </div>
                     </div>
 
                     <div class="anime-section" id="new-section">
-                        <h3><i class="fas fa-star"></i> New Anime</h3>
-                        <div class="anime-grid" id="new-anime-grid">
-                            <!-- New anime will be populated here -->
+                        <h3><i class="fas fa-star"></i> New Media</h3>
+                        <div class="anime-grid" id="new-media-grid">
+                            <!-- New media will be populated here -->
                         </div>
                     </div>
                 </div>
