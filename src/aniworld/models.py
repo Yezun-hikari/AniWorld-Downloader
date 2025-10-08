@@ -21,6 +21,7 @@ from .config import (
 )
 from .parser import arguments
 from .common import get_season_episode_count, get_movie_episode_count
+from .common.session import get_session
 
 
 class Anime:
@@ -174,7 +175,8 @@ class Anime:
         """
         if self._html_cache is None:
             try:
-                self._html_cache = requests.get(
+                session = get_session()
+                self._html_cache = session.get(
                     f"{self.base_url}/{self.stream_path}/{self.slug}",
                     timeout=DEFAULT_REQUEST_TIMEOUT,
                     headers={"User-Agent": RANDOM_USER_AGENT},
@@ -276,7 +278,8 @@ class Anime:
             if not anime_id:
                 return "Could not find MyAnimeList ID for English description."
 
-            response = requests.get(
+            session = get_session()
+            response = session.get(
                 f"https://myanimelist.net/anime/{anime_id}",
                 timeout=DEFAULT_REQUEST_TIMEOUT,
                 headers={"User-Agent": RANDOM_USER_AGENT},
@@ -636,7 +639,8 @@ class Episode:
                 raise ValueError("Cannot fetch HTML without episode link")
 
             try:
-                self._html_cache = requests.get(
+                session = get_session()
+                self._html_cache = session.get(
                     self.link,
                     timeout=DEFAULT_REQUEST_TIMEOUT,
                     headers={"User-Agent": RANDOM_USER_AGENT},
@@ -1062,7 +1066,8 @@ class Episode:
             return None
 
         try:
-            response = requests.get(
+            session = get_session()
+            response = session.get(
                 self.redirect_link,
                 timeout=DEFAULT_REQUEST_TIMEOUT,
                 headers={"User-Agent": RANDOM_USER_AGENT},

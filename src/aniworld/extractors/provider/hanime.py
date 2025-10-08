@@ -8,6 +8,7 @@ from urllib.parse import urlparse
 import requests
 
 from ...config import DEFAULT_REQUEST_TIMEOUT
+from ...common.session import get_session
 
 # Constants
 VIDEO_MANIFEST_PATTERN = r"^.*videos_manifest.*$"
@@ -34,7 +35,9 @@ def _make_request(url: str, retry_count: int = 0) -> requests.Response:
     """
     try:
         logger.debug(f"Making request to: {url} (attempt {retry_count + 1})")
-        response = requests.get(
+        session = get_session()
+
+        response = session.get(
             url,
             timeout=DEFAULT_REQUEST_TIMEOUT,
             headers={

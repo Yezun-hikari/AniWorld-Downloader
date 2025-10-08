@@ -14,6 +14,7 @@ import requests
 
 from .ascii_art import display_ascii_art
 from .config import DEFAULT_REQUEST_TIMEOUT, ANIWORLD_TO, S_TO
+from .common.session import get_session
 
 
 # Constants for better maintainability
@@ -71,6 +72,7 @@ def _get_user_input() -> str:
 def _cached_search_request(search_url: str) -> str:
     """
     Cached HTTP request for search results.
+    Uses shared session with connection pooling for better performance.
 
     Args:
         search_url: The URL to fetch data from
@@ -78,7 +80,8 @@ def _cached_search_request(search_url: str) -> str:
     Returns:
         str: Raw response text
     """
-    response = requests.get(search_url, timeout=DEFAULT_REQUEST_TIMEOUT)
+    session = get_session()
+    response = session.get(search_url, timeout=DEFAULT_REQUEST_TIMEOUT)
     response.raise_for_status()
     return response.text.strip()
 
@@ -193,8 +196,9 @@ def fetch_popular_and_new_media() -> Dict[str, Dict[str, List[Dict[str, str]]]]:
     }
 
     # Fetch from AniWorld.to
+    session = get_session()
     try:
-        response = requests.get(ANIWORLD_TO, timeout=DEFAULT_REQUEST_TIMEOUT)
+        response = session.get(ANIWORLD_TO, timeout=DEFAULT_REQUEST_TIMEOUT)
         response.raise_for_status()
         soup = BeautifulSoup(response.text, "html.parser")
 
@@ -228,7 +232,7 @@ def fetch_popular_and_new_media() -> Dict[str, Dict[str, List[Dict[str, str]]]]:
 
     # Fetch from S.to
     try:
-        response = requests.get(S_TO, timeout=DEFAULT_REQUEST_TIMEOUT)
+        response = session.get(S_TO, timeout=DEFAULT_REQUEST_TIMEOUT)
         response.raise_for_status()
         soup = BeautifulSoup(response.text, "html.parser")
 

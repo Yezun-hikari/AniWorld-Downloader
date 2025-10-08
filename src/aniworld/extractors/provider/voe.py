@@ -10,6 +10,7 @@ import requests
 from bs4 import BeautifulSoup
 
 from ... import config
+from ...common.session import get_session
 
 
 # Compile regex patterns once for better performance
@@ -107,7 +108,8 @@ def get_direct_link_from_voe(embeded_voe_link: str) -> str:
     """
     try:
         # Initial request to get redirect URL
-        response = requests.get(
+        session = get_session()
+        response = session.get(
             embeded_voe_link,
             headers={"User-Agent": config.RANDOM_USER_AGENT},
             timeout=config.DEFAULT_REQUEST_TIMEOUT,
@@ -192,7 +194,8 @@ def get_preview_image_link_from_voe(embeded_voe_link: str) -> str:
     """
     try:
         # Initial request to get redirect URL
-        response = requests.get(
+        session = get_session()
+        response = session.get(
             embeded_voe_link,
             headers={"User-Agent": config.RANDOM_USER_AGENT},
             timeout=config.DEFAULT_REQUEST_TIMEOUT,

@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup
 
 from ..config import DEFAULT_REQUEST_TIMEOUT, MPV_SCRIPTS_DIRECTORY
 from ..common import copy_file_if_different, setup_autostart, setup_autoexit
+from ..common.session import get_session
 
 # Constants
 CHAPTER_FORMAT = "\n[CHAPTER]\nTIMEBASE=1/1000\nSTART={}\nEND={}\nTITLE={}\n"
@@ -27,9 +28,10 @@ def _float_to_milliseconds(value: float) -> str:
 def _make_request(
     url: str, timeout: int = DEFAULT_REQUEST_TIMEOUT
 ) -> requests.Response:
-    """Make HTTP request with error handling."""
+    """Make HTTP request with error handling using shared session."""
     try:
-        response = requests.get(url, timeout=timeout)
+        session = get_session()
+        response = session.get(url, timeout=timeout)
         response.raise_for_status()
         return response
     except requests.RequestException as err:
@@ -282,7 +284,8 @@ def build_flags(anime_id: str, episode: int, chapters_file: str) -> str:
     """
     try:
         aniskip_url = ANISKIP_API_URL.format(anime_id, episode)
-        response = requests.get(aniskip_url, timeout=DEFAULT_REQUEST_TIMEOUT)
+        session = get_session()
+        response = session.get(aniskip_url, timeout=DEFAULT_REQUEST_TIMEOUT)
 
         if response.status_code == 500:
             logging.info("Aniskip API is currently not working!")
