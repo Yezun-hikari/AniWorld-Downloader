@@ -105,6 +105,10 @@ class SelectionMenu(npyscreen.NPSApp):
         """
         try:
             anime_data = self.anime[0]
+
+            # ensure episode details are filled
+            anime_data.auto_fill_details()
+
             available_languages = anime_data.language_name
             season_episode_count = anime_data.season_episode_count
             movie_episode_count = anime_data.movie_episode_count
