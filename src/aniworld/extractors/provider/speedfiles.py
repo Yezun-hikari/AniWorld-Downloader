@@ -7,7 +7,6 @@ from urllib.parse import urlparse
 import requests
 
 from ...config import DEFAULT_REQUEST_TIMEOUT, RANDOM_USER_AGENT
-from ...common.session import get_session
 
 # Constants
 SPEEDFILES_PATTERN = re.compile(r'var _0x5opu234 = "(?P<encoded_data>.*?)";')
@@ -62,9 +61,7 @@ def _make_request(url: str) -> requests.Response:
     """
     try:
         logger.debug(f"Making request to: {url}")
-        session = get_session()
-
-        response = session.get(
+        response = requests.get(
             url,
             timeout=DEFAULT_REQUEST_TIMEOUT,
             headers={"User-Agent": RANDOM_USER_AGENT},
