@@ -15,8 +15,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const homeContent = document.getElementById('home-content');
     const homeLoading = document.getElementById('home-loading');
     const popularNewSections = document.getElementById('popular-new-sections');
-    const popularAnimeGrid = document.getElementById('popular-anime-grid');
-    const newAnimeGrid = document.getElementById('new-anime-grid');
+    const popularMediaGrid = document.getElementById('popular-media-grid');
+    const newMediaGrid = document.getElementById('new-media-grid');
+    
+    // Media site filter elements
+    const mediaSiteAniworld = document.getElementById('media-site-aniworld');
+    const mediaSiteSto = document.getElementById('media-site-sto');
+    
+    // Store fetched media data
+    let cachedMediaData = null;
 
     // Theme toggle elements
     const themeToggle = document.getElementById('theme-toggle');
@@ -57,8 +64,8 @@ document.addEventListener('DOMContentLoaded', function() {
     checkQueueStatus();
     loadAvailableProviders();
 
-    // Load popular and new anime on page load
-    loadPopularAndNewAnime();
+    // Load popular and new media on page load
+    loadPopularAndNewMedia();
 
     // Initialize theme (default is dark mode)
     initializeTheme();
@@ -106,8 +113,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             // Show home content (original state)
             showHomeContent();
-            // Reload popular and new anime
-            loadPopularAndNewAnime();
+            // Reload popular and new media
+            loadPopularAndNewMedia();
         });
     }
 
@@ -943,8 +950,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function loadPopularAndNewAnime() {
-        console.log('Loading popular and new anime...');
+    function loadPopularAndNewMedia() {
+        console.log('Loading popular and new media...');
 
         // Show loading state for home content
         homeLoading.style.display = 'block';
@@ -962,36 +969,91 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!data) return;
 
                 if (data.success) {
-                    displayPopularAndNewAnime(data.popular || [], data.new || []);
+                    // Cache the media data
+                    cachedMediaData = {
+                        aniworld: data.aniworld || {popular: [], new: []},
+                        s_to: data.s_to || {popular: [], new: []}
+                    };
+                    
+                    // Display with current filter selection
+                    filterAndDisplayMedia();
+                    
+                    // Add event listeners for filter buttons
+                    if (mediaSiteAniworld) {
+                        mediaSiteAniworld.addEventListener('change', filterAndDisplayMedia);
+                    }
+                    if (mediaSiteSto) {
+                        mediaSiteSto.addEventListener('change', filterAndDisplayMedia);
+                    }
                 } else {
-                    console.error('Failed to load popular/new anime:', data.error);
+                    console.error('Failed to load popular/new media:', data.error);
                     showEmptyState();
                 }
             })
             .catch(error => {
-                console.error('Error loading popular/new anime:', error);
+                console.error('Error loading popular/new media:', error);
                 showEmptyState();
             })
             .finally(() => {
                 homeLoading.style.display = 'none';
             });
     }
+    
+    function filterAndDisplayMedia() {
+        if (!cachedMediaData) return;
+        
+        // Get selected filter - default to showing both
+        let selectedSite = 'both';
+        if (mediaSiteAniworld && mediaSiteAniworld.checked) {
+            selectedSite = 'aniworld.to';
+        } else if (mediaSiteSto && mediaSiteSto.checked) {
+            selectedSite = 's.to';
+        }
+        
+        console.log('Filtering media for site:', selectedSite);
+        
+        let popularMedia = [];
+        let newMedia = [];
+        
+        // Combine data based on filter - always show both by default
+        if (selectedSite === 'aniworld.to') {
+            // Show AniWorld only
+            popularMedia = cachedMediaData.aniworld.popular;
+            newMedia = cachedMediaData.aniworld.new;
+        } else if (selectedSite === 's.to') {
+            // Show S.to only
+            popularMedia = cachedMediaData.s_to.popular;
+            newMedia = cachedMediaData.s_to.new;
+        } else {
+            // Default: Show both combined
+            popularMedia = [
+                ...cachedMediaData.aniworld.popular,
+                ...cachedMediaData.s_to.popular
+            ];
+            newMedia = [
+                ...cachedMediaData.aniworld.new,
+                ...cachedMediaData.s_to.new
+            ];
+        }
+        
+        displayPopularAndNewMedia(popularMedia, newMedia);
+    }
 
-    function displayPopularAndNewAnime(popularAnime, newAnime) {
+    function displayPopularAndNewMedia(popularMedia, newMedia) {
         // Clear existing content
-        popularAnimeGrid.innerHTML = '';
-        newAnimeGrid.innerHTML = '';
+        popularMediaGrid.innerHTML = '';
+        newMediaGrid.innerHTML = '';
 
-        // Populate popular anime (limit to 8)
-        popularAnime.slice(0, 8).forEach(anime => {
-            const animeCard = createHomeAnimeCard(anime);
-            popularAnimeGrid.appendChild(animeCard);
+        // Populate popular media (limit to 8)
+        popularMedia.slice(0, 8).forEach(media => {
+            const mediaCard = createHomeMediaCard(media);
+            popularMediaGrid.appendChild(mediaCard);
         });
 
-        // Populate new anime (limit to 8)
-        newAnime.slice(0, 8).forEach(anime => {
-            const animeCard = createHomeAnimeCard(anime);
-            newAnimeGrid.appendChild(animeCard);
+        // Populate new media (limit to 8)
+        newMedia.slice(0, 8).forEach(media => {
+            const mediaCard = createHomeMediaCard(media);
+            newMediaGrid.appendChild(mediaCard);
         });
 
         // Show the sections
@@ -999,20 +1061,20 @@ document.addEventListener('DOMContentLoaded', function() {
         showHomeContent();
     }
 
-    function createHomeAnimeCard(anime) {
+    function createHomeMediaCard(media) {
         const card = document.createElement('div');
         card.className = 'home-anime-card';
 
         const defaultCover = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDIwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjMzMzIi8+CjxwYXRoIGQ9Ik0xMDAgMTUwTDEyMCAxNzBMMTAwIDE5MFY3MGwyMCAyMEwxMDAgMTEwVjE1MFoiIGZpbGw9IiM2NjYiLz4KPC9zdmc+';
 
         // Replace image size from 150x225 to 220x330 for higher resolution
-        let coverUrl = anime.cover || defaultCover;
+        let coverUrl = media.cover || defaultCover;
         if (coverUrl.includes('_150x225.png')) {
             coverUrl = coverUrl.replace('_150x225.png', '_220x330.png');
         }
 
         // Truncate title at word boundaries to stay under 68 characters total
-        let displayTitle = anime.name;
+        let displayTitle = media.name;
         if (displayTitle.length > 65) { // Leave room for "..." (3 chars)
             // Find the last space before character 65
             let truncateAt = displayTitle.lastIndexOf(' ', 65);
@@ -1025,17 +1087,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
         card.innerHTML = `
             <div class="home-anime-cover">
-                <img src="${coverUrl}" alt="${escapeHtml(anime.name)}" loading="lazy"
+                <img src="${coverUrl}" alt="${escapeHtml(media.name)}" loading="lazy"
                      onerror="this.src='${defaultCover}'">
             </div>
-            <div class="home-anime-title" title="${escapeHtml(anime.name)}">
+            <div class="home-anime-title" title="${escapeHtml(media.name)}">
                 ${escapeHtml(displayTitle)}
             </div>
         `;
 
-        // Add click handler to search for this anime
+        // Add click handler to search for this media
         card.addEventListener('click', () => {
-            searchInput.value = anime.name;
+            searchInput.value = media.name;
             performSearch();
         });
 

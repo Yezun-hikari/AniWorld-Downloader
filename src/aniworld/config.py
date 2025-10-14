@@ -102,8 +102,12 @@ except PackageNotFoundError:
 def get_latest_github_version():
     """Get latest GitHub version with caching to avoid repeated API calls"""
     try:
+        # Import here to avoid circular dependency
+        from .common.session import get_session
+        
         url = "https://api.github.com/repos/phoenixthrush/AniWorld-Downloader/releases/latest"
-        response = requests.get(url, timeout=DEFAULT_REQUEST_TIMEOUT)
+        session = get_session()
+        response = session.get(url, timeout=DEFAULT_REQUEST_TIMEOUT)
         return (
             response.json().get("tag_name", "") if response.status_code == 200 else ""
         )

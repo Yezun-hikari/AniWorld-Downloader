@@ -7,6 +7,7 @@ import jsbeautifier
 from bs4 import BeautifulSoup
 
 from ...config import RANDOM_USER_AGENT, DEFAULT_REQUEST_TIMEOUT
+from ...common.session import get_session
 
 # Constants
 FILEMOON_BASE_URL = "https://filemoon.to/"
@@ -21,7 +22,9 @@ def _get_headers() -> dict:
 def _make_request(url: str, headers: Optional[dict] = None) -> requests.Response:
     """Make HTTP request with error handling."""
     try:
-        response = requests.get(url, headers=headers, timeout=DEFAULT_REQUEST_TIMEOUT)
+        session = get_session()
+
+        response = session.get(url, headers=headers, timeout=DEFAULT_REQUEST_TIMEOUT)
         response.raise_for_status()
         return response
     except requests.RequestException as err:

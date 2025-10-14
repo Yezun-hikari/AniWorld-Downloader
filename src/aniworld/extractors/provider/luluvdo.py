@@ -7,6 +7,7 @@ from urllib.parse import urlparse
 import requests
 
 from ... import config
+from ...common.session import get_session
 
 # Setup module logger
 logger = logging.getLogger(__name__)
@@ -135,7 +136,9 @@ def _make_request(url: str, headers: Dict[str, str]) -> requests.Response:
     """
     try:
         logger.debug(f"Making request to: {url}")
-        response = requests.get(
+        session = get_session()
+
+        response = session.get(
             url, headers=headers, timeout=config.DEFAULT_REQUEST_TIMEOUT
         )
         response.raise_for_status()
