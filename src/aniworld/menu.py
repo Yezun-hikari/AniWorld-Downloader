@@ -2,10 +2,43 @@ import curses
 import logging
 import os
 import sys
+import struct
+import fcntl
+import termios
 from typing import Dict, List, Optional, Tuple, Any
 
-import npyscreen
 import urllib3
+
+# Fix for Python 3.14+ buffer overflow in npyscreen
+# The issue is that struct.unpack('hh', ...) expects exactly 4 bytes
+# but TIOCGWINSZ returns 8 bytes on newer Python versions
+# This must be applied BEFORE npyscreen is imported
+if sys.version_info >= (3, 14):
+    # Monkey-patch before import
+    import npyscreen.proto_fm_screen_area as _npyscreen_area
+
+    def _patched_max_physical(self):
+        """Patched version of _max_physical to handle Python 3.14+ terminal size"""
+        try:
+            # Try to get terminal size using ioctl
+            # Use 8 bytes buffer to accommodate both old and new behavior
+            result = fcntl.ioctl(sys.stderr.fileno(), termios.TIOCGWINSZ, b"\x00" * 8)
+            # Unpack only the first 4 bytes (2 shorts for rows and columns)
+            mxy, mxx = struct.unpack("hh", result[:4])
+            return mxy - 1, mxx - 1
+        except (OSError, ValueError, AttributeError):
+            # Fallback to curses method
+            try:
+                mxy, mxx = curses.LINES, curses.COLS
+                return mxy - 1, mxx - 1
+            except AttributeError:
+                # Last resort fallback
+                return 24, 80
+
+    # Apply the patch
+    _npyscreen_area.ScreenArea._max_physical = _patched_max_physical
+
+import npyscreen
 
 from .models import Anime, Episode
 from .config import (
