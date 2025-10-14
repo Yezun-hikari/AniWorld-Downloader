@@ -43,20 +43,12 @@ class WebApp:
 
         # Download manager
         self.download_manager = get_download_manager(self.db)
-        
-        # Media cache
-        self.media_cache = None
-        self.media_cache_lock = threading.Lock()
-        self.cache_refresh_thread = None
 
         # Create Flask app
         self.app = self._create_app()
 
         # Setup routes
         self._setup_routes()
-        
-        # Initialize media cache and start auto-refresh
-        self._init_media_cache()
 
     def _create_app(self) -> Flask:
         """Create and configure Flask application."""
@@ -147,56 +139,6 @@ class WebApp:
             return f(*args, **kwargs)
 
         return decorated_function
-    
-    def _init_media_cache(self):
-        """Initialize media cache and start auto-refresh thread."""
-        # Initial cache load
-        self._refresh_media_cache()
-        
-        # Start auto-refresh thread
-        self.cache_refresh_thread = threading.Thread(
-            target=self._auto_refresh_media_cache, daemon=True
-        )
-        self.cache_refresh_thread.start()
-        logging.info("Media cache initialized and auto-refresh scheduled")
-    
-    def _refresh_media_cache(self):
-        """Refresh the media cache from both sites."""
-        try:
-            from ..search import fetch_popular_and_new_media
-            
-            logging.info("Refreshing media cache...")
-            media_data = fetch_popular_and_new_media()
-            
-            with self.media_cache_lock:
-                self.media_cache = media_data
-                
-            logging.info("Media cache refreshed successfully")
-        except Exception as e:
-            logging.error(f"Failed to refresh media cache: {e}")
-    
-    def _auto_refresh_media_cache(self):
-        """Auto-refresh media cache at midnight (00:00)."""
-        while True:
-            try:
-                # Calculate seconds until next midnight
-                now = datetime.now()
-                tomorrow = now.replace(hour=0, minute=0, second=0, microsecond=0)
-                tomorrow = tomorrow.replace(day=tomorrow.day + 1)
-                seconds_until_midnight = (tomorrow - now).total_seconds()
-                
-                logging.info(f"Next media cache refresh in {seconds_until_midnight/3600:.1f} hours (at midnight)")
-                
-                # Sleep until midnight
-                time.sleep(seconds_until_midnight)
-                
-                # Refresh cache
-                self._refresh_media_cache()
-                
-            except Exception as e:
-                logging.error(f"Error in auto-refresh thread: {e}")
-                # Sleep for 1 hour before trying again
-                time.sleep(3600)
 
     def _setup_routes(self):
         """Setup Flask routes."""
@@ -955,34 +897,24 @@ class WebApp:
         @self.app.route("/api/popular-new")
         @self._require_api_auth
         def api_popular_new():
-            """Get popular and new media from cache (refreshed at midnight)."""
+            """Get popular and new anime endpoint."""
             try:
-                # Use cached data
-                with self.media_cache_lock:
-                    media_data = self.media_cache
-                
-                if not media_data:
-                    # Fallback: fetch fresh data if cache is empty
-                    from ..search import fetch_popular_and_new_media
-                    media_data = fetch_popular_and_new_media()
-                    
-                    # Update cache
-                    with self.media_cache_lock:
-                        self.media_cache = media_data
-                
+                from ..search import fetch_popular_and_new_anime
+
+                anime_data = fetch_popular_and_new_anime()
                 return jsonify(
                     {
                         "success": True,
-                        "aniworld": media_data.get("aniworld", {"popular": [], "new": []}),
-                        "s_to": media_data.get("s_to", {"popular": [], "new": []}),
+                        "popular": anime_data.get("popular", []),
+                        "new": anime_data.get("new", []),
                     }
                 )
             except Exception as e:
-                logging.error(f"Failed to fetch popular/new media: {e}")
+                logging.error(f"Failed to fetch popular/new anime: {e}")
                 return jsonify(
                     {
                         "success": False,
-                        "error": f"Failed to fetch popular/new media: {str(e)}",
+                        "error": f"Failed to fetch popular/new anime: {str(e)}",
                     }
                 ), 500
 

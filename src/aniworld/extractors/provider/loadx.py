@@ -6,7 +6,6 @@ from typing import Dict, Optional
 from urllib.parse import urlparse
 
 from ...config import DEFAULT_REQUEST_TIMEOUT
-from ...common.session import get_session
 
 # Setup module logger
 logger = logging.getLogger(__name__)
@@ -75,18 +74,14 @@ def _make_request(
                 headers=headers or {},
             )
         elif method.upper() == "POST":
-            session = get_session()
-
-            response = session.post(
+            response = requests.post(
                 url,
                 headers=headers or {},
                 verify=False,
                 timeout=DEFAULT_REQUEST_TIMEOUT,
             )
         else:
-            session = get_session()
-
-            response = session.get(
+            response = requests.get(
                 url,
                 headers=headers or {},
                 verify=False,

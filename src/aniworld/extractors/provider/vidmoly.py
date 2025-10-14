@@ -4,7 +4,6 @@ import requests
 from bs4 import BeautifulSoup
 
 from ...config import DEFAULT_REQUEST_TIMEOUT, RANDOM_USER_AGENT
-from ...common.session import get_session
 
 
 # Compile regex pattern once for better performance
@@ -26,9 +25,7 @@ def get_direct_link_from_vidmoly(embeded_vidmoly_link: str) -> str:
         requests.RequestException: If the request fails
     """
     try:
-        session = get_session()
-
-        response = session.get(
+        response = requests.get(
             embeded_vidmoly_link,
             headers={"User-Agent": RANDOM_USER_AGENT},
             timeout=DEFAULT_REQUEST_TIMEOUT,
@@ -73,9 +70,7 @@ def get_preview_image_link_from_vidmoly(embeded_vidmoly_link: str) -> str:
     """
     try:
         # Perform initial request to fetch HTML content
-        session = get_session()
-
-        response = session.get(
+        response = requests.get(
             embeded_vidmoly_link,
             headers={"User-Agent": RANDOM_USER_AGENT},
             timeout=DEFAULT_REQUEST_TIMEOUT,

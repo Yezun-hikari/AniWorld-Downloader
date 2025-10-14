@@ -44,11 +44,9 @@ PACKAGE_MANAGERS = {
 def _make_request(
     url: str, timeout: int = DEFAULT_REQUEST_TIMEOUT
 ) -> requests.Response:
-    """Make HTTP request with error handling using shared session."""
+    """Make HTTP request with error handling."""
     try:
-        from .session import get_session
-        session = get_session()
-        response = session.get(url, timeout=timeout)
+        response = requests.get(url, timeout=timeout)
         response.raise_for_status()
         return response
     except requests.RequestException as err:
@@ -170,9 +168,7 @@ def download_file(url: str, path: str) -> bool:
         True if download successful
     """
     try:
-        from .session import get_session
-        session = get_session()
-        response = session.get(
+        response = requests.get(
             url, stream=True, allow_redirects=True, timeout=DEFAULT_REQUEST_TIMEOUT
         )
         response.raise_for_status()

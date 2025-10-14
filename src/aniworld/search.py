@@ -13,8 +13,7 @@ import curses
 import requests
 
 from .ascii_art import display_ascii_art
-from .config import DEFAULT_REQUEST_TIMEOUT, ANIWORLD_TO, S_TO
-from .common.session import get_session
+from .config import DEFAULT_REQUEST_TIMEOUT, ANIWORLD_TO
 
 
 # Constants for better maintainability
@@ -72,7 +71,6 @@ def _get_user_input() -> str:
 def _cached_search_request(search_url: str) -> str:
     """
     Cached HTTP request for search results.
-    Uses shared session with connection pooling for better performance.
 
     Args:
         search_url: The URL to fetch data from
@@ -80,8 +78,7 @@ def _cached_search_request(search_url: str) -> str:
     Returns:
         str: Raw response text
     """
-    session = get_session()
-    response = session.get(search_url, timeout=DEFAULT_REQUEST_TIMEOUT)
+    response = requests.get(search_url, timeout=DEFAULT_REQUEST_TIMEOUT)
     response.raise_for_status()
     return response.text.strip()
 
@@ -177,30 +174,22 @@ def fetch_anime_list(url: str) -> List[Dict]:
         raise ValueError("Could not fetch anime data from server") from err
 
 
-def fetch_popular_and_new_media() -> Dict[str, Dict[str, List[Dict[str, str]]]]:
+def fetch_popular_and_new_anime() -> Dict[str, List[Dict[str, str]]]:
     """
-    Fetch HTML from both AniWorld and S.to homepages for popular and new media parsing.
+    Fetch HTML from AniWorld homepage for popular and new anime parsing.
 
-    Extracts media titles and cover URLs from "Beliebt" and "Neue" sections.
+    Extracts anime titles and cover URLs from "Beliebt bei AniWorld" and "Neue Animes" sections.
 
     Returns:
-        Dictionary with 'aniworld' and 's_to' keys, each containing 'popular' and 'new' lists
-        Example: {
-            'aniworld': {'popular': [...], 'new': [...]},
-            's_to': {'popular': [...], 'new': [...]}
-        }
+        Dictionary with 'popular' and 'new' keys containing lists of anime data
     """
-    result = {
-        "aniworld": {"popular": [], "new": []},
-        "s_to": {"popular": [], "new": []}
-    }
-
-    # Fetch from AniWorld.to
-    session = get_session()
     try:
-        response = session.get(ANIWORLD_TO, timeout=DEFAULT_REQUEST_TIMEOUT)
+        response = requests.get(ANIWORLD_TO, timeout=DEFAULT_REQUEST_TIMEOUT)
         response.raise_for_status()
+
         soup = BeautifulSoup(response.text, "html.parser")
+
+        result = {"popular": [], "new": []}
 
         # Extract popular anime section
         popular_section = soup.find(
@@ -211,7 +200,7 @@ def fetch_popular_and_new_media() -> Dict[str, Dict[str, List[Dict[str, str]]]]:
                 "div", class_="previews"
             )
             if popular_carousel:
-                result["aniworld"]["popular"] = extract_anime_from_carousel(popular_carousel, ANIWORLD_TO)
+                result["popular"] = extract_anime_from_carousel(popular_carousel)
 
         # Extract new anime section
         new_section = soup.find(
@@ -225,74 +214,25 @@ def fetch_popular_and_new_media() -> Dict[str, Dict[str, List[Dict[str, str]]]]:
                 "div", class_="previews"
             )
             if new_carousel:
-                result["aniworld"]["new"] = extract_anime_from_carousel(new_carousel, ANIWORLD_TO)
+                result["new"] = extract_anime_from_carousel(new_carousel)
+
+        return result
 
     except requests.RequestException as err:
         logging.error("Failed to fetch AniWorld homepage: %s", err)
-
-    # Fetch from S.to
-    try:
-        response = session.get(S_TO, timeout=DEFAULT_REQUEST_TIMEOUT)
-        response.raise_for_status()
-        soup = BeautifulSoup(response.text, "html.parser")
-
-        # Extract popular series section
-        popular_section = soup.find(
-            "h2", string=lambda text: text and "beliebt" in text.lower()
-        )
-        if popular_section:
-            popular_carousel = popular_section.find_parent().find_next_sibling(
-                "div", class_="previews"
-            )
-            if popular_carousel:
-                result["s_to"]["popular"] = extract_anime_from_carousel(popular_carousel, S_TO)
-
-        # Extract new series section
-        new_section = soup.find(
-            "h2",
-            string=lambda text: text
-            and "neue" in text.lower()
-            and "serie" in text.lower(),
-        )
-        if new_section:
-            new_carousel = new_section.find_parent().find_next_sibling(
-                "div", class_="previews"
-            )
-            if new_carousel:
-                result["s_to"]["new"] = extract_anime_from_carousel(new_carousel, S_TO)
-
-    except requests.RequestException as err:
-        logging.error("Failed to fetch S.to homepage: %s", err)
-
-    return result
+        raise ValueError("Could not fetch homepage data") from err
 
 
-def fetch_popular_and_new_anime() -> Dict[str, List[Dict[str, str]]]:
+def extract_anime_from_carousel(carousel_div):
     """
-    Legacy function for backward compatibility.
-    Fetches only AniWorld data.
-
-    Returns:
-        Dictionary with 'popular' and 'new' keys containing lists of anime data
-    """
-    media_data = fetch_popular_and_new_media()
-    return media_data.get("aniworld", {"popular": [], "new": []})
-
-
-def extract_anime_from_carousel(carousel_div, base_url=None):
-    """
-    Extract anime/series data from a carousel div section.
+    Extract anime data from a carousel div section.
 
     Args:
         carousel_div: BeautifulSoup element containing the carousel
-        base_url: Base URL for resolving relative image paths (defaults to ANIWORLD_TO)
 
     Returns:
         List of dictionaries with 'name' and 'cover' keys
     """
-    if base_url is None:
-        base_url = ANIWORLD_TO
-        
     anime_list = []
 
     # Find all cover list items
@@ -328,7 +268,7 @@ def extract_anime_from_carousel(carousel_div, base_url=None):
                 cover = img_tag.get("data-src") or img_tag.get("src")
                 # Make absolute URL if relative
                 if cover and cover.startswith("/"):
-                    cover = base_url + cover
+                    cover = ANIWORLD_TO + cover
 
             if name and cover:
                 anime_list.append({"name": name, "cover": cover})

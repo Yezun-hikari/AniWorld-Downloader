@@ -8,7 +8,6 @@ from urllib.parse import urljoin
 import requests
 
 from ...config import RANDOM_USER_AGENT, DEFAULT_REQUEST_TIMEOUT
-from ...common.session import get_session
 
 # Constants
 DOODSTREAM_BASE_URL = "https://dood.li"
@@ -25,9 +24,7 @@ def _get_headers() -> dict:
 def _make_request(url: str, headers: dict) -> requests.Response:
     """Make HTTP request with error handling."""
     try:
-        session = get_session()
-
-        response = session.get(
+        response = requests.get(
             url, headers=headers, timeout=DEFAULT_REQUEST_TIMEOUT, verify=False
         )
         response.raise_for_status()
