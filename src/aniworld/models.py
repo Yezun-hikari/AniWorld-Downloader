@@ -614,8 +614,10 @@ class Episode:
         self._basic_details_filled = False
         self._full_details_filled = False
 
-        # fill basic details (including link construction if needed)
-        self._auto_fill_basic_details()
+        if self.link:
+            self._auto_fill_basic_details()
+        else:
+            self.auto_fill_details()
 
     @property
     def html(self) -> requests.models.Response:
