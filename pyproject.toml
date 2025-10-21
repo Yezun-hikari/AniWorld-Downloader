@@ -33,7 +33,8 @@ dependencies = [
     'jsbeautifier',
     'flask',
     'py-cpuinfo; platform_system == "Windows"',
-    'windows-curses; platform_system == "Windows"'
+    'windows-curses; platform_system == "Windows"',
+    'winfcntl; platform_system == "Windows"'
 ]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
