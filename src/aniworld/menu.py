@@ -3,12 +3,14 @@ import logging
 import os
 import sys
 import struct
-import sys
+
 if sys.platform == "win32":
     import winfcntl as fcntl
+
     # termios existiert nicht unter Windows, definiere TIOCGWINSZ als None
     class MockTermios:
         TIOCGWINSZ = None
+
     termios = MockTermios()
 else:
     import fcntl

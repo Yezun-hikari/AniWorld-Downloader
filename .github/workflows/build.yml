@@ -110,11 +110,20 @@ jobs:
           VERSION="${{ needs.extract-version.outputs.version }}"
           YEAR="${{ needs.extract-version.outputs.year }}"
           
+          # Windows-specific flag for memory issue C1002
+          # See: https://nuitka.net/user-documentation/common-issue-solutions.html#memory-issues-and-compiler-bugs
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            LOW_MEMORY="--low-memory"
+          else
+            LOW_MEMORY=""
+          fi
+
           # Build with Nuitka
           python src/aniworld/nuitka/preprocess.py
           python -m nuitka \
             --onefile \
             --assume-yes-for-downloads \
+            $LOW_MEMORY \
             --include-package=aniworld \
             --include-data-file="$JSON_PATH=fake_useragent/data/browsers.jsonl" \
             --include-data-file=src/aniworld/ASCII.txt=aniworld/ASCII.txt \
