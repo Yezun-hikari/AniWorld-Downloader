@@ -2,7 +2,7 @@
 setlocal enabledelayedexpansion
 
 set CURRENT_DIR=%cd%
-rem cd ..\..
+cd ..\..
 
 py -m pip install -U pip
 py -m pip install -U nuitka imageio
