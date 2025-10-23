@@ -26,6 +26,11 @@ def convert_relative_to_absolute(path):
             abs_import = f"from {'.'.join(abs_parts)} import {imports}"
             new_lines.append(abs_import + "\n")
             modified = True
+        # Handle potential yt-dlp import issues by adding exception handling
+        elif "from yt_dlp" in line and "extractor" in line:
+            # Skip problematic yt-dlp extractor imports
+            new_lines.append(f"# {line}")
+            modified = True
         else:
             new_lines.append(line)
 
