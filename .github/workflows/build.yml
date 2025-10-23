@@ -110,20 +110,36 @@ jobs:
           VERSION="${{ needs.extract-version.outputs.version }}"
           YEAR="${{ needs.extract-version.outputs.year }}"
           
-          # Windows-specific flag for memory issue C1002
+          # Windows-specific flags for memory issue C1002
           # See: https://nuitka.net/user-documentation/common-issue-solutions.html#memory-issues-and-compiler-bugs
           if [ "$RUNNER_OS" == "Windows" ]; then
-            LOW_MEMORY="--low-memory"
+            LOW_MEMORY="--lto=no --disable-ccache"
           else
-            LOW_MEMORY=""
+            LOW_MEMORY="--lto=no"
           fi
+          
+          # yt-dlp optimizations (same for all platforms)
+          YT_DLP_OPTIMIZATIONS="--nofollow-import-to=yt_dlp.extractor.lazy_extractors --nofollow-import-to=yt_dlp.extractor.youtube_dl --nofollow-import-to=yt_dlp.extractor.wikimedia --nofollow-import-to=yt_dlp.extractor.wikipedia --nofollow-import-to=yt_dlp.extractor.wikidata"
 
           # Build with Nuitka
+          # Create temporary build directory for preprocessing
+          TEMP_BUILD_DIR=$(mktemp -d)
+          cp -r src "$TEMP_BUILD_DIR/"
+          
+          # Run preprocessing on temp directory
+          cd "$TEMP_BUILD_DIR"
           python src/aniworld/nuitka/preprocess.py
+          cd -
+          
+          TEMP_MAIN_PATH="$TEMP_BUILD_DIR/src/aniworld/__main__.py"
+          
           python -m nuitka \
             --onefile \
             --assume-yes-for-downloads \
+            --show-progress \
+            --remove-output \
             $LOW_MEMORY \
+            $YT_DLP_OPTIMIZATIONS \
             --include-package=aniworld \
             --include-data-file="$JSON_PATH=fake_useragent/data/browsers.jsonl" \
             --include-data-file=src/aniworld/ASCII.txt=aniworld/ASCII.txt \
@@ -138,7 +154,10 @@ jobs:
             --file-description="AniWorld Downloader is a command-line tool for downloading and streaming content from aniworld.to and s.to. " \
             --copyright="Copyright (c) 2024-${YEAR} phoenixthrush, Tmaster055" \
             ${{ matrix.icon }} \
-            src/aniworld/entry.py
+            "$TEMP_MAIN_PATH"
+            
+          # Clean up temporary directory only (Nuitka cleans itself with --remove-output)
+          rm -rf "$TEMP_BUILD_DIR"
             
       - name: Upload artifact
         uses: actions/upload-artifact@v4
