@@ -38,6 +38,7 @@ py -m nuitka ^
     --onefile ^
     --assume-yes-for-downloads ^
     --show-progress ^
+    --remove-output ^
     --lto=no ^
     --disable-ccache ^
     --nofollow-import-to=yt_dlp.extractor.lazy_extractors ^
@@ -61,12 +62,7 @@ py -m nuitka ^
     --windows-icon-from-ico=src/aniworld/nuitka/icon.webp ^
     "%TEMP_MAIN_PATH%"
 
-rem Clean up temporary directory
+rem Clean up temporary directory only (Nuitka cleans itself with --remove-output)
 rmdir /S /Q "%TEMP_BUILD_DIR%"
-
-rem Clean up Nuitka build directories
-if exist "__main__.build" rmdir /S /Q "__main__.build"
-if exist "__main__.dist" rmdir /S /Q "__main__.dist"
-if exist "__main__.onefile-build" rmdir /S /Q "__main__.onefile-build"
 
 cd /d "%CURRENT_DIR%"

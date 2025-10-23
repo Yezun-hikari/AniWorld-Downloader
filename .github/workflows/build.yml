@@ -114,11 +114,12 @@ jobs:
           # See: https://nuitka.net/user-documentation/common-issue-solutions.html#memory-issues-and-compiler-bugs
           if [ "$RUNNER_OS" == "Windows" ]; then
             LOW_MEMORY="--lto=no --disable-ccache"
-            YT_DLP_OPTIMIZATIONS="--nofollow-import-to=yt_dlp.extractor.lazy_extractors --nofollow-import-to=yt_dlp.extractor.youtube_dl --nofollow-import-to=yt_dlp.extractor.wikimedia --nofollow-import-to=yt_dlp.extractor.wikipedia --nofollow-import-to=yt_dlp.extractor.wikidata"
           else
             LOW_MEMORY="--lto=no"
-            YT_DLP_OPTIMIZATIONS="--nofollow-import-to=yt_dlp.extractor.lazy_extractors --nofollow-import-to=yt_dlp.extractor.youtube_dl --nofollow-import-to=yt_dlp.extractor.wikimedia --nofollow-import-to=yt_dlp.extractor.wikipedia --nofollow-import-to=yt_dlp.extractor.wikidata"
           fi
+          
+          # yt-dlp optimizations (same for all platforms)
+          YT_DLP_OPTIMIZATIONS="--nofollow-import-to=yt_dlp.extractor.lazy_extractors --nofollow-import-to=yt_dlp.extractor.youtube_dl --nofollow-import-to=yt_dlp.extractor.wikimedia --nofollow-import-to=yt_dlp.extractor.wikipedia --nofollow-import-to=yt_dlp.extractor.wikidata"
 
           # Build with Nuitka
           # Create temporary build directory for preprocessing
@@ -136,6 +137,7 @@ jobs:
             --onefile \
             --assume-yes-for-downloads \
             --show-progress \
+            --remove-output \
             $LOW_MEMORY \
             $YT_DLP_OPTIMIZATIONS \
             --include-package=aniworld \
@@ -154,8 +156,8 @@ jobs:
             ${{ matrix.icon }} \
             "$TEMP_MAIN_PATH"
             
-          # Clean up temporary and build directories
-          rm -rf "$TEMP_BUILD_DIR" __main__.build __main__.dist __main__.onefile-build
+          # Clean up temporary directory only (Nuitka cleans itself with --remove-output)
+          rm -rf "$TEMP_BUILD_DIR"
             
       - name: Upload artifact
         uses: actions/upload-artifact@v4
