@@ -121,7 +121,17 @@ jobs:
           fi
 
           # Build with Nuitka
-          # python src/aniworld/nuitka/preprocess.py
+          # Create temporary build directory for preprocessing
+          TEMP_BUILD_DIR=$(mktemp -d)
+          cp -r src "$TEMP_BUILD_DIR/"
+          
+          # Run preprocessing on temp directory
+          cd "$TEMP_BUILD_DIR"
+          python src/aniworld/nuitka/preprocess.py
+          cd -
+          
+          TEMP_MAIN_PATH="$TEMP_BUILD_DIR/src/aniworld/__main__.py"
+          
           python -m nuitka \
             --onefile \
             --assume-yes-for-downloads \
@@ -142,10 +152,10 @@ jobs:
             --file-description="AniWorld Downloader is a command-line tool for downloading and streaming content from aniworld.to and s.to. " \
             --copyright="Copyright (c) 2024-${YEAR} phoenixthrush, Tmaster055" \
             ${{ matrix.icon }} \
-            src/aniworld/__main__.py
+            "$TEMP_MAIN_PATH"
             
-          # Clean up build directories
-          rm -rf __main__.build __main__.dist __main__.onefile-build
+          # Clean up temporary and build directories
+          rm -rf "$TEMP_BUILD_DIR" __main__.build __main__.dist __main__.onefile-build
             
       - name: Upload artifact
         uses: actions/upload-artifact@v4
