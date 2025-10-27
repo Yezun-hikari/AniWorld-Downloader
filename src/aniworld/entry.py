@@ -1,7 +1,7 @@
 import traceback
 import logging
 import sys
-from typing import List
+from typing import List, Union
 
 from .ascii_art import display_traceback_art
 from .action import watch, syncplay
