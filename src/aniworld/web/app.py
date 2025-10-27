@@ -10,6 +10,7 @@ import webbrowser
 from datetime import datetime
 from functools import wraps
 from flask import Flask, render_template, jsonify, request, session, redirect, url_for
+import requests
 
 from .. import config
 from .database import UserDatabase
@@ -967,6 +968,18 @@ class WebApp:
                         "error": f"Failed to fetch popular/new anime: {str(e)}",
                     }
                 ), 500
+
+        @self.app.route("/api/ip")
+        @self._require_api_auth
+        def api_ip():
+            """API endpoint to get the public IP address."""
+            try:
+                response = requests.get("https://api.ipify.org?format=json")
+                response.raise_for_status()
+                return jsonify(response.json())
+            except requests.exceptions.RequestException as e:
+                logging.error(f"Failed to get public IP address: {e}")
+                return jsonify({"success": False, "error": "Failed to get IP address"}), 500
 
     def _format_uptime(self, seconds: int) -> str:
         """Format uptime in human readable format."""

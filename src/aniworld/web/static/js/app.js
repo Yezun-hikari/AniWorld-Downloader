@@ -125,6 +125,16 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 versionDisplay.textContent = `v${data.version}`;
+                fetch('/api/ip')
+                    .then(response => response.json())
+                    .then(ipData => {
+                        if (ipData.ip) {
+                            versionDisplay.textContent += ` | ${ipData.ip}`;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Failed to load IP info:', error);
+                    });
             })
             .catch(error => {
                 console.error('Failed to load version info:', error);
