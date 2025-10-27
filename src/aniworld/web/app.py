@@ -895,7 +895,6 @@ class WebApp:
                 ), 500
 
         @self.app.route("/api/download-status")
-        @self._require_api_auth
         def api_download_status():
             """Get current download status endpoint."""
             try:
