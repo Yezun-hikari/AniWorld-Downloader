@@ -7,6 +7,7 @@ services:
       - "8080:8080"
     volumes:
       - ./downloads:/app/downloads
+      - ./movies:/app/movies
       - ./data:/app/data
     stdin_open: true
     tty: true
