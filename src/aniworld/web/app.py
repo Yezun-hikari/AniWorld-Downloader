@@ -894,6 +894,57 @@ class WebApp:
                     {"success": False, "error": "Failed to get queue status"}
                 ), 500
 
+        @self.app.route("/api/download-status")
+        @self._require_api_auth
+        def api_download_status():
+            """Get current download status endpoint."""
+            try:
+                queue_status = self.download_manager.get_queue_status()
+                active_downloads = queue_status.get("active", [])
+
+                if not active_downloads:
+                    return jsonify({"success": False, "message": "No active downloads"})
+
+                # Get the first active download
+                download = active_downloads[0]
+
+                # --- Data Transformation ---
+                import re
+
+                # Series Name
+                series_name = download.get("anime_title", "Unknown Series")
+                series_name = re.sub(r'\s*\([^)]*\)$', '', series_name).strip()
+
+                # Current Episode Progress
+                current_episode_progress = f"{int(download.get('current_episode_progress', 0))}%"
+
+                # Download Speed and ETA from current_episode string
+                current_episode_str = download.get("current_episode", "")
+                speed_match = re.search(r'Speed: (.*?)( \||$)', current_episode_str)
+                eta_match = re.search(r'ETA: (.*?)( \||$)', current_episode_str)
+                download_speed = speed_match.group(1).strip() if speed_match else "N/A"
+                eta = eta_match.group(1).strip() if eta_match else "N/A"
+
+                # Overall Progress
+                overall_progress = f"{download.get('completed_episodes', 0)}/{download.get('total_episodes', 0)}"
+
+                response_data = {
+                    "series_name": series_name,
+                    "current_episode_progress": current_episode_progress,
+                    "download_speed": download_speed,
+                    "eta": eta,
+                    "overall_progress": overall_progress,
+                    "success": True,
+                }
+
+                return jsonify(response_data)
+
+            except Exception as e:
+                logging.error(f"Failed to get download status: {e}")
+                return jsonify(
+                    {"success": False, "error": "Failed to get download status"}
+                ), 500
+
         @self.app.route("/api/popular-new")
         @self._require_api_auth
         def api_popular_new():
