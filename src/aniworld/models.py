@@ -1467,5 +1467,11 @@ def get_anime_title_from_html(
         return ""
 
 
+class Movie:
+    def __init__(self, title: str, link: str):
+        self.title = title
+        self.link = link
+        self.type = "movie"
+
 if __name__ == "__main__":
     pass

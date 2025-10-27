@@ -244,6 +244,7 @@ USES_DEFAULT_PROVIDER = False
 DEFAULT_ACTION = "Download"
 DEFAULT_ANISKIP = False
 DEFAULT_DOWNLOAD_PATH = pathlib.Path.home() / "Downloads"
+DEFAULT_MOVIE_DOWNLOAD_PATH = pathlib.Path.home() / "Downloads" / "Movies"
 DEFAULT_KEEP_WATCHING = False
 # German Dub, English Sub, German Sub
 DEFAULT_LANGUAGE = "German Sub"

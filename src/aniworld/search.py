@@ -83,21 +83,48 @@ def _cached_search_request(search_url: str) -> str:
     return response.text.strip()
 
 
-def search_anime(
-    keyword: Optional[str] = None, only_return: bool = False
-) -> Union[str, List[Dict]]:
+def search_movie(keyword: str) -> List[Dict]:
     """
-    Search for anime series on AniWorld.
+    Search for movies on Megakino.
+
+    Args:
+        keyword: Search term
+
+    Returns:
+        List[Dict]: List of movie dictionaries
+    """
+    url = f"https://megakino.video/index.php?do=search&subaction=search&search_start=0&full_search=0&result_from=1&story={quote(keyword)}"
+    try:
+        response = requests.get(url, timeout=DEFAULT_REQUEST_TIMEOUT)
+        response.raise_for_status()
+    except requests.RequestException as e:
+        logging.error(f"Error: Unable to fetch the page. Details: {e}")
+        return []
+
+    soup = BeautifulSoup(response.content, 'html.parser')
+    titles_links = []
+    for link in soup.find_all('a', class_='poster'):
+        title = link.find('h3', class_='poster__title')
+        if title:
+            titles_links.append({"name": title.text.strip(), "link": link['href'], "type": "movie"})
+    return titles_links
+
+
+def search_media(
+    keyword: Optional[str] = None, only_return: bool = False
+) -> Union[Dict, List[Dict]]:
+    """
+    Search for anime series on AniWorld and movies on Megakino.
 
     Args:
         keyword: Search term (if None, prompts user)
-        only_return: If True, returns raw anime list instead of processing
+        only_return: If True, returns raw media list instead of processing
 
     Returns:
-        Union[str, List[Dict]]: Either selected anime link or list of anime
+        Union[Dict, List[Dict]]: Either selected media object or list of media
 
     Raises:
-        ValueError: If no anime found or invalid input
+        ValueError: If no media found or invalid input
     """
     if not only_return:
         print(display_ascii_art())
@@ -107,19 +134,27 @@ def search_anime(
     else:
         keyword = _validate_keyword(keyword)
 
+    # Search for anime
     search_url = f"{ANIWORLD_TO}/ajax/seriesSearch?keyword={quote(keyword)}"
     anime_list = fetch_anime_list(search_url)
+    for anime in anime_list:
+        anime["type"] = "anime"
+
+    # Search for movies
+    movie_list = search_movie(keyword)
+
+    media_list = anime_list + movie_list
 
     if only_return:
-        return anime_list
+        return media_list
 
-    if len(anime_list) == 1:
-        return anime_list[0].get("link", None)
+    if len(media_list) == 1:
+        return media_list[0]
 
-    if not anime_list:
-        raise ValueError("Could not get valid anime")
+    if not media_list:
+        raise ValueError("Could not get any valid media")
 
-    return curses.wrapper(show_menu, anime_list)
+    return curses.wrapper(show_menu, media_list)
 
 
 def _clean_json_text(text: str) -> str:
@@ -310,24 +345,29 @@ def _handle_konami_code(entered_keys: List[str], key_input: str) -> List[str]:
 
 def _render_menu(stdscr: curses.window, options: List[Dict], current_row: int) -> None:
     """
-    Render the anime selection menu.
+    Render the media selection menu.
 
     Args:
         stdscr: Curses window object
-        options: List of anime options
+        options: List of media options
         current_row: Currently selected row index
     """
     stdscr.clear()
 
     max_y, max_x = stdscr.getmaxyx()
 
-    for idx, anime in enumerate(options):
+    for idx, media in enumerate(options):
         if idx >= max_y - 1:  # Prevent drawing beyond screen
             break
 
-        name = anime.get("name", "No Name")
-        year = anime.get("productionYear", "Unknown Year")
-        display_text = f"{name} {year}"
+        name = media.get("name", "No Name")
+        media_type = media.get("type", "Unknown")
+
+        if media_type == "anime":
+            year = media.get("productionYear", "Unknown Year")
+            display_text = f"Anime: {name} {year}"
+        else:
+            display_text = f"Movie: {name}"
 
         # Truncate text if it's too long for the screen
         if len(display_text) >= max_x:
@@ -346,16 +386,16 @@ def _render_menu(stdscr: curses.window, options: List[Dict], current_row: int) -
     stdscr.refresh()
 
 
-def show_menu(stdscr: curses.window, options: List[Dict]) -> Optional[str]:
+def show_menu(stdscr: curses.window, options: List[Dict]) -> Optional[Dict]:
     """
-    Display interactive menu for anime selection.
+    Display interactive menu for media selection.
 
     Args:
         stdscr: Curses window object
-        options: List of anime dictionaries
+        options: List of media dictionaries
 
     Returns:
-        Optional[str]: Selected anime link or None if cancelled
+        Optional[Dict]: Selected media object or None if cancelled
     """
     if not options:
         return None
@@ -380,7 +420,7 @@ def show_menu(stdscr: curses.window, options: List[Dict]) -> Optional[str]:
             elif key == curses.KEY_UP:
                 current_row = (current_row - 1 + len(options)) % len(options)
             elif key == ord("\n"):
-                return options[current_row].get("link", "No Link")
+                return options[current_row]
             elif key == ord("q") or key == 27:  # 'q' or ESC
                 break
 
@@ -393,4 +433,4 @@ def show_menu(stdscr: curses.window, options: List[Dict]) -> Optional[str]:
 
 
 if __name__ == "__main__":
-    print(search_anime())
+    print(search_media())

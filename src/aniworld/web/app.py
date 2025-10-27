@@ -510,131 +510,63 @@ class WebApp:
                 # Get site parameter (default to both)
                 site = data.get("site", "both")
 
-                # Create wrapper function for search with dual-site support
-                def search_anime_wrapper(keyword, site="both"):
-                    """Wrapper function for anime search with multi-site support"""
-                    from ..search import fetch_anime_list
-                    from .. import config
-                    from urllib.parse import quote
+                from ..search import search_media
 
-                    if site == "both":
-                        # Search both sites using existing fetch_anime_list function
-                        aniworld_url = f"{config.ANIWORLD_TO}/ajax/seriesSearch?keyword={quote(keyword)}"
-                        sto_url = (
-                            f"{config.S_TO}/ajax/seriesSearch?keyword={quote(keyword)}"
-                        )
-
-                        # Fetch from both sites
-                        aniworld_results = []
-                        sto_results = []
-
-                        try:
-                            aniworld_results = fetch_anime_list(aniworld_url)
-                        except Exception as e:
-                            logging.warning(f"Failed to fetch from aniworld: {e}")
-
-                        try:
-                            sto_results = fetch_anime_list(sto_url)
-                        except Exception as e:
-                            logging.warning(f"Failed to fetch from s.to: {e}")
-
-                        # Combine and deduplicate results
-                        all_results = []
-                        seen_slugs = set()
-
-                        # Add aniworld results first
-                        for anime in aniworld_results:
-                            slug = anime.get("link", "")
-                            if slug and slug not in seen_slugs:
-                                anime["site"] = "aniworld.to"
-                                anime["base_url"] = config.ANIWORLD_TO
-                                anime["stream_path"] = "anime/stream"
-                                all_results.append(anime)
-                                seen_slugs.add(slug)
-
-                        # Add s.to results, but skip duplicates
-                        for anime in sto_results:
-                            slug = anime.get("link", "")
-                            if slug and slug not in seen_slugs:
-                                anime["site"] = "s.to"
-                                anime["base_url"] = config.S_TO
-                                anime["stream_path"] = "serie/stream"
-                                all_results.append(anime)
-                                seen_slugs.add(slug)
-
-                        return all_results
-
-                    elif site == "s.to":
-                        # Single site search - s.to
-                        search_url = (
-                            f"{config.S_TO}/ajax/seriesSearch?keyword={quote(keyword)}"
-                        )
-                        try:
-                            results = fetch_anime_list(search_url)
-                            for anime in results:
-                                anime["site"] = "s.to"
-                                anime["base_url"] = config.S_TO
-                                anime["stream_path"] = "serie/stream"
-                            return results
-                        except Exception as e:
-                            logging.error(f"s.to search failed: {e}")
-                            return []
-
-                    else:
-                        # Single site search - aniworld.to (default)
-                        from ..search import search_anime
-
-                        try:
-                            results = search_anime(keyword=keyword, only_return=True)
-                            for anime in results:
-                                anime["site"] = "aniworld.to"
-                                anime["base_url"] = config.ANIWORLD_TO
-                                anime["stream_path"] = "anime/stream"
-                            return results
-                        except Exception as e:
-                            logging.error(f"aniworld.to search failed: {e}")
-                            return []
-
-                # Use wrapper function
-                results = search_anime_wrapper(query, site)
+                results = search_media(keyword=query, only_return=True)
 
                 # Process results - simplified without episode fetching
                 processed_results = []
-                for anime in results[:50]:  # Limit to 50 results
-                    # Get the link and construct full URL if needed
-                    link = anime.get("link", "")
-                    anime_site = anime.get("site", "aniworld")
-                    anime_base_url = anime.get("base_url", config.ANIWORLD_TO)
-                    anime_stream_path = anime.get("stream_path", "anime/stream")
+                for item in results[:50]:  # Limit to 50 results
+                    item_type = item.get("type", "anime")
+                    if item_type == "anime":
+                        # Get the link and construct full URL if needed
+                        link = item.get("link", "")
+                        anime_site = item.get("site", "aniworld")
+                        anime_base_url = item.get("base_url", config.ANIWORLD_TO)
+                        anime_stream_path = item.get("stream_path", "anime/stream")
 
-                    if link and not link.startswith("http"):
-                        # If it's just a slug, construct the full URL using the anime's specific site info
-                        full_url = f"{anime_base_url}/{anime_stream_path}/{link}"
-                    else:
-                        full_url = link
+                        if link and not link.startswith("http"):
+                            # If it's just a slug, construct the full URL using the anime's specific site info
+                            full_url = f"{anime_base_url}/{anime_stream_path}/{link}"
+                        else:
+                            full_url = link
 
-                    # Use the same field names as CLI search
-                    name = anime.get("name", "Unknown Name")
-                    year = anime.get("productionYear", "Unknown Year")
+                        # Use the same field names as CLI search
+                        name = item.get("name", "Unknown Name")
+                        year = item.get("productionYear", "Unknown Year")
 
-                    # Create title like CLI does, but avoid double parentheses
-                    if year and year != "Unknown Year" and str(year) not in name:
-                        title = f"{name} {year}"
-                    else:
-                        title = name
+                        # Create title like CLI does, but avoid double parentheses
+                        if year and year != "Unknown Year" and str(year) not in name:
+                            title = f"{name} {year}"
+                        else:
+                            title = name
 
-                    processed_anime = {
-                        "title": title,
-                        "url": full_url,
-                        "description": anime.get("description", ""),
-                        "slug": link,
-                        "name": name,
-                        "year": year,
-                        "site": anime_site,
-                        "cover": anime.get("cover", ""),
-                    }
+                        processed_item = {
+                            "title": title,
+                            "url": full_url,
+                            "description": item.get("description", ""),
+                            "slug": link,
+                            "name": name,
+                            "year": year,
+                            "site": anime_site,
+                            "cover": item.get("cover", ""),
+                            "type": "anime",
+                        }
+                    else: # Movie
+                        processed_item = {
+                            "title": item.get("name", "Unknown Name"),
+                            "url": item.get("link"),
+                            "description": "",
+                            "slug": item.get("link"),
+                            "name": item.get("name", "Unknown Name"),
+                            "year": "",
+                            "site": "megakino.video",
+                            "cover": "",
+                            "type": "movie",
+                        }
 
-                    processed_results.append(processed_anime)
+
+                    processed_results.append(processed_item)
 
                 return jsonify(
                     {
@@ -659,86 +591,123 @@ class WebApp:
 
                 data = request.get_json()
 
-                # Check for both single episode (legacy) and multiple episodes (new)
-                episode_urls = data.get("episode_urls", [])
-                single_episode_url = data.get("episode_url")
+                item_type = data.get("type", "anime")
+                if item_type == "anime":
+                    # Check for both single episode (legacy) and multiple episodes (new)
+                    episode_urls = data.get("episode_urls", [])
+                    single_episode_url = data.get("episode_url")
 
-                if single_episode_url:
-                    episode_urls = [single_episode_url]
+                    if single_episode_url:
+                        episode_urls = [single_episode_url]
 
-                if not episode_urls:
-                    return jsonify(
-                        {"success": False, "error": "Episode URL(s) required"}
-                    ), 400
+                    if not episode_urls:
+                        return jsonify(
+                            {"success": False, "error": "Episode URL(s) required"}
+                        ), 400
 
-                language = data.get("language", "German Sub")
-                provider = data.get("provider", "VOE")
+                    language = data.get("language", "German Sub")
+                    provider = data.get("provider", "VOE")
 
-                # DEBUG: Log received parameters
-                logging.debug(
-                    f"WEB API RECEIVED - Language: '{language}', Provider: '{provider}'"
-                )
-                logging.debug(f"WEB API RECEIVED - Request data: {data}")
-
-                # Get current user for queue tracking
-                current_user = None
-                if self.auth_enabled and self.db:
-                    session_token = request.cookies.get("session_token")
-                    current_user = self.db.get_user_by_session(session_token)
-
-                # Determine anime title
-                anime_title = data.get("anime_title", "Unknown Anime")
-
-                # Calculate total episodes by checking episode URLs
-                from ..entry import _group_episodes_by_series
-
-                try:
-                    anime_list = _group_episodes_by_series(episode_urls)
-                    total_episodes = sum(
-                        len(anime.episode_list) for anime in anime_list
+                    # DEBUG: Log received parameters
+                    logging.debug(
+                        f"WEB API RECEIVED - Language: '{language}', Provider: '{provider}'"
                     )
-                except Exception as e:
-                    logging.error(f"Failed to process episode URLs: {e}")
+                    logging.debug(f"WEB API RECEIVED - Request data: {data}")
+
+                    # Get current user for queue tracking
+                    current_user = None
+                    if self.auth_enabled and self.db:
+                        session_token = request.cookies.get("session_token")
+                        current_user = self.db.get_user_by_session(session_token)
+
+                    # Determine anime title
+                    anime_title = data.get("anime_title", "Unknown Anime")
+
+                    # Calculate total episodes by checking episode URLs
+                    from ..entry import _group_episodes_by_series
+
+                    try:
+                        anime_list = _group_episodes_by_series(episode_urls)
+                        total_episodes = sum(
+                            len(anime.episode_list) for anime in anime_list
+                        )
+                    except Exception as e:
+                        logging.error(f"Failed to process episode URLs: {e}")
+                        return jsonify(
+                            {
+                                "success": False,
+                                "error": "No valid anime objects could be created from provided URLs",
+                            }
+                        ), 400
+
+                    if total_episodes == 0:
+                        return jsonify(
+                            {
+                                "success": False,
+                                "error": "No valid anime objects could be created from provided URLs",
+                            }
+                        ), 400
+
+                    # Add to download queue
+                    queue_id = self.download_manager.add_download(
+                        anime_title=anime_title,
+                        episode_urls=episode_urls,
+                        language=language,
+                        provider=provider,
+                        total_episodes=total_episodes,
+                        created_by=current_user["id"] if current_user else None,
+                    )
+
+                    if not queue_id:
+                        return jsonify(
+                            {"success": False, "error": "Failed to add download to queue"}
+                        ), 500
+
                     return jsonify(
                         {
-                            "success": False,
-                            "error": "No valid anime objects could be created from provided URLs",
+                            "success": True,
+                            "message": f"Download added to queue: {total_episodes} episode(s)",
+                            "episode_count": total_episodes,
+                            "language": language,
+                            "provider": provider,
+                            "queue_id": queue_id,
                         }
-                    ), 400
+                    )
+                else: # Movie
+                    movie_url = data.get("movie_url")
+                    if not movie_url:
+                        return jsonify(
+                            {"success": False, "error": "Movie URL required"}
+                        ), 400
 
-                if total_episodes == 0:
+                    movie_title = data.get("movie_title", "Unknown Movie")
+
+                    # Get current user for queue tracking
+                    current_user = None
+                    if self.auth_enabled and self.db:
+                        session_token = request.cookies.get("session_token")
+                        current_user = self.db.get_user_by_session(session_token)
+
+                    queue_id = self.download_manager.add_download(
+                        anime_title=movie_title,
+                        movie_url=movie_url,
+                        total_episodes=1,
+                        created_by=current_user["id"] if current_user else None,
+                        is_movie=True,
+                    )
+
+                    if not queue_id:
+                        return jsonify(
+                            {"success": False, "error": "Failed to add movie to queue"}
+                        ), 500
+
                     return jsonify(
                         {
-                            "success": False,
-                            "error": "No valid anime objects could be created from provided URLs",
+                            "success": True,
+                            "message": f"Movie '{movie_title}' added to queue",
+                            "queue_id": queue_id,
                         }
-                    ), 400
-
-                # Add to download queue
-                queue_id = self.download_manager.add_download(
-                    anime_title=anime_title,
-                    episode_urls=episode_urls,
-                    language=language,
-                    provider=provider,
-                    total_episodes=total_episodes,
-                    created_by=current_user["id"] if current_user else None,
-                )
-
-                if not queue_id:
-                    return jsonify(
-                        {"success": False, "error": "Failed to add download to queue"}
-                    ), 500
-
-                return jsonify(
-                    {
-                        "success": True,
-                        "message": f"Download added to queue: {total_episodes} episode(s)",
-                        "episode_count": total_episodes,
-                        "language": language,
-                        "provider": provider,
-                        "queue_id": queue_id,
-                    }
-                )
+                    )
 
             except Exception as err:
                 logging.error(f"Download error: {err}")

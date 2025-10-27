@@ -286,42 +286,38 @@ document.addEventListener('DOMContentLoaded', function() {
         showResultsSection();
     }
 
-    function createAnimeCard(anime) {
+    function createAnimeCard(item) {
         const card = document.createElement('div');
         card.className = 'anime-card';
 
-        // Handle cover image
         let coverStyle = '';
-        if (anime.cover) {
-            let coverUrl = anime.cover;
-            // Make URL absolute if it's relative
+        if (item.cover) {
+            let coverUrl = item.cover;
             if (!coverUrl.startsWith('http')) {
                 if (coverUrl.startsWith('//')) {
                     coverUrl = 'https:' + coverUrl;
                 } else if (coverUrl.startsWith('/')) {
-                    // Determine base URL based on site
-                    const baseUrl = anime.site === 's.to' ? 'https://s.to' : 'https://aniworld.to';
+                    const baseUrl = item.site === 's.to' ? 'https://s.to' : 'https://aniworld.to';
                     coverUrl = baseUrl + coverUrl;
                 } else {
-                    const baseUrl = anime.site === 's.to' ? 'https://s.to' : 'https://aniworld.to';
+                    const baseUrl = item.site === 's.to' ? 'https://s.to' : 'https://aniworld.to';
                     coverUrl = baseUrl + '/' + coverUrl;
                 }
             }
-
-            // Upgrade image resolution from 150x225 to 220x330 for better quality
             coverUrl = coverUrl.replace("150x225", "220x330");
-
             coverStyle = `style="background-image: url('${coverUrl}')"`;
         }
+
+        const isMovie = item.type === 'movie';
 
         card.innerHTML = `
             <div class="anime-card-background" ${coverStyle}></div>
             <div class="anime-card-content">
-                <div class="anime-title">${escapeHtml(anime.title)}</div>
+                <div class="anime-title">${escapeHtml(item.title)}</div>
                 <div class="anime-info">
-                    <strong>Site:</strong> ${escapeHtml(anime.site || 'aniworld.to')}<br>
-                    <strong>Slug:</strong> ${escapeHtml(anime.slug || 'Unknown')}<br>
-                    ${anime.description ? `<strong>Description:</strong> ${escapeHtml(anime.description)}<br>` : ''}
+                    <strong>Site:</strong> ${escapeHtml(item.site || 'unknown')}<br>
+                    ${isMovie ? '' : `<strong>Slug:</strong> ${escapeHtml(item.slug || 'Unknown')}<br>`}
+                    ${item.description ? `<strong>Description:</strong> ${escapeHtml(item.description)}<br>` : ''}
                 </div>
                 <div class="anime-actions">
                     <button class="download-btn">
@@ -331,11 +327,16 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         `;
 
-        // Add event listener for the download button to avoid onclick string issues
         const downloadBtn = card.querySelector('.download-btn');
-        downloadBtn.addEventListener('click', () => {
-            showDownloadModal(anime.title, 'Series', anime.url);
-        });
+        if (isMovie) {
+            downloadBtn.addEventListener('click', () => {
+                startMovieDownload(item.title, item.url);
+            });
+        } else {
+            downloadBtn.addEventListener('click', () => {
+                showDownloadModal(item.title, 'Series', item.url);
+            });
+        }
 
         return card;
     }
@@ -710,6 +711,35 @@ document.addEventListener('DOMContentLoaded', function() {
         confirmDownload.disabled = count === 0;
     }
 
+    function startMovieDownload(title, url) {
+        const requestPayload = {
+            type: 'movie',
+            movie_url: url,
+            movie_title: title,
+        };
+
+        fetch('/api/download', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestPayload)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(`Download started for movie: ${title}`, 'success');
+                startQueueTracking();
+            } else {
+                showNotification(data.error || 'Download failed to start', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Download error:', error);
+            showNotification('Failed to start download', 'error');
+        });
+    }
+
     function startDownload() {
         if (!currentDownloadData || selectedEpisodes.size === 0) {
             showNotification('Please select at least one episode or movie to download', 'error');
@@ -765,7 +795,8 @@ document.addEventListener('DOMContentLoaded', function() {
             episode_urls: selectedEpisodeUrls,
             language: selectedLanguage,
             provider: selectedProvider,
-            anime_title: currentDownloadData.anime
+            anime_title: currentDownloadData.anime,
+            type: 'anime'
         };
 
         fetch('/api/download', {

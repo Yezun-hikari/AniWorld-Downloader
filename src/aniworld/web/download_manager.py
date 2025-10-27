@@ -51,10 +51,12 @@ class DownloadQueueManager:
     def add_download(
         self,
         anime_title: str,
-        episode_urls: list,
-        language: str,
-        provider: str,
-        total_episodes: int,
+        episode_urls: list = None,
+        movie_url: str = None,
+        is_movie: bool = False,
+        language: str = None,
+        provider: str = None,
+        total_episodes: int = 0,
         created_by: int = None,
     ) -> int:
         """Add a download to the queue"""
@@ -66,6 +68,8 @@ class DownloadQueueManager:
                 "id": queue_id,
                 "anime_title": anime_title,
                 "episode_urls": episode_urls,
+                "movie_url": movie_url,
+                "is_movie": is_movie,
                 "language": language,
                 "provider": provider,
                 "total_episodes": total_episodes,
@@ -158,6 +162,41 @@ class DownloadQueueManager:
                 time.sleep(5)
 
     def _process_download_job(self, job):
+        """Process a single download job"""
+        queue_id = job["id"]
+
+        try:
+            if job.get("is_movie"):
+                self._process_movie_download_job(job)
+            else:
+                self._process_anime_download_job(job)
+        except Exception as e:
+            logging.error(f"Download job {job['id']} failed: {e}")
+            self._update_download_status(
+                job["id"], "failed", error_message=f"Download failed: {str(e)}"
+            )
+
+    def _process_movie_download_job(self, job):
+        queue_id = job["id"]
+        self._update_download_status(
+            queue_id, "downloading", current_episode="Starting movie download..."
+        )
+
+        from ..movie.action import download_movie
+        from ..models import Movie
+
+        try:
+            movie = Movie(title=job["anime_title"], link=job["movie_url"])
+            download_movie(movie)
+            self._update_download_status(
+                queue_id, "completed", completed_episodes=1, current_episode="Movie downloaded"
+            )
+        except Exception as e:
+            self._update_download_status(
+                queue_id, "failed", error_message=f"Movie download failed: {str(e)}"
+            )
+
+    def _process_anime_download_job(self, job):
         """Process a single download job"""
         queue_id = job["id"]
 
