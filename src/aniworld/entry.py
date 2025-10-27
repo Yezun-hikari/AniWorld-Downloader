@@ -7,7 +7,7 @@ from .ascii_art import display_traceback_art
 from .action import watch, syncplay
 from .models import Anime, Episode, SUPPORTED_SITES
 from .parser import arguments
-from .search import search_anime
+from .search import search_media
 from .execute import execute
 from .menu import menu
 from .common import generate_links
@@ -78,17 +78,25 @@ def _collect_episode_links() -> List[str]:
     return generate_links(links, arguments)
 
 
-def _group_episodes_by_series(links: List[str]) -> List[Anime]:
+def _group_episodes_by_series(links: List[str]) -> List[Union[Anime, Movie]]:
     """Group episodes by series and create Anime objects."""
     if not links:
         return []
 
-    anime_list = []
+    media_list = []
     episode_list = []
     current_anime = None
 
     for link in links:
         if link:
+            if "megakino.video" in link:
+                from .models import Movie
+                # This is a movie, create a Movie object.
+                # We need to get the title from the URL or a placeholder
+                title = link.split("/")[-1] # Basic title from slug
+                media_list.append(Movie(title=title, link=link))
+                continue
+
             parts = link.split("/")
             try:
                 series_slug = parts[parts.index("stream") + 1]
@@ -104,7 +112,7 @@ def _group_episodes_by_series(links: List[str]) -> List[Anime]:
                     episode_site = (
                         episode_list[0].site if episode_list else "aniworld.to"
                     )
-                    anime_list.append(
+                    media_list.append(
                         Anime(episode_list=episode_list, site=episode_site)
                     )
                     episode_list = []
@@ -115,15 +123,22 @@ def _group_episodes_by_series(links: List[str]) -> List[Anime]:
     if episode_list:
         # Get the site from the first episode in the list
         episode_site = episode_list[0].site if episode_list else "aniworld.to"
-        anime_list.append(Anime(episode_list=episode_list, site=episode_site))
+        media_list.append(Anime(episode_list=episode_list, site=episode_site))
 
     # Handle case when no links are provided but we need to create a default anime
-    if not anime_list and not links:
-        slug = arguments.slug or search_anime()
-        episode = Episode(slug=slug)
-        anime_list.append(Anime(episode_list=[episode]))
+    if not media_list and not links:
+        selected_media = search_media()
+        if selected_media is None:
+            return []
+        slug = selected_media['link']
+        if selected_media["type"] == "movie":
+            from .models import Movie
+            media_list.append(Movie(title=selected_media["name"], link=slug))
+        else:
+            episode = Episode(slug=slug)
+            media_list.append(Anime(episode_list=[episode]))
 
-    return anime_list
+    return media_list
 
 
 def _handle_episode_mode() -> None:
@@ -132,13 +147,11 @@ def _handle_episode_mode() -> None:
 
     # If no links were collected, handle as interactive mode
     if not links:
-        slug = arguments.slug or search_anime()
-        episode = Episode(slug=slug)
-        anime_list = [Anime(episode_list=[episode])]
+        media_list = _group_episodes_by_series(links)
     else:
-        anime_list = _group_episodes_by_series(links)
+        media_list = _group_episodes_by_series(links)
 
-    execute(anime_list=anime_list)
+    execute(media_list=media_list)
 
 
 def _handle_interactive_mode() -> None:
@@ -148,13 +161,22 @@ def _handle_interactive_mode() -> None:
     if not slug:
         while True:
             try:
-                slug = search_anime()
+                selected_media = search_media()
+                if selected_media is None:  # Handle menu cancellation
+                    return
+                if selected_media.get("type") == "movie":
+                    from .models import Movie
+                    movie = Movie(title=selected_media["name"], link=selected_media["link"])
+                    execute(media_list=[movie])
+                    return
+                else:
+                    slug = selected_media["link"]
                 break
             except ValueError:
                 continue
 
     anime = menu(arguments=arguments, slug=slug)
-    execute(anime_list=[anime])
+    execute(media_list=[anime])
 
 
 def _handle_runtime_error(e: Exception) -> None:
