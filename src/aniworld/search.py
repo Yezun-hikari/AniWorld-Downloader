@@ -94,8 +94,11 @@ def search_movie(keyword: str) -> List[Dict]:
         List[Dict]: List of movie dictionaries
     """
     url = f"{MEGAKINO_URL}/index.php?do=search&subaction=search&search_start=0&full_search=0&result_from=1&story={quote(keyword)}"
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
+    }
     try:
-        response = requests.get(url, timeout=DEFAULT_REQUEST_TIMEOUT)
+        response = requests.get(url, headers=headers, timeout=DEFAULT_REQUEST_TIMEOUT)
         response.raise_for_status()
     except requests.RequestException as e:
         logging.error(f"Error: Unable to fetch the page. Details: {e}")
