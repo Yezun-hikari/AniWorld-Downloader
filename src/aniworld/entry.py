@@ -11,7 +11,7 @@ from .search import search_media
 from .execute import execute
 from .menu import menu
 from .common import generate_links
-from .config import S_TO
+from .config import S_TO, MEGAKINO_URL
 
 
 def _detect_site_from_url(url: str) -> str:
@@ -89,7 +89,7 @@ def _group_episodes_by_series(links: List[str]) -> List[Union[Anime, Movie]]:
 
     for link in links:
         if link:
-            if "megakino.video" in link:
+            if MEGAKINO_URL in link:
                 from .models import Movie
                 # This is a movie, create a Movie object.
                 # We need to get the title from the URL or a placeholder

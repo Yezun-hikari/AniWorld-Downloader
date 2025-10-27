@@ -5,7 +5,6 @@ def run(playwright):
     context = browser.new_context()
     page = context.new_page()
     page.goto("http://localhost:8080/")
-    page.wait_for_timeout(5000) # 5 seconds
     page.check("#site-megakino")
     page.get_by_placeholder("Enter anime or series name...").click()
     page.get_by_placeholder("Enter anime or series name...").fill("Bad Boys")

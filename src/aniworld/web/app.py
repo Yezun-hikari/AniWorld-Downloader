@@ -529,7 +529,7 @@ class WebApp:
                     results = fetch_anime_list(search_url)
                     for r in results:
                         r['type'] = 'anime'
-                elif site == "megakino.video":
+                elif site == "megakino":
                     results = search_movie(keyword=query)
 
                 # Process results - simplified without episode fetching
@@ -578,7 +578,7 @@ class WebApp:
                             "slug": item.get("link"),
                             "name": item.get("name", "Unknown Name"),
                             "year": "",
-                            "site": "megakino.video",
+                            "site": "MegaKino",
                             "cover": "",
                             "type": "movie",
                         }

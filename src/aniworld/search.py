@@ -13,7 +13,7 @@ import curses
 import requests
 
 from .ascii_art import display_ascii_art
-from .config import DEFAULT_REQUEST_TIMEOUT, ANIWORLD_TO
+from .config import DEFAULT_REQUEST_TIMEOUT, ANIWORLD_TO, MEGAKINO_URL
 
 
 # Constants for better maintainability
@@ -93,7 +93,7 @@ def search_movie(keyword: str) -> List[Dict]:
     Returns:
         List[Dict]: List of movie dictionaries
     """
-    url = f"https://megakino.video/index.php?do=search&subaction=search&search_start=0&full_search=0&result_from=1&story={quote(keyword)}"
+    url = f"{MEGAKINO_URL}/index.php?do=search&subaction=search&search_start=0&full_search=0&result_from=1&story={quote(keyword)}"
     try:
         response = requests.get(url, timeout=DEFAULT_REQUEST_TIMEOUT)
         response.raise_for_status()
