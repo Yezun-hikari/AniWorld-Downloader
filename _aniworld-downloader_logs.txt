@@ -1,0 +1,80 @@
+Traceback (most recent call last):
+  File "/usr/local/bin/aniworld", line 3, in <module>
+    from aniworld.__main__ import main
+  File "/app/src/aniworld/__main__.py", line 9, in <module>
+    from .entry import aniworld
+  File "/app/src/aniworld/entry.py", line 10, in <module>
+    from .search import search_anime
+ImportError: cannot import name 'search_anime' from 'aniworld.search' (/app/src/aniworld/search.py). Did you mean: 'search_movie'?
+Traceback (most recent call last):
+  File "/usr/local/bin/aniworld", line 3, in <module>
+    from aniworld.__main__ import main
+  File "/app/src/aniworld/__main__.py", line 9, in <module>
+    from .entry import aniworld
+  File "/app/src/aniworld/entry.py", line 10, in <module>
+    from .search import search_anime
+ImportError: cannot import name 'search_anime' from 'aniworld.search' (/app/src/aniworld/search.py). Did you mean: 'search_movie'?
+Traceback (most recent call last):
+  File "/usr/local/bin/aniworld", line 3, in <module>
+    from aniworld.__main__ import main
+  File "/app/src/aniworld/__main__.py", line 9, in <module>
+    from .entry import aniworld
+  File "/app/src/aniworld/entry.py", line 10, in <module>
+    from .search import search_anime
+ImportError: cannot import name 'search_anime' from 'aniworld.search' (/app/src/aniworld/search.py). Did you mean: 'search_movie'?
+Traceback (most recent call last):
+  File "/usr/local/bin/aniworld", line 3, in <module>
+    from aniworld.__main__ import main
+  File "/app/src/aniworld/__main__.py", line 9, in <module>
+    from .entry import aniworld
+  File "/app/src/aniworld/entry.py", line 10, in <module>
+    from .search import search_anime
+ImportError: cannot import name 'search_anime' from 'aniworld.search' (/app/src/aniworld/search.py). Did you mean: 'search_movie'?
+Traceback (most recent call last):
+  File "/usr/local/bin/aniworld", line 3, in <module>
+    from aniworld.__main__ import main
+  File "/app/src/aniworld/__main__.py", line 9, in <module>
+    from .entry import aniworld
+  File "/app/src/aniworld/entry.py", line 10, in <module>
+    from .search import search_anime
+ImportError: cannot import name 'search_anime' from 'aniworld.search' (/app/src/aniworld/search.py). Did you mean: 'search_movie'?
+Traceback (most recent call last):
+  File "/usr/local/bin/aniworld", line 3, in <module>
+    from aniworld.__main__ import main
+  File "/app/src/aniworld/__main__.py", line 9, in <module>
+    from .entry import aniworld
+  File "/app/src/aniworld/entry.py", line 10, in <module>
+    from .search import search_anime
+ImportError: cannot import name 'search_anime' from 'aniworld.search' (/app/src/aniworld/search.py). Did you mean: 'search_movie'?
+Traceback (most recent call last):
+  File "/usr/local/bin/aniworld", line 3, in <module>
+    from aniworld.__main__ import main
+  File "/app/src/aniworld/__main__.py", line 9, in <module>
+    from .entry import aniworld
+  File "/app/src/aniworld/entry.py", line 10, in <module>
+    from .search import search_anime
+ImportError: cannot import name 'search_anime' from 'aniworld.search' (/app/src/aniworld/search.py). Did you mean: 'search_movie'?
+Traceback (most recent call last):
+  File "/usr/local/bin/aniworld", line 3, in <module>
+    from aniworld.__main__ import main
+  File "/app/src/aniworld/__main__.py", line 9, in <module>
+    from .entry import aniworld
+  File "/app/src/aniworld/entry.py", line 10, in <module>
+    from .search import search_anime
+ImportError: cannot import name 'search_anime' from 'aniworld.search' (/app/src/aniworld/search.py). Did you mean: 'search_movie'?
+Traceback (most recent call last):
+  File "/usr/local/bin/aniworld", line 3, in <module>
+    from aniworld.__main__ import main
+  File "/app/src/aniworld/__main__.py", line 9, in <module>
+    from .entry import aniworld
+  File "/app/src/aniworld/entry.py", line 10, in <module>
+    from .search import search_anime
+ImportError: cannot import name 'search_anime' from 'aniworld.search' (/app/src/aniworld/search.py). Did you mean: 'search_movie'?
+Traceback (most recent call last):
+  File "/usr/local/bin/aniworld", line 3, in <module>
+    from aniworld.__main__ import main
+  File "/app/src/aniworld/__main__.py", line 9, in <module>
+    from .entry import aniworld
+  File "/app/src/aniworld/entry.py", line 10, in <module>
+    from .search import search_anime
+ImportError: cannot import name 'search_anime' from 'aniworld.search' (/app/src/aniworld/search.py). Did you mean: 'search_movie'?
