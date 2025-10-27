@@ -507,12 +507,30 @@ class WebApp:
                         {"success": False, "error": "Query cannot be empty"}
                     ), 400
 
-                # Get site parameter (default to both)
-                site = data.get("site", "both")
+                # Get site parameter
+                site = data.get("site", "all")
 
-                from ..search import search_media
+                from ..search import search_media, search_movie
+                from .. import config
+                from urllib.parse import quote
+                from ..search import fetch_anime_list
 
-                results = search_media(keyword=query, only_return=True)
+
+                results = []
+                if site == "all":
+                    results = search_media(keyword=query, only_return=True)
+                elif site == "aniworld.to":
+                    search_url = f"{config.ANIWORLD_TO}/ajax/seriesSearch?keyword={quote(query)}"
+                    results = fetch_anime_list(search_url)
+                    for r in results:
+                        r['type'] = 'anime'
+                elif site == "s.to":
+                    search_url = f"{config.S_TO}/ajax/seriesSearch?keyword={quote(query)}"
+                    results = fetch_anime_list(search_url)
+                    for r in results:
+                        r['type'] = 'anime'
+                elif site == "megakino.video":
+                    results = search_movie(keyword=query)
 
                 # Process results - simplified without episode fetching
                 processed_results = []
