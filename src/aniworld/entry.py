@@ -5,7 +5,7 @@ from typing import List, Union
 
 from .ascii_art import display_traceback_art
 from .action import watch, syncplay
-from .models import Anime, Episode, SUPPORTED_SITES
+from .models import Anime, Episode, SUPPORTED_SITES, Movie
 from .parser import arguments
 from .search import search_media
 from .execute import execute
