@@ -3,56 +3,35 @@ import logging
 import yt_dlp
 import re
 import requests
-from urllib.parse import urljoin
-from .. import config
-from ..config import DEFAULT_MOVIE_DOWNLOAD_PATH, RANDOM_USER_AGENT
+from ..config import DEFAULT_MOVIE_DOWNLOAD_PATH, RANDOM_USER_AGENT, MEGAKINO_URL
 from ..models import Movie
 from ..action.common import sanitize_filename
+from ..extractors.provider.voe import get_direct_link_from_voe
 
-def megakino_get_direct_link(url: str) -> str or None:
+def megakino_get_voe_link(movie_url: str) -> str or None:
     """
-    Robustly extracts the direct M3U8 stream link from a megakino.ms movie page.
-    This combines the multi-step extraction process with proper session handling.
+    Extracts the voe.sx embed link from a megakino.ms movie page.
     """
     try:
-        token_url = f"{config.MEGAKINO_URL}/index.php?yg=token"
-        headers = {'User-Agent': RANDOM_USER_AGENT}
-
         with requests.Session() as s:
-            s.get(token_url, headers=headers, timeout=15)
+            # Handle anti-bot token
+            s.get(f"{MEGAKINO_URL}/index.php?yg=token", headers={"User-Agent": RANDOM_USER_AGENT})
 
-            main_page_response = s.get(url, headers=headers, timeout=15)
-            main_page_response.raise_for_status()
-            embed_match = re.search(r'iframe src="([^"]+)"', main_page_response.text)
-            if not embed_match:
-                logging.error(f"Could not find embed iframe src on: {url}")
+            # Get movie page content
+            response = s.get(movie_url, headers={"User-Agent": RANDOM_USER_AGENT})
+            response.raise_for_status()
+
+            # Find the voe.sx link in the iframe's data-src attribute
+            match = re.search(r'<iframe[^>]+data-src="([^"]*voe\.sx[^"]*)"', response.text)
+            if match:
+                voe_embed_url = match.group(1)
+                logging.info(f"Found VOE embed link: {voe_embed_url}")
+                return voe_embed_url
+            else:
+                logging.error(f"Could not find VOE embed link on page: {movie_url}")
                 return None
-
-            embed_link = embed_match.group(1)
-            if embed_link.startswith("//"):
-                embed_link = "https:" + embed_link
-
-            player_headers = headers.copy()
-            player_headers['Referer'] = url
-            player_page_response = s.get(embed_link, headers=player_headers, timeout=15)
-            player_page_response.raise_for_status()
-
-            uid_match = re.search(r'"uid":"(.*?)"', player_page_response.text)
-            md5_match = re.search(r'"md5":"(.*?)"', player_page_response.text)
-            id_match = re.search(r'"id":"(.*?)"', player_page_response.text)
-
-            if not all([uid_match, md5_match, id_match]):
-                logging.error("Could not extract all required video metadata from player page.")
-                return None
-
-            uid, md5, video_id = uid_match.group(1), md5_match.group(1), id_match.group(1)
-
-            stream_link = f"https://watch.gxplayer.xyz/m3u8/{uid}/{md5}/master.txt?s=1&id={video_id}&cache=1"
-            logging.info(f"Successfully extracted stream link: {stream_link}")
-            return stream_link
-
     except requests.exceptions.RequestException as e:
-        logging.error(f"A network error occurred during megakino link extraction for {url}: {e}")
+        logging.error(f"Network error while fetching VOE link from megakino: {e}")
         return None
 
 # A simple logger to suppress most of yt-dlp's output while capturing errors.
@@ -64,21 +43,31 @@ class QuietLogger:
 
 def download_movie(movie: Movie, progress_callback=None) -> bool:
     """
-    Downloads a movie using the yt-dlp library, combining the robust extractor
-    with the correct User-Agent and Referer headers.
+    Downloads a movie from megakino by first extracting the voe.sx link,
+    then getting the direct video URL from VOE, and finally downloading with yt-dlp.
     """
     try:
-        direct_link = megakino_get_direct_link(movie.link)
-        if not direct_link:
+        # Step 1: Get the voe.sx embed link from the movie page.
+        voe_embed_link = megakino_get_voe_link(movie.link)
+        if not voe_embed_link:
             if progress_callback:
-                progress_callback({'status': 'error', 'error': 'Could not extract direct download link.'})
+                progress_callback({'status': 'error', 'error': 'Could not find VOE video source.'})
             return False
 
+        # Step 2: Use the existing VOE extractor to get the final, direct video link.
+        direct_link = get_direct_link_from_voe(voe_embed_link)
+        if not direct_link:
+            if progress_callback:
+                progress_callback({'status': 'error', 'error': 'Failed to extract direct link from VOE.'})
+            return False
+
+        # Step 3: Prepare download path and options.
         sanitized_title = sanitize_filename(movie.title)
         output_dir = os.path.join(DEFAULT_MOVIE_DOWNLOAD_PATH, sanitized_title)
         output_file_template = os.path.join(output_dir, f"{sanitized_title}.%(ext)s")
         os.makedirs(output_dir, exist_ok=True)
 
+        # Standard yt-dlp options are sufficient for VOE links.
         ydl_opts = {
             'outtmpl': output_file_template,
             'nocheckcertificate': True,
@@ -88,12 +77,9 @@ def download_movie(movie: Movie, progress_callback=None) -> bool:
             'no_warnings': True,
             'logger': QuietLogger(),
             'progress_hooks': [progress_callback] if progress_callback else [],
-            'http_headers': {
-                'User-Agent': RANDOM_USER_AGENT,
-                'Referer': movie.link,
-            },
         }
 
+        # Step 4: Execute the download.
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([direct_link])
 
