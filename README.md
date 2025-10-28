@@ -3,6 +3,8 @@
 
 AniWorld Downloader is a tool for downloading content from various streaming sites. It features a modern web interface and can be easily deployed using Docker.
 
+![Preview](.github/assets/preview.png)
+
 ![License](https://img.shields.io/pypi/l/aniworld?label=License&color=blue)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -61,7 +63,7 @@ pip install --upgrade aniworld
 To install the latest development version directly from GitHub, use the following command:
 
 ```shell
-pip install --upgrade git+https://github.com/Master-T-v-T-v-T/AniWorld-Downloader.git@next#egg=aniworld
+pip install --upgrade git+https://github.com/Yezun-hikari/AniWorld-Downloader.git@next#egg=aniworld
 ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -111,7 +113,7 @@ The recommended way to run the AniWorld Downloader is with Docker, which simplif
 
 1. Clone the repository:
    ```shell
-   git clone https://github.com/Master-T-v-T-v-T/AniWorld-Downloader.git
+   git clone https://github.com/Yezun-hikari/AniWorld-Downloader.git
    cd AniWorld-Downloader
    ```
 
@@ -139,7 +141,7 @@ The Docker container runs with:
 
 If you need help with AniWorld Downloader, you can:
 
-- **Submit an issue** on the [GitHub Issues](https://github.com/Master-T-v-T-v-T/AniWorld-Downloader/issues) page.
+- **Submit an issue** on the [GitHub Issues](https://github.com/Yezun-hikari/AniWorld-Downloader/issues) page.
 
 If you find this tool useful, consider starring the repository on GitHub. Your support is greatly appreciated!
 
