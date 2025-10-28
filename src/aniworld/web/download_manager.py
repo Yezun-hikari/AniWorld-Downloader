@@ -188,13 +188,24 @@ class DownloadQueueManager:
         try:
             movie = Movie(title=job["anime_title"], link=job["movie_url"])
 
+            # This flag will be used to determine if the callback ever reported an error.
+            _error_reported_by_callback = False
+
             def web_progress_callback(progress_data):
                 """Handle progress updates from yt-dlp and update web interface"""
+                nonlocal _error_reported_by_callback
                 try:
                     if self._stop_event.is_set():
                         raise KeyboardInterrupt("Download stopped by user")
 
-                    if progress_data["status"] == "downloading":
+                    status = progress_data.get("status")
+                    if status == "error":
+                        _error_reported_by_callback = True
+                        error_msg = progress_data.get("error", "An unknown error occurred.")
+                        self._update_download_status(
+                            queue_id, "failed", error_message=error_msg
+                        )
+                    elif status == "downloading":
                         percent_str = progress_data.get("_percent_str")
                         percentage = float(percent_str.replace("%", "")) if percent_str else 0.0
                         speed = progress_data.get("_speed_str", "N/A")
@@ -209,12 +220,21 @@ class DownloadQueueManager:
 
                 except Exception as e:
                     logging.warning(f"Web progress callback error: {e}")
+                    _error_reported_by_callback = True
 
-            download_movie(movie, web_progress_callback)
-            self._update_download_status(
-                queue_id, "completed", completed_episodes=1, current_episode="Movie downloaded"
-            )
+            # The download_movie function now returns True on success and False on failure.
+            download_successful = download_movie(movie, web_progress_callback)
+
+            # Only mark as completed if the download function succeeded AND the callback
+            # did not report an error. This prevents overwriting a "failed" status.
+            if download_successful and not _error_reported_by_callback:
+                self._update_download_status(
+                    queue_id, "completed", completed_episodes=1, current_episode="Movie downloaded"
+                )
+
         except Exception as e:
+            # This is a final catch-all for unexpected errors during the setup.
+            logging.error(f"Unexpected error in _process_movie_download_job for queue ID {queue_id}: {e}")
             self._update_download_status(
                 queue_id, "failed", error_message=f"Movie download failed: {str(e)}"
             )
