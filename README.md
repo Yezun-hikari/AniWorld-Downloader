@@ -139,6 +139,71 @@ The Docker container runs with:
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+## API Endpoints
+
+The web interface provides a simple API to monitor download status, making it easy to integrate with dashboards like [gethomepage](https://gethomepage.dev/).
+
+### `/api/download-status`
+
+This endpoint provides real-time information about the currently active download.
+
+- **URL**: `/api/download-status`
+- **Method**: `GET`
+- **Authentication**: None. This endpoint is publicly accessible.
+
+#### Example Response
+
+If a download is in progress, the API will return a JSON object like this:
+
+```json
+{
+  "series_name": "Oshi No Ko",
+  "current_episode_progress": "35%",
+  "download_speed": "8.46MiB/s",
+  "eta": "00:28",
+  "overall_progress": "0/1",
+  "success": true
+}
+```
+
+If no download is active, it will return:
+
+```json
+{
+  "success": false,
+  "message": "No active downloads"
+}
+```
+
+### gethomepage Integration
+
+You can add a widget to your [gethomepage](https://gethomepage.dev/) dashboard to monitor your downloads. Add the following configuration to your `services.yaml` file:
+
+```yaml
+- AniWorld Downloader:
+    icon: https://cdn.pixabay.com/photo/2016/12/18/13/45/download-1915753_640.png
+    href: http://localhost:8080/
+    description: WebUI for Anime-Downloads
+    widget:
+      type: customapi
+      url: http://localhost:8080/api/download-status
+      mappings:
+        - field: series_name
+          label: Name
+        - field: current_episode_progress
+          label: Progress
+        - field: download_speed
+          label: Speed
+        - field: overall_progress
+          label: Episodes
+        - field: eta
+          label: ETA
+```
+
+**Note:** The `gethomepage` widget will only display the first four mapped fields on the dashboard.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 ## Support
 
 If you need help with AniWorld Downloader, you can:
