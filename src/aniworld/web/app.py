@@ -524,11 +524,13 @@ class WebApp:
                     results = fetch_anime_list(search_url)
                     for r in results:
                         r['type'] = 'anime'
+                        r['site'] = 'AniWorld.to'
                 elif site == "s.to":
                     search_url = f"{config.S_TO}/ajax/seriesSearch?keyword={quote(query)}"
                     results = fetch_anime_list(search_url)
                     for r in results:
                         r['type'] = 'anime'
+                        r['site'] = 'S.to'
                 elif site == "megakino":
                     results = search_movie(keyword=query)
 
@@ -539,7 +541,7 @@ class WebApp:
                     if item_type == "anime":
                         # Get the link and construct full URL if needed
                         link = item.get("link", "")
-                        anime_site = item.get("site", "aniworld")
+                        anime_site = item.get("site", "AniWorld.to")
                         anime_base_url = item.get("base_url", config.ANIWORLD_TO)
                         anime_stream_path = item.get("stream_path", "anime/stream")
 
