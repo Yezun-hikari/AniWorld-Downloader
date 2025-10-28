@@ -13,14 +13,13 @@ def megakino_get_direct_link(url: str) -> str or None:
     1. Initializing a session and getting an anti-bot token.
     2. Visiting the main movie page to get the embedded player URL.
     3. Visiting the embedded player page to extract video metadata.
-    4. Using the metadata to get a pointer file (`master.txt`).
-    5. Reading the pointer file to get the final M3U8 manifest URL.
+    4. Constructing the final M3U8 playlist URL from the metadata.
 
     Args:
         url: The URL of the megakino.ms movie page.
 
     Returns:
-        The direct M3U8 manifest link if successful, otherwise None.
+        The direct M3U8 playlist link if successful, otherwise None.
     """
     try:
         token_url = f"{config.MEGAKINO_URL}/index.php?yg=token"
@@ -58,24 +57,11 @@ def megakino_get_direct_link(url: str) -> str or None:
 
             uid, md5, video_id = uid_match.group(1), md5_match.group(1), id_match.group(1)
 
-            # Step 4: Construct the URL to the pointer file (`master.txt`).
-            pointer_file_url = f"https://watch.gxplayer.xyz/m3u8/{uid}/{md5}/master.txt?s=1&id={video_id}&cache=1"
+            # Step 4: Construct the URL to the M3U8 playlist. This is the final link.
+            stream_link = f"https://watch.gxplayer.xyz/m3u8/{uid}/{md5}/master.txt?s=1&id={video_id}&cache=1"
 
-            # Step 5: Read the content of the pointer file to get the real manifest URL.
-            manifest_response = s.get(pointer_file_url, headers=player_headers, timeout=15)
-            manifest_response.raise_for_status()
-
-            # The content of master.txt is the relative path to the manifest.
-            manifest_path = manifest_response.text.strip()
-            if not manifest_path:
-                logging.error("Pointer file 'master.txt' was empty.")
-                return None
-
-            # Construct the final, absolute URL to the HLS manifest.
-            final_stream_link = urljoin(pointer_file_url, manifest_path)
-
-            logging.info(f"Successfully extracted final stream link: {final_stream_link}")
-            return final_stream_link
+            logging.info(f"Successfully extracted final stream link: {stream_link}")
+            return stream_link
 
     except requests.exceptions.RequestException as e:
         logging.error(f"A network error occurred during megakino link extraction for {url}: {e}")
