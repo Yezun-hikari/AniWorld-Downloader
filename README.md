@@ -27,7 +27,6 @@ You can download content from the following websites:
 
 - **AniWorld.to** (Anime)
 - **S.to** (Anime & Series)
-- **MegaKino.ms** (Movies)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
