@@ -1,12 +1,18 @@
 import re
 import requests
+from .. import config
 
 from ..config import RANDOM_USER_AGENT
 
 def get_embed_link(url):
-    response = requests.get(url, timeout=15, headers={
-        "User-Agent": RANDOM_USER_AGENT
-    })
+    token_url = f"{config.MEGAKINO_URL}/index.php?yg=token"
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
+    }
+    with requests.Session() as s:
+        s.get(token_url, headers=headers, timeout=15)
+        response = s.get(url, headers=headers, timeout=15)
+
     embed_match = re.search(r'iframe src="([^"]+)"', response.text)
     if embed_match:
         return embed_match.group(1)

@@ -187,7 +187,30 @@ class DownloadQueueManager:
 
         try:
             movie = Movie(title=job["anime_title"], link=job["movie_url"])
-            download_movie(movie)
+
+            def web_progress_callback(progress_data):
+                """Handle progress updates from yt-dlp and update web interface"""
+                try:
+                    if self._stop_event.is_set():
+                        raise KeyboardInterrupt("Download stopped by user")
+
+                    if progress_data["status"] == "downloading":
+                        percent_str = progress_data.get("_percent_str")
+                        percentage = float(percent_str.replace("%", "")) if percent_str else 0.0
+                        speed = progress_data.get("_speed_str", "N/A")
+                        eta = progress_data.get("_eta_str", "N/A")
+
+                        import re
+                        speed = re.sub(r"\x1b\[[0-9;]*m", "", str(speed)).strip()
+                        eta = re.sub(r"\x1b\[[0-9;]*m", "", str(eta)).strip()
+
+                        status_msg = f"Downloading {movie.title} - {percentage:.1f}% | Speed: {speed} | ETA: {eta}"
+                        self.update_episode_progress(queue_id, percentage, status_msg)
+
+                except Exception as e:
+                    logging.warning(f"Web progress callback error: {e}")
+
+            download_movie(movie, web_progress_callback)
             self._update_download_status(
                 queue_id, "completed", completed_episodes=1, current_episode="Movie downloaded"
             )
