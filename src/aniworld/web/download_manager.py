@@ -206,12 +206,14 @@ class DownloadQueueManager:
                             queue_id, "failed", error_message=error_msg
                         )
                     elif status == "downloading":
-                        percent_str = progress_data.get("_percent_str")
-                        percentage = float(percent_str.replace("%", "")) if percent_str else 0.0
+                        import re
+                        percent_str = progress_data.get("_percent_str", "0%")
+                        cleaned_percent_str = re.sub(r"\x1b\[[0-9;]*m", "", str(percent_str)).strip()
+                        percentage = float(cleaned_percent_str.replace("%", "")) if cleaned_percent_str else 0.0
+
                         speed = progress_data.get("_speed_str", "N/A")
                         eta = progress_data.get("_eta_str", "N/A")
 
-                        import re
                         speed = re.sub(r"\x1b\[[0-9;]*m", "", str(speed)).strip()
                         eta = re.sub(r"\x1b\[[0-9;]*m", "", str(eta)).strip()
 
@@ -352,8 +354,11 @@ class DownloadQueueManager:
                                     percent_str = progress_data.get("_percent_str")
                                     if percent_str:
                                         try:
+                                            # Clean ANSI codes before converting to float
+                                            import re
+                                            cleaned_percent_str = re.sub(r"\x1b\[[0-9;]*m", "", str(percent_str)).strip()
                                             percentage = float(
-                                                percent_str.replace("%", "")
+                                                cleaned_percent_str.replace("%", "")
                                             )
                                         except (ValueError, TypeError):
                                             pass
