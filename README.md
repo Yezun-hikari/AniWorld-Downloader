@@ -3,9 +3,9 @@
 
 AniWorld Downloader is a tool for downloading content from various streaming sites. It features a modern web interface and can be easily deployed using Docker.
 
-![Preview](.github/assets/preview.png)
-
 ![License](https://img.shields.io/pypi/l/aniworld?label=License&color=blue)
+
+![Preview](.github/assets/preview.png)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
