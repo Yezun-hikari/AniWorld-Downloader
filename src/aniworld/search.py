@@ -13,7 +13,7 @@ import curses
 import requests
 
 from .ascii_art import display_ascii_art
-from .config import DEFAULT_REQUEST_TIMEOUT, ANIWORLD_TO, MEGAKINO_URL
+from .config import DEFAULT_REQUEST_TIMEOUT, ANIWORLD_TO, MEGAKINO_URL, S_TO
 
 
 # Constants for better maintainability
@@ -199,16 +199,48 @@ def fetch_anime_list(url: str) -> List[Dict]:
         # First attempt: direct JSON parsing
         try:
             decoded_data = json.loads(html.unescape(clean_text))
-            return decoded_data if isinstance(decoded_data, list) else []
         except json.JSONDecodeError:
             # Second attempt: clean problematic characters
             cleaned_text = _clean_json_text(clean_text)
             try:
                 decoded_data = json.loads(cleaned_text)
-                return decoded_data if isinstance(decoded_data, list) else []
             except json.JSONDecodeError as err:
                 logging.error("Failed to parse JSON after cleaning: %s", err)
                 raise ValueError("Could not parse anime search results") from err
+
+        if not isinstance(decoded_data, list):
+            decoded_data = []
+
+        # If the search was for s.to, we need to fetch the cover images manually
+        if S_TO in url:
+            for item in decoded_data:
+                try:
+                    # Construct series URL
+                    series_url = f"{S_TO}/serie/stream/{item['link']}"
+
+                    # Fetch series page HTML
+                    series_page_res = requests.get(series_url, timeout=DEFAULT_REQUEST_TIMEOUT)
+                    series_page_res.raise_for_status()
+
+                    # Parse HTML to find cover image
+                    soup = BeautifulSoup(series_page_res.text, 'html.parser')
+
+                    # Look for the cover image in common places
+                    cover_img = soup.find('img', class_='seriesCover')
+                    if cover_img and cover_img.get('src'):
+                        item['cover'] = cover_img['src']
+                    else:
+                        # Fallback to Open Graph image meta tag
+                        og_image = soup.find('meta', property='og:image')
+                        if og_image and og_image.get('content'):
+                            item['cover'] = og_image['content']
+                        else:
+                            item['cover'] = ''  # or a default image
+                except (requests.RequestException, KeyError) as e:
+                    logging.warning(f"Could not fetch cover for {item.get('link', 'unknown item')}: {e}")
+                    item['cover'] = ''  # Set empty string on failure
+
+        return decoded_data
 
     except requests.RequestException as err:
         logging.error("Failed to fetch anime list: %s", err)
