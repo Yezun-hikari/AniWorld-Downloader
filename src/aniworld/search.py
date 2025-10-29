@@ -98,21 +98,38 @@ def search_movie(keyword: str) -> List[Dict]:
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
     }
+    titles_links = []
     try:
         with requests.Session() as s:
             s.get(token_url, headers=headers, timeout=DEFAULT_REQUEST_TIMEOUT)
             response = s.get(search_url, headers=headers, timeout=DEFAULT_REQUEST_TIMEOUT)
             response.raise_for_status()
+
+            soup = BeautifulSoup(response.content, 'html.parser')
+            for link in soup.find_all('a', class_='poster'):
+                title_element = link.find('h3', class_='poster__title')
+                if title_element:
+                    movie_url = link['href']
+                    try:
+                        # Scrape the movie page for description using the same session
+                        movie_page_response = s.get(movie_url, headers=headers, timeout=DEFAULT_REQUEST_TIMEOUT)
+                        movie_page_response.raise_for_status()
+                        movie_soup = BeautifulSoup(movie_page_response.content, 'html.parser')
+                        description_element = movie_soup.find('div', class_='page__text')
+                        description = description_element.text.strip() if description_element else ""
+
+                        titles_links.append({
+                            "name": title_element.text.strip(),
+                            "link": movie_url,
+                            "type": "movie",
+                            "description": description
+                        })
+                    except requests.RequestException as e:
+                        logging.error(f"Error fetching movie details for {movie_url}: {e}")
+                        continue  # Skip this movie if details can't be fetched
     except requests.RequestException as e:
         logging.error(f"Error: Unable to fetch the page. Details: {e}")
         return []
-
-    soup = BeautifulSoup(response.content, 'html.parser')
-    titles_links = []
-    for link in soup.find_all('a', class_='poster'):
-        title = link.find('h3', class_='poster__title')
-        if title:
-            titles_links.append({"name": title.text.strip(), "link": link['href'], "type": "movie"})
 
     # Filter results because megakino search is not reliable
     filtered_results = [
