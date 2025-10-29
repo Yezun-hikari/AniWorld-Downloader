@@ -271,13 +271,9 @@ Thank you for using AniWorld Downloader!
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## Legal Disclaimer
+## ⚠️ Legal Disclaimer
 
-This tool is made for accessing content that’s already publicly available online. It doesn’t support or promote piracy or copyright violations. The developer isn’t responsible for how the tool is used or for any content found through external links.
-
-All content accessed with this tool is available on the internet, and the tool itself doesn’t host or share copyrighted files.
-
-If you have concerns about any content accessed through this tool, please reach out directly to the website’s owner, admin, or hosting provider. Thanks for your understanding.
+I provide this tool for educational and informational purposes only. You are solely responsible for how you use it. Any actions taken using this tool are entirely your own responsibility. I do not condone or support illegal use.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
