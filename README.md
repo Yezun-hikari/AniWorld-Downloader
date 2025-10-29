@@ -139,6 +139,49 @@ The Docker container runs with:
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+### Using Docker Compose with Gluetun VPN
+
+For users who want to route the container's traffic through a VPN, you can use [Gluetun](https://github.com/qdm12/gluetun). Here is an example `docker-compose.yml` for a Portainer stack:
+
+```yml
+version: '3.8'
+services:
+  aniworld:
+    container_name: aniworld-downloader
+    image: aniworld-downloader:local
+    volumes:
+      - ./downloads:/app/downloads
+      - ./movies:/app/movies
+      - ./data:/app/data
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+    network_mode: "service:vpn"
+  vpn:
+    image: 'qmcgaw/gluetun'
+    container_name: vpn
+    cap_add:
+      - NET_ADMIN
+    environment:
+      - VPN_SERVICE_PROVIDER= # e.g., mullvad, nordvpn, protonvpn
+      - OPENVPN_USER= # Your OpenVPN username
+      - OPENVPN_PASSWORD= # Your OpenVPN password
+    ports:
+      - "8080:8080" # AniWorld WebUI
+      - "8001:8000" # Gluetun API for integrations like gethomepage
+    volumes:
+      - ./gluetun:/gluetun
+    restart: unless-stopped
+```
+
+In this setup:
+- The `aniworld` service is configured to use the network of the `vpn` service (`network_mode: "service:vpn"`).
+- The `vpn` service is a Gluetun container. You must configure the `VPN_SERVICE_PROVIDER` (e.g., Mullvad, NordVPN, ProtonVPN) and your credentials. For a full list of providers and setup instructions, refer to the [**official Gluetun documentation**](https://gluetun.github.io/gluetun/providers/).
+- **Port `8080`** exposes the AniWorld Downloader web interface.
+- **Port `8001`** exposes the Gluetun API, which can be used for integrations with dashboards like [gethomepage](https://gethomepage.dev/).
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 ## API Endpoints
 
 The web interface provides a simple API to monitor download status, making it easy to integrate with dashboards like [gethomepage](https://gethomepage.dev/).
