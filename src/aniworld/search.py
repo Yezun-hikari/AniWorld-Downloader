@@ -113,7 +113,15 @@ def search_movie(keyword: str) -> List[Dict]:
         title = link.find('h3', class_='poster__title')
         if title:
             titles_links.append({"name": title.text.strip(), "link": link['href'], "type": "movie"})
-    return titles_links
+
+    # Filter results because megakino search is not reliable
+    filtered_results = [
+        result
+        for result in titles_links
+        if keyword.lower() in result.get("name", "").lower()
+    ]
+
+    return filtered_results
 
 
 def search_media(
