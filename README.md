@@ -176,7 +176,7 @@ services:
 
 In this setup:
 - The `aniworld` service is configured to use the network of the `vpn` service (`network_mode: "service:vpn"`).
-- The `vpn` service is a Gluetun container. You must configure the `VPN_SERVICE_PROVIDER` (e.g., Mullvad, NordVPN, ProtonVPN) and your credentials. For a full list of providers and setup instructions, refer to the [**official Gluetun documentation**](https://gluetun.github.io/gluetun/providers/).
+- The `vpn` service is a Gluetun container. You must configure the `VPN_SERVICE_PROVIDER` (e.g., Mullvad, NordVPN, ProtonVPN) and your credentials. For a full list of providers and setup instructions, refer to the [**official Gluetun documentation**](https://github.com/qdm12/gluetun-wiki/tree/main/setup/providers).
 - **Port `8080`** exposes the AniWorld Downloader web interface.
 - **Port `8001`** exposes the Gluetun API, which can be used for integrations with dashboards like [gethomepage](https://gethomepage.dev/).
 
