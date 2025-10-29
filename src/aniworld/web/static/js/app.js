@@ -317,7 +317,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="anime-info">
                     <strong>Site:</strong> ${escapeHtml(item.site || 'unknown')}<br>
                     ${isMovie ? '' : `<strong>Slug:</strong> ${escapeHtml(item.slug || 'Unknown')}<br>`}
-                    ${item.description ? `<strong>Description:</strong> ${escapeHtml(item.description)}<br>` : ''}
+                    <span class="description-container">${item.description ? `<strong>Description:</strong> ${escapeHtml(item.description)}<br>` : ''}</span>
                 </div>
                 <div class="anime-actions">
                     <button class="download-btn">
@@ -332,6 +332,25 @@ document.addEventListener('DOMContentLoaded', function() {
             downloadBtn.addEventListener('click', () => {
                 startMovieDownload(item.title, item.url);
             });
+
+            // Asynchronously fetch and display the description
+            const descriptionContainer = card.querySelector('.description-container');
+            if (descriptionContainer) {
+                fetch('/api/scrape-movie-description', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ url: item.url })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.description) {
+                        descriptionContainer.innerHTML = `<strong>Description:</strong> ${escapeHtml(data.description)}<br>`;
+                    }
+                })
+                .catch(error => console.error('Error fetching description:', error));
+            }
         } else {
             downloadBtn.addEventListener('click', () => {
                 showDownloadModal(item.title, 'Series', item.url);
