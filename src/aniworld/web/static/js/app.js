@@ -218,56 +218,112 @@ document.addEventListener('DOMContentLoaded', function() {
     function performSearch() {
         const query = searchInput.value.trim();
         if (!query) {
-            // If search is empty, show home content again
             showHomeContent();
             return;
         }
 
-        // Get selected site
         const selectedSite = document.querySelector('input[name="site"]:checked').value;
 
-        // Show loading state
         showLoadingState();
         searchBtn.disabled = true;
         searchBtn.textContent = 'Searching...';
 
-        fetch('/api/search', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                query: query,
-                site: selectedSite
-            })
-        })
-        .then(response => {
-            if (response.status === 401) {
-                // Authentication required - redirect to login
-                window.location.href = '/login';
-                return;
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (!data) return; // Handle redirect case
-            if (data.success) {
-                displaySearchResults(data.results);
-            } else {
-                showNotification(data.error || 'Search failed', 'error');
+        resultsContainer.innerHTML = '';
+        const displayedTitles = new Set();
+
+        function appendUniqueResults(results) {
+            const newResults = results.filter(item => {
+                const normalizedTitle = item.title.replace(/\s*\(\d{4}\)$/, '').trim();
+                if (!displayedTitles.has(normalizedTitle)) {
+                    displayedTitles.add(normalizedTitle);
+                    return true;
+                }
+                return false;
+            });
+
+            newResults.forEach(item => {
+                resultsContainer.appendChild(createAnimeCard(item));
+            });
+        }
+
+        if (selectedSite === 'all') {
+            const aniworldPromise = fetch('/api/search', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query, site: 'aniworld.to' }) }).then(res => res.json());
+            const sToPromise = fetch('/api/search', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query, site: 's.to' }) }).then(res => res.json());
+
+            Promise.all([aniworldPromise, sToPromise]).then(([aniworldData, sToData]) => {
+                hideLoadingState();
+                showResultsSection();
+
+                if (aniworldData && aniworldData.success) {
+                    appendUniqueResults(aniworldData.results);
+                }
+                if (sToData && sToData.success) {
+                    appendUniqueResults(sToData.results);
+                }
+
+                if (resultsContainer.innerHTML === '') {
+                    // Keep loading state if fast providers return nothing, for megakino
+                    showLoadingState();
+                }
+
+                // Now fetch the slow provider
+                fetch('/api/search', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query, site: 'megakino' }) })
+                    .then(res => res.json())
+                    .then(megakinoData => {
+                        if (megakinoData && megakinoData.success) {
+                            appendUniqueResults(megakinoData.results);
+                        }
+                    })
+                    .catch(err => console.error('Megakino search failed:', err))
+                    .finally(() => {
+                        searchBtn.disabled = false;
+                        searchBtn.textContent = 'Search';
+                        hideLoadingState();
+                        if (resultsContainer.innerHTML === '') {
+                            showEmptyState();
+                        }
+                    });
+            }).catch(error => {
+                console.error("Fast provider search failed:", error);
+                searchBtn.disabled = false;
+                searchBtn.textContent = 'Search';
+                hideLoadingState();
                 showEmptyState();
-            }
-        })
-        .catch(error => {
-            console.error('Search error:', error);
-            showNotification('Search failed. Please try again.', 'error');
-            showEmptyState();
-        })
-        .finally(() => {
-            searchBtn.disabled = false;
-            searchBtn.textContent = 'Search';
-            hideLoadingState();
-        });
+            });
+
+        } else {
+            // Original logic for single site search
+            fetch('/api/search', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query: query, site: selectedSite })
+            })
+            .then(response => {
+                if (response.status === 401) {
+                    window.location.href = '/login';
+                    return;
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data && data.success) {
+                    displaySearchResults(data.results);
+                } else {
+                    showNotification(data.error || 'Search failed', 'error');
+                    showEmptyState();
+                }
+            })
+            .catch(error => {
+                console.error('Search error:', error);
+                showNotification('Search failed. Please try again.', 'error');
+                showEmptyState();
+            })
+            .finally(() => {
+                searchBtn.disabled = false;
+                searchBtn.textContent = 'Search';
+                hideLoadingState();
+            });
+        }
     }
 
     function displaySearchResults(results) {
@@ -317,7 +373,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="anime-info">
                     <strong>Site:</strong> ${escapeHtml(item.site || 'unknown')}<br>
                     ${isMovie ? '' : `<strong>Slug:</strong> ${escapeHtml(item.slug || 'Unknown')}<br>`}
-                    <span class="description-container">${item.description ? `<strong>Description:</strong> ${escapeHtml(item.description)}<br>` : ''}</span>
+                    ${item.description ? `<strong>Description:</strong> ${escapeHtml(item.description)}<br>` : ''}
                 </div>
                 <div class="anime-actions">
                     <button class="download-btn">
@@ -332,25 +388,6 @@ document.addEventListener('DOMContentLoaded', function() {
             downloadBtn.addEventListener('click', () => {
                 startMovieDownload(item.title, item.url);
             });
-
-            // Asynchronously fetch and display the description
-            const descriptionContainer = card.querySelector('.description-container');
-            if (descriptionContainer) {
-                fetch('/api/scrape-movie-description', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ url: item.url })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success && data.description) {
-                        descriptionContainer.innerHTML = `<strong>Description:</strong> ${escapeHtml(data.description)}<br>`;
-                    }
-                })
-                .catch(error => console.error('Error fetching description:', error));
-            }
         } else {
             downloadBtn.addEventListener('click', () => {
                 showDownloadModal(item.title, 'Series', item.url);

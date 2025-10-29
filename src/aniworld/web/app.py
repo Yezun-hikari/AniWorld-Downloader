@@ -969,34 +969,6 @@ class WebApp:
                 logging.error(f"Failed to get public IP address: {e}")
                 return jsonify({"success": False, "error": "Failed to get IP address"}), 500
 
-        @self.app.route("/api/scrape-movie-description", methods=["POST"])
-        @self._require_api_auth
-        def api_scrape_movie_description():
-            """Scrape movie description from URL."""
-            from flask import request
-            from bs4 import BeautifulSoup
-
-            data = request.get_json()
-            movie_url = data.get("url")
-
-            if not movie_url:
-                return jsonify({"success": False, "error": "URL is required"}), 400
-
-            try:
-                with requests.Session() as s:
-                    headers = {
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
-                    }
-                    movie_page_response = s.get(movie_url, headers=headers, timeout=config.DEFAULT_REQUEST_TIMEOUT)
-                    movie_page_response.raise_for_status()
-                    movie_soup = BeautifulSoup(movie_page_response.content, 'html.parser')
-                    description_element = movie_soup.find('div', class_='page__text')
-                    description = description_element.text.strip() if description_element else ""
-                    return jsonify({"success": True, "description": description})
-            except requests.RequestException as e:
-                logging.error(f"Error fetching movie details for {movie_url}: {e}")
-                return jsonify({"success": False, "error": "Failed to fetch movie details"}), 500
-
     def _format_uptime(self, seconds: int) -> str:
         """Format uptime in human readable format."""
         if seconds < 60:

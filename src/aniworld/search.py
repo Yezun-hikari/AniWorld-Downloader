@@ -110,12 +110,23 @@ def search_movie(keyword: str) -> List[Dict]:
                 title_element = link.find('h3', class_='poster__title')
                 if title_element:
                     movie_url = link['href']
-                    titles_links.append({
-                        "name": title_element.text.strip(),
-                        "link": movie_url,
-                        "type": "movie",
-                        "description": ""
-                    })
+                    try:
+                        # Scrape the movie page for description using the same session
+                        movie_page_response = s.get(movie_url, headers=headers, timeout=DEFAULT_REQUEST_TIMEOUT)
+                        movie_page_response.raise_for_status()
+                        movie_soup = BeautifulSoup(movie_page_response.content, 'html.parser')
+                        description_element = movie_soup.find('div', class_='page__text')
+                        description = description_element.text.strip() if description_element else ""
+
+                        titles_links.append({
+                            "name": title_element.text.strip(),
+                            "link": movie_url,
+                            "type": "movie",
+                            "description": description
+                        })
+                    except requests.RequestException as e:
+                        logging.error(f"Error fetching movie details for {movie_url}: {e}")
+                        continue  # Skip this movie if details can't be fetched
     except requests.RequestException as e:
         logging.error(f"Error: Unable to fetch the page. Details: {e}")
         return []
