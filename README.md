@@ -51,7 +51,10 @@ The downloader supports a wide range of popular hosters, including:
 - Vidmoly
 - Doodstream
 - Streamtape
-- and more...
+- LoadX
+- Luluvdo
+- Vidoza
+- SpeedFiles
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
