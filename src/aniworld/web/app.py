@@ -577,7 +577,6 @@ class WebApp:
                             "title": item.get("name", "Unknown Name"),
                             "url": item.get("link"),
                             "description": item.get("description", ""),
-                            "slug": item.get("slug", ""),
                             "name": item.get("name", "Unknown Name"),
                             "year": "",
                             "site": "MegaKino",

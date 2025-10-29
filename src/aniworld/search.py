@@ -117,13 +117,11 @@ def search_movie(keyword: str) -> List[Dict]:
                         movie_soup = BeautifulSoup(movie_page_response.content, 'html.parser')
                         description_element = movie_soup.find('div', class_='page__text')
                         description = description_element.text.strip() if description_element else ""
-                        slug = movie_url.split('/')[-1]
 
                         titles_links.append({
                             "name": title_element.text.strip(),
                             "link": movie_url,
                             "type": "movie",
-                            "slug": slug,
                             "description": description
                         })
                     except requests.RequestException as e:
