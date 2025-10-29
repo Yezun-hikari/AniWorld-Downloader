@@ -518,7 +518,49 @@ class WebApp:
 
                 results = []
                 if site == "all":
-                    results = search_media(keyword=query, only_return=True)
+                    import re
+                    # AniWorld
+                    aniworld_url = f"{config.ANIWORLD_TO}/ajax/seriesSearch?keyword={quote(query)}"
+                    aniworld_results = fetch_anime_list(aniworld_url)
+                    for r in aniworld_results:
+                        r['type'] = 'anime'
+                        r['site'] = 'AniWorld.to'
+
+                    # S.to
+                    s_to_url = f"{config.S_TO}/ajax/seriesSearch?keyword={quote(query)}"
+                    s_to_results = fetch_anime_list(s_to_url)
+                    for r in s_to_results:
+                        r['type'] = 'anime'
+                        r['site'] = 'S.to'
+
+                    # Megakino
+                    megakino_results = search_movie(keyword=query)
+
+                    # Prioritization logic
+                    processed_titles = set()
+
+                    def normalize_title(title):
+                        # Removes trailing year in parentheses, e.g., "Series (2023)" -> "Series"
+                        return re.sub(r'\s*\(\d{4}\)$', '', title).strip().lower()
+
+                    # 1. Add all AniWorld results first and gather their titles
+                    results.extend(aniworld_results)
+                    for item in aniworld_results:
+                        processed_titles.add(normalize_title(item.get("name", "")))
+
+                    # 2. Add S.to results if the title is not already in the set
+                    for item in s_to_results:
+                        title = normalize_title(item.get("name", ""))
+                        if title not in processed_titles:
+                            results.append(item)
+                            processed_titles.add(title)
+
+                    # 3. Add Megakino results if the title is not already in the set
+                    for item in megakino_results:
+                        title = normalize_title(item.get("name", ""))
+                        if title not in processed_titles:
+                            results.append(item)
+
                 elif site == "aniworld.to":
                     search_url = f"{config.ANIWORLD_TO}/ajax/seriesSearch?keyword={quote(query)}"
                     results = fetch_anime_list(search_url)
