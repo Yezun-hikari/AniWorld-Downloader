@@ -111,13 +111,12 @@ async def search_movie_async(keyword: str) -> List[Dict]:
 
     async with aiohttp.ClientSession(headers=headers) as session:
         try:
-            # Fetch token and search page concurrently
-            token_task = session.get(token_url, timeout=DEFAULT_REQUEST_TIMEOUT)
-            search_task = session.get(search_url, timeout=DEFAULT_REQUEST_TIMEOUT)
-
-            token_resp, search_resp = await asyncio.gather(token_task, search_task)
-
+            # Fetch token first to set the session cookie
+            token_resp = await session.get(token_url, timeout=DEFAULT_REQUEST_TIMEOUT)
             token_resp.raise_for_status()
+
+            # Then fetch the search page with the cookie
+            search_resp = await session.get(search_url, timeout=DEFAULT_REQUEST_TIMEOUT)
             search_resp.raise_for_status()
 
             html_content = await search_resp.text()
