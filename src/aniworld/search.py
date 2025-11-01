@@ -9,6 +9,7 @@ from typing import List, Dict, Optional, Union
 from functools import lru_cache
 
 import aiohttp
+from aiohttp import TCPConnector
 from bs4 import BeautifulSoup
 
 import curses
@@ -16,6 +17,43 @@ import requests
 
 from .ascii_art import display_ascii_art
 from .config import DEFAULT_REQUEST_TIMEOUT, ANIWORLD_TO, MEGAKINO_URL
+
+
+# Global session for Megakino requests
+_global_megakino_session: Optional[aiohttp.ClientSession] = None
+
+
+async def get_global_session() -> aiohttp.ClientSession:
+    """
+    Get the global aiohttp ClientSession, creating it if necessary.
+    Singleton pattern to ensure only one session is active.
+    """
+    global _global_megakino_session
+    if _global_megakino_session is None or _global_megakino_session.closed:
+        # Configuration for the TCPConnector
+        connector = TCPConnector(
+            limit=10,  # Max 10 parallel connections
+            ttl_dns_cache=300,  # DNS cache for 5 minutes
+            keepalive_timeout=60,  # Keep-Alive for 60 seconds
+        )
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
+        }
+        _global_megakino_session = aiohttp.ClientSession(
+            connector=connector,
+            headers=headers
+        )
+    return _global_megakino_session
+
+
+async def close_global_session():
+    """
+    Close the global aiohttp ClientSession if it exists.
+    """
+    global _global_megakino_session
+    if _global_megakino_session and not _global_megakino_session.closed:
+        await _global_megakino_session.close()
+        _global_megakino_session = None
 
 
 # Constants for better maintainability
@@ -105,25 +143,22 @@ async def search_movie_async(keyword: str) -> List[Dict]:
     """
     search_url = f"{MEGAKINO_URL}/index.php?do=search&subaction=search&search_start=0&full_search=0&result_from=1&story={quote(keyword)}"
     token_url = f"{MEGAKINO_URL}/index.php?yg=token"
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
-    }
 
-    async with aiohttp.ClientSession(headers=headers) as session:
-        try:
-            # Fetch token first to set the session cookie
-            token_resp = await session.get(token_url, timeout=DEFAULT_REQUEST_TIMEOUT)
-            token_resp.raise_for_status()
+    session = await get_global_session()
+    try:
+        # Fetch token first to set the session cookie
+        token_resp = await session.get(token_url, timeout=DEFAULT_REQUEST_TIMEOUT)
+        token_resp.raise_for_status()
 
-            # Then fetch the search page with the cookie
-            search_resp = await session.get(search_url, timeout=DEFAULT_REQUEST_TIMEOUT)
-            search_resp.raise_for_status()
+        # Then fetch the search page with the cookie
+        search_resp = await session.get(search_url, timeout=DEFAULT_REQUEST_TIMEOUT)
+        search_resp.raise_for_status()
 
-            html_content = await search_resp.text()
+        html_content = await search_resp.text()
 
-        except aiohttp.ClientError as e:
-            logging.error(f"Error: Unable to fetch the page. Details: {e}")
-            return []
+    except aiohttp.ClientError as e:
+        logging.error(f"Error: Unable to fetch the page. Details: {e}")
+        return []
 
     soup = BeautifulSoup(html_content, 'lxml')
 

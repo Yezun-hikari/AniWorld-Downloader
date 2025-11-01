@@ -7,6 +7,7 @@ import os
 import time
 import threading
 import webbrowser
+import asyncio
 from datetime import datetime
 from functools import wraps
 from flask import Flask, render_template, jsonify, request, session, redirect, url_for
@@ -997,7 +998,15 @@ class WebApp:
                 use_reloader=False,  # Disable reloader to avoid conflicts
             )
         except KeyboardInterrupt:
-            logging.info("Web interface stopped by user")
+            logging.info("Web interface stopped by user. Cleaning up...")
+            from ..search import close_global_session
+            try:
+                # Run the async cleanup function
+                asyncio.run(close_global_session())
+                logging.info("Global session closed.")
+            except Exception as e:
+                logging.error(f"Error during cleanup: {e}")
+
         except Exception as err:
             logging.error(f"Error running web interface: {err}")
             raise
