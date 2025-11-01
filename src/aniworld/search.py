@@ -1,12 +1,14 @@
 import json
 import html
 import webbrowser
+import asyncio
 from urllib.parse import quote
 import logging
 import re
 from typing import List, Dict, Optional, Union
 from functools import lru_cache
 
+import aiohttp
 from bs4 import BeautifulSoup
 
 import curses
@@ -83,9 +85,17 @@ def _cached_search_request(search_url: str) -> str:
     return response.text.strip()
 
 
+@lru_cache(maxsize=128)
 def search_movie(keyword: str) -> List[Dict]:
     """
-    Search for movies on Megakino.
+    Wrapper to run the async search_movie_async in a sync context.
+    """
+    return asyncio.run(search_movie_async(keyword))
+
+
+async def search_movie_async(keyword: str) -> List[Dict]:
+    """
+    Search for movies on Megakino asynchronously.
 
     Args:
         keyword: Search term
@@ -98,27 +108,41 @@ def search_movie(keyword: str) -> List[Dict]:
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
     }
-    try:
-        with requests.Session() as s:
-            s.get(token_url, headers=headers, timeout=DEFAULT_REQUEST_TIMEOUT)
-            response = s.get(search_url, headers=headers, timeout=DEFAULT_REQUEST_TIMEOUT)
-            response.raise_for_status()
-    except requests.RequestException as e:
-        logging.error(f"Error: Unable to fetch the page. Details: {e}")
-        return []
 
-    soup = BeautifulSoup(response.content, 'html.parser')
+    async with aiohttp.ClientSession(headers=headers) as session:
+        try:
+            # Fetch token first to set the session cookie
+            token_resp = await session.get(token_url, timeout=DEFAULT_REQUEST_TIMEOUT)
+            token_resp.raise_for_status()
+
+            # Then fetch the search page with the cookie
+            search_resp = await session.get(search_url, timeout=DEFAULT_REQUEST_TIMEOUT)
+            search_resp.raise_for_status()
+
+            html_content = await search_resp.text()
+
+        except aiohttp.ClientError as e:
+            logging.error(f"Error: Unable to fetch the page. Details: {e}")
+            return []
+
+    soup = BeautifulSoup(html_content, 'lxml')
+
     titles_links = []
-    for link in soup.find_all('a', class_='poster'):
-        title = link.find('h3', class_='poster__title')
-        if title:
-            titles_links.append({"name": title.text.strip(), "link": link['href'], "type": "movie"})
+    posters = soup.find_all('a', class_='poster')
+
+    for link in posters:
+        title_tag = link.find('h3', class_='poster__title')
+        if title_tag:
+            titles_links.append({
+                "name": title_tag.text.strip(),
+                "link": link['href'],
+                "type": "movie"
+            })
 
     # Filter results because megakino search is not reliable
+    keyword_lower = keyword.lower()
     filtered_results = [
-        result
-        for result in titles_links
-        if keyword.lower() in result.get("name", "").lower()
+        result for result in titles_links if keyword_lower in result.get("name", "").lower()
     ]
 
     return filtered_results
