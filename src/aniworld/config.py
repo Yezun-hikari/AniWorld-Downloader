@@ -20,7 +20,7 @@ from fake_useragent import UserAgent
 
 ANIWORLD_TO = "https://aniworld.to"
 S_TO = "http://186.2.175.5"
-MEGAKINO_URL = "https://megakino.ms"
+MEGAKINO_URL = "https://megakino.zone/"
 
 # Supported streaming sites with their URL patterns
 SUPPORTED_SITES = {

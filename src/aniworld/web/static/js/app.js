@@ -218,129 +218,56 @@ document.addEventListener('DOMContentLoaded', function() {
     function performSearch() {
         const query = searchInput.value.trim();
         if (!query) {
+            // If search is empty, show home content again
             showHomeContent();
             return;
         }
 
+        // Get selected site
         const selectedSite = document.querySelector('input[name="site"]:checked').value;
 
+        // Show loading state
         showLoadingState();
         searchBtn.disabled = true;
         searchBtn.textContent = 'Searching...';
 
-        if (selectedSite === 'megakino') {
-            fetch('/api/search_megakino', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ query: query })
+        fetch('/api/search', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                query: query,
+                site: selectedSite
             })
-            .then(response => {
-                if (response.status === 401) { window.location.href = '/login'; return; }
-                return response.json();
-            })
-            .then(data => {
-                if (!data) return;
-                if (data.success) {
-                    displaySearchResults(data.results);
-                } else {
-                    showNotification(data.error || 'Search failed', 'error');
-                    showEmptyState();
-                }
-            })
-            .catch(error => {
-                console.error('Search error:', error);
-                showNotification('Search failed. Please try again.', 'error');
+        })
+        .then(response => {
+            if (response.status === 401) {
+                // Authentication required - redirect to login
+                window.location.href = '/login';
+                return;
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (!data) return; // Handle redirect case
+            if (data.success) {
+                displaySearchResults(data.results);
+            } else {
+                showNotification(data.error || 'Search failed', 'error');
                 showEmptyState();
-            })
-            .finally(() => {
-                searchBtn.disabled = false;
-                searchBtn.textContent = 'Search';
-                hideLoadingState();
-            });
-
-        } else if (selectedSite === 'all') {
-            // Fetch fast results first, then asynchronously fetch and append slow results
-            fetch('/api/search', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ query: query, site: 'all' })
-            })
-            .then(response => {
-                if (response.status === 401) { window.location.href = '/login'; return; }
-                return response.json();
-            })
-            .then(data => {
-                if (!data) return;
-                if (data.success) {
-                    displaySearchResults(data.results);
-                } else {
-                    showNotification(data.error || 'Initial search failed', 'error');
-                    showEmptyState();
-                }
-
-                // Fetch MegaKino results asynchronously
-                fetch('/api/search_megakino', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ query: query })
-                })
-                .then(res => res.json())
-                .then(megaData => {
-                    if (megaData.success && megaData.results.length > 0) {
-                        const initialSearchWasEmpty = resultsContainer.children.length === 0;
-                        if (initialSearchWasEmpty) {
-                            showResultsSection();
-                        }
-                        megaData.results.forEach(item => {
-                            const animeCard = createAnimeCard(item);
-                            resultsContainer.appendChild(animeCard);
-                        });
-                    }
-                })
-                .catch(err => console.error('Failed to fetch MegaKino results:', err));
-            })
-            .catch(error => {
-                console.error('Search error:', error);
-                showNotification('Search failed. Please try again.', 'error');
-                showEmptyState();
-            })
-            .finally(() => {
-                searchBtn.disabled = false;
-                searchBtn.textContent = 'Search';
-                hideLoadingState();
-            });
-
-        } else {
-            // Default search for aniworld.to and s.to
-            fetch('/api/search', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ query: query, site: selectedSite })
-            })
-            .then(response => {
-                if (response.status === 401) { window.location.href = '/login'; return; }
-                return response.json();
-            })
-            .then(data => {
-                if (!data) return;
-                if (data.success) {
-                    displaySearchResults(data.results);
-                } else {
-                    showNotification(data.error || 'Search failed', 'error');
-                    showEmptyState();
-                }
-            })
-            .catch(error => {
-                console.error('Search error:', error);
-                showNotification('Search failed. Please try again.', 'error');
-                showEmptyState();
-            })
-            .finally(() => {
-                searchBtn.disabled = false;
-                searchBtn.textContent = 'Search';
-                hideLoadingState();
-            });
-        }
+            }
+        })
+        .catch(error => {
+            console.error('Search error:', error);
+            showNotification('Search failed. Please try again.', 'error');
+            showEmptyState();
+        })
+        .finally(() => {
+            searchBtn.disabled = false;
+            searchBtn.textContent = 'Search';
+            hideLoadingState();
+        });
     }
 
     function displaySearchResults(results) {

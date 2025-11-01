@@ -518,12 +518,7 @@ class WebApp:
 
                 results = []
                 if site == "all":
-                    # Temporarily disable megakino from 'all' search to keep it fast
-                    search_url = f"{config.ANIWORLD_TO}/ajax/seriesSearch?keyword={quote(query)}"
-                    results = fetch_anime_list(search_url)
-                    for r in results:
-                        r['type'] = 'anime'
-                        r['site'] = 'AniWorld.to'
+                    results = search_media(keyword=query, only_return=True)
                 elif site == "aniworld.to":
                     search_url = f"{config.ANIWORLD_TO}/ajax/seriesSearch?keyword={quote(query)}"
                     results = fetch_anime_list(search_url)
@@ -537,8 +532,7 @@ class WebApp:
                         r['type'] = 'anime'
                         r['site'] = 'S.to'
                 elif site == "megakino":
-                    # This case is now handled by /api/search_megakino
-                    pass
+                    results = search_movie(keyword=query)
 
                 # Process results - simplified without episode fetching
                 processed_results = []
@@ -604,58 +598,6 @@ class WebApp:
 
             except Exception as err:
                 logging.error(f"Search error: {err}")
-                return jsonify(
-                    {"success": False, "error": f"Search failed: {str(err)}"}
-                ), 500
-
-        @self.app.route("/api/search_megakino", methods=["POST"])
-        @self._require_api_auth
-        def api_search_megakino():
-            """Search for movies on MegaKino."""
-            try:
-                from flask import request
-
-                data = request.get_json()
-                if not data or "query" not in data:
-                    return jsonify(
-                        {"success": False, "error": "Query parameter is required"}
-                    ), 400
-
-                query = data["query"].strip()
-                if not query:
-                    return jsonify(
-                        {"success": False, "error": "Query cannot be empty"}
-                    ), 400
-
-                from ..search import search_movie
-
-                results = search_movie(keyword=query)
-
-                processed_results = []
-                for item in results[:50]:  # Limit to 50 results
-                    processed_item = {
-                        "title": item.get("name", "Unknown Name"),
-                        "url": item.get("link"),
-                        "description": "",
-                        "slug": item.get("link"),
-                        "name": item.get("name", "Unknown Name"),
-                        "year": "",
-                        "site": "MegaKino",
-                        "cover": "",
-                        "type": "movie",
-                    }
-                    processed_results.append(processed_item)
-
-                return jsonify(
-                    {
-                        "success": True,
-                        "results": processed_results,
-                        "count": len(processed_results),
-                    }
-                )
-
-            except Exception as err:
-                logging.error(f"MegaKino search error: {err}")
                 return jsonify(
                     {"success": False, "error": f"Search failed: {str(err)}"}
                 ), 500

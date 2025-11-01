@@ -85,7 +85,7 @@ def _cached_search_request(search_url: str) -> str:
 
 def search_movie(keyword: str) -> List[Dict]:
     """
-    Search for movies on Megakino.
+    Search for movies on Megakino using the fast search API.
 
     Args:
         keyword: Search term
@@ -93,35 +93,56 @@ def search_movie(keyword: str) -> List[Dict]:
     Returns:
         List[Dict]: List of movie dictionaries
     """
-    search_url = f"{MEGAKINO_URL}/index.php?do=search&subaction=search&search_start=0&full_search=0&result_from=1&story={quote(keyword)}"
-    token_url = f"{MEGAKINO_URL}/index.php?yg=token"
+    ajax_search_url = f"{MEGAKINO_URL}engine/ajax/controller.php?mod=search"
+    token_url = f"{MEGAKINO_URL}index.php?yg=token"
+
+    # This hash seems to be static for guest users.
+    # Found in the main page's HTML source.
+    dle_login_hash = "ea7b4b65a6e38bc55b44b3f0b223993a93e13d0f"
+
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36',
+        'Referer': MEGAKINO_URL,
+        'X-Requested-With': 'XMLHttpRequest'
     }
+
+    post_data = {
+        'query': keyword,
+        'user_hash': dle_login_hash
+    }
+
     try:
         with requests.Session() as s:
+            # Get the session token first
             s.get(token_url, headers=headers, timeout=DEFAULT_REQUEST_TIMEOUT)
-            response = s.get(search_url, headers=headers, timeout=DEFAULT_REQUEST_TIMEOUT)
+
+            # Perform the search using a POST request
+            response = s.post(ajax_search_url, data=post_data, headers=headers, timeout=DEFAULT_REQUEST_TIMEOUT)
             response.raise_for_status()
+
     except requests.RequestException as e:
-        logging.error(f"Error: Unable to fetch the page. Details: {e}")
+        logging.error(f"Error: Unable to fetch movie search results. Details: {e}")
         return []
 
+    # The AJAX response is an HTML snippet
     soup = BeautifulSoup(response.content, 'html.parser')
     titles_links = []
-    for link in soup.find_all('a', class_='poster'):
-        title = link.find('h3', class_='poster__title')
-        if title:
-            titles_links.append({"name": title.text.strip(), "link": link['href'], "type": "movie"})
 
-    # Filter results because megakino search is not reliable
-    filtered_results = [
-        result
-        for result in titles_links
-        if keyword.lower() in result.get("name", "").lower()
-    ]
+    # The response is a list of <a> tags, parse them
+    for link in soup.find_all('a'):
+        title_span = link.find('span', class_='searchheading')
+        if title_span:
+            title = title_span.text.strip()
+            url = link['href']
 
-    return filtered_results
+            # Ensure the URL is absolute
+            if not url.startswith('http'):
+                base_url = MEGAKINO_URL.rstrip('/')
+                url = f"{base_url}{url}" if url.startswith('/') else f"{base_url}/{url}"
+
+            titles_links.append({"name": title, "link": url, "type": "movie"})
+
+    return titles_links
 
 
 def search_media(
