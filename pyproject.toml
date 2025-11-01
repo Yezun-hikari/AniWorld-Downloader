@@ -32,6 +32,8 @@ dependencies = [
     'packaging',
     'jsbeautifier',
     'flask',
+    'aiohttp',
+    'lxml',
     'py-cpuinfo; platform_system == "Windows"',
     'windows-curses; platform_system == "Windows"',
     'winfcntl; platform_system == "Windows"'
