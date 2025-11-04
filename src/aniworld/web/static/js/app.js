@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Download modal elements
     const downloadModal = document.getElementById('download-modal');
+    const autoDownloadGroup = document.querySelector('.auto-download-group');
     const closeDownloadModal = document.getElementById('close-download-modal');
     const cancelDownload = document.getElementById('cancel-download');
     const confirmDownload = document.getElementById('confirm-download');
@@ -362,6 +363,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Populate modal
         document.getElementById('download-anime-title').textContent = animeTitle;
+
+        // Show auto-download checkbox for series only
+        if (autoDownloadGroup) {
+            if (episodeTitle === 'Series') {
+                autoDownloadGroup.style.display = 'flex';
+            } else {
+                autoDownloadGroup.style.display = 'none';
+            }
+        }
 
         // Populate language dropdown based on site
         populateLanguageDropdown(detectedSite);
@@ -790,13 +800,19 @@ document.addEventListener('DOMContentLoaded', function() {
             console.warn('Warning: No language selected from dropdown, using fallback');
         }
 
+        // Get auto-download checkbox state
+        const autoDownloadCheckbox = document.getElementById('auto-download-checkbox');
+        const monitorSeries = autoDownloadCheckbox ? autoDownloadCheckbox.checked : false;
+
         // Create request payload and log it
         const requestPayload = {
             episode_urls: selectedEpisodeUrls,
             language: selectedLanguage,
             provider: selectedProvider,
             anime_title: currentDownloadData.anime,
-            type: 'anime'
+            type: 'anime',
+            monitor_series: monitorSeries,
+            series_url: currentDownloadData.url
         };
 
         fetch('/api/download', {

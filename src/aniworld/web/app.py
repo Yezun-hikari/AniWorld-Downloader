@@ -6,6 +6,8 @@ import logging
 import os
 import time
 import threading
+from .. import config
+from .background_checker import BackgroundChecker
 import webbrowser
 from datetime import datetime
 from functools import wraps
@@ -15,6 +17,7 @@ import requests
 from .. import config
 from .database import UserDatabase
 from .download_manager import get_download_manager
+from .monitored_series_manager import get_monitored_series_manager
 
 
 class WebApp:
@@ -44,6 +47,9 @@ class WebApp:
 
         # Download manager
         self.download_manager = get_download_manager(self.db)
+
+        # Background checker for new episodes
+        self.background_checker = BackgroundChecker()
 
         # Create Flask app
         self.app = self._create_app()
@@ -683,6 +689,12 @@ class WebApp:
                             {"success": False, "error": "Failed to add download to queue"}
                         ), 500
 
+                    # If monitor_series is true, add to monitored list
+                    if data.get("monitor_series"):
+                        series_url = data.get("series_url", episode_urls[0]) # Fallback to first episode url
+                        monitored_series_manager = get_monitored_series_manager()
+                        monitored_series_manager.add_series(anime_title, language, series_url)
+
                     return jsonify(
                         {
                             "success": True,
@@ -989,6 +1001,9 @@ class WebApp:
         logging.info("Starting AniWorld Downloader Web Interface...")
         logging.info(f"Server running at http://{self.host}:{self.port}")
 
+        # Start background checker
+        self.background_checker.start()
+
         try:
             self.app.run(
                 host=self.host,
@@ -997,8 +1012,10 @@ class WebApp:
                 use_reloader=False,  # Disable reloader to avoid conflicts
             )
         except KeyboardInterrupt:
+            self.background_checker.stop()
             logging.info("Web interface stopped by user")
         except Exception as err:
+            self.background_checker.stop()
             logging.error(f"Error running web interface: {err}")
             raise
 

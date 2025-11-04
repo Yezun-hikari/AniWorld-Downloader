@@ -268,6 +268,8 @@ DEFAULT_APPDATA_PATH = os.path.join(
     os.getenv("APPDATA") or os.path.expanduser("~"), "aniworld"
 )
 
+APP_DATA_PATH = pathlib.Path(DEFAULT_APPDATA_PATH)
+
 # Use cached platform check
 MPV_DIRECTORY = (
     os.path.join(os.environ.get("APPDATA", ""), "mpv")
