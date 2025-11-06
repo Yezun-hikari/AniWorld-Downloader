@@ -239,7 +239,7 @@ You can add a widget to your [gethomepage](https://gethomepage.dev/) dashboard t
 
 ```yaml
 - AniWorld Downloader:
-    icon: https://cdn.pixabay.com/photo/2016/12/18/13/45/download-1915753_640.png
+    icon: https://github.com/Yezun-hikari/AniWorld-Downloader/blob/main/src/aniworld/nuitka/icon.webp?raw=true
     href: http://localhost:8080/
     description: WebUI for Anime-Downloads
     widget:
