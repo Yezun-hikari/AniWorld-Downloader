@@ -262,6 +262,12 @@ You can add a widget to your [gethomepage](https://gethomepage.dev/) dashboard t
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+## Credits
+Original AniWorld-Downloader: *[phoenixthrush](https://github.com/phoenixthrush)* <br/>
+MEGAKino-Downloader: *[Tmaster055](https://github.com/Tmaster055)* <br/>
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 ## Support
 
 If you need help with AniWorld Downloader, you can:
@@ -283,6 +289,6 @@ I provide this tool for educational and informational purposes only. You are sol
 ## License
 
 This project is licensed under the **[MIT License](LICENSE)**.
-For more details, see the LICENSE file.
+For more details, see the LICENSE file or click the blue text above.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
