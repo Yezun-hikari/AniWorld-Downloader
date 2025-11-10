@@ -1,6 +1,6 @@
 import re
 import requests
-from ....config import RANDOM_USER_AGENT
+from ...config import RANDOM_USER_AGENT
 
 def get_direct_link_from_gxplayer(embed_url: str) -> str or None:
     """
