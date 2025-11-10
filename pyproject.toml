@@ -1,17 +1,17 @@
 [project]
-name = "AniWorld-Downloader"
+name = "aniworld"
 version = "3.8.2"
 authors = [
-  { name="Yezun_hikari", email="pypi.splashy429@passinbox.com" },
+  { name="Phoenixthrush UwU", email="contact@phoenixthrush.com" },
 ]
 maintainers = [
-  { name="Yezun_hikari", email="pypi.splashy429@passinbox.com" }
+  { name="Phoenixthrush UwU", email="contact@phoenixthrush.com" }
 ]
 description = "AniWorld Downloader is a command-line tool for downloading and streaming anime, series and movies, compatible with Windows, macOS, and Linux."
 keywords = [
-    "anime",
-    "aniworld",
-    "anime-downloader",
+    "anime", 
+    "aniworld", 
+    "anime-downloader", 
     "aniworld-downloader",
     "streaming",
     "download",
@@ -67,14 +67,14 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/Yezun-hikari/AniWorld-Downloader"
-Documentation = "https://github.com/Yezun-hikari/AniWorld-Downloader/blob/main/README.md"
-Repository = "https://github.com/Yezun-hikari/AniWorld-Downloader.git"
-"Bug Tracker" = "https://github.com/Yezun-hikari/AniWorld-Downloader/issues"
-Changelog = "https://github.com/Yezun-hikari/AniWorld-Downloader/commits"
-"Source Code" = "https://github.com/Yezun-hikari/AniWorld-Downloader"
-"Download" = "https://github.com/Yezun-hikari/AniWorld-Downloader/archive/refs/heads/main.zip"
-Funding = "https://github.com/sponsors/Yezun-hikari"
+Homepage = "https://github.com/phoenixthrush/AniWorld-Downloader"
+Documentation = "https://github.com/phoenixthrush/AniWorld-Downloader/blob/main/README.md"
+Repository = "https://github.com/phoenixthrush/AniWorld-Downloader.git"
+"Bug Tracker" = "https://github.com/phoenixthrush/AniWorld-Downloader/issues"
+Changelog = "https://github.com/phoenixthrush/AniWorld-Downloader/commits"
+"Source Code" = "https://github.com/phoenixthrush/AniWorld-Downloader"
+"Download" = "https://github.com/phoenixthrush/AniWorld-Downloader/archive/refs/heads/main.zip"
+Funding = "https://github.com/sponsors/phoenixthrush"
 
 [project.scripts]
 aniworld = "aniworld.__main__:main"
