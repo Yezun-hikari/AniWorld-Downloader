@@ -35,6 +35,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const providerSelect = document.getElementById('provider-select');
     const languageSelect = document.getElementById('language-select');
 
+    // Movie provider modal elements
+    const movieProviderModal = document.getElementById('movie-provider-modal');
+    const closeMovieProviderModal = document.getElementById('close-movie-provider-modal');
+    const movieProviderTitle = document.getElementById('movie-provider-title');
+    const movieProviderList = document.getElementById('movie-provider-list');
+    const movieProviderLoading = document.getElementById('movie-provider-loading');
+
+
     // Queue elements
     const queueSection = document.getElementById('queue-section');
     const activeDownloads = document.getElementById('active-downloads');
@@ -92,6 +100,12 @@ document.addEventListener('DOMContentLoaded', function() {
         deselectAllBtn.addEventListener('click', deselectAllEpisodes);
     }
 
+    // Movie provider modal functionality
+    if (closeMovieProviderModal) {
+        closeMovieProviderModal.addEventListener('click', hideMovieProviderModal);
+    }
+
+
     // Theme toggle functionality (only if element exists)
     if (themeToggle) {
         themeToggle.addEventListener('click', toggleTheme);
@@ -119,6 +133,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+    if (movieProviderModal) {
+        movieProviderModal.addEventListener('click', function(e) {
+            if (e.target === movieProviderModal) {
+                hideMovieProviderModal();
+            }
+        });
+    }
+
 
     function loadVersionInfo() {
         fetch('/api/info')
@@ -330,7 +352,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const downloadBtn = card.querySelector('.download-btn');
         if (isMovie) {
             downloadBtn.addEventListener('click', () => {
-                startMovieDownload(item.title, item.url);
+                showMovieProviderModal(item.title, item.url);
             });
         } else {
             downloadBtn.addEventListener('click', () => {
@@ -424,6 +446,55 @@ document.addEventListener('DOMContentLoaded', function() {
         selectedEpisodes.clear();
         availableEpisodes = {};
         availableMovies = [];
+    }
+
+    function showMovieProviderModal(title, url) {
+        currentDownloadData = {
+            title: title,
+            url: url
+        };
+
+        movieProviderTitle.textContent = title;
+        movieProviderList.innerHTML = '';
+        movieProviderLoading.style.display = 'block';
+        movieProviderModal.style.display = 'flex';
+
+        fetch('/api/movie/providers', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ movie_url: url })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.providers.length > 0) {
+                data.providers.forEach(provider => {
+                    const providerBtn = document.createElement('button');
+                    providerBtn.className = 'provider-btn';
+                    providerBtn.textContent = provider.name;
+                    providerBtn.onclick = () => {
+                        startMovieDownload(title, url, provider);
+                        hideMovieProviderModal();
+                    };
+                    movieProviderList.appendChild(providerBtn);
+                });
+            } else {
+                movieProviderList.innerHTML = '<p>No providers found for this movie.</p>';
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching providers:', error);
+            movieProviderList.innerHTML = '<p>Failed to load providers. Please try again.</p>';
+        })
+        .finally(() => {
+            movieProviderLoading.style.display = 'none';
+        });
+    }
+
+    function hideMovieProviderModal() {
+        movieProviderModal.style.display = 'none';
+        currentDownloadData = null;
     }
 
     function renderEpisodeTree() {
@@ -711,11 +782,12 @@ document.addEventListener('DOMContentLoaded', function() {
         confirmDownload.disabled = count === 0;
     }
 
-    function startMovieDownload(title, url) {
+    function startMovieDownload(title, url, provider) {
         const requestPayload = {
             type: 'movie',
             movie_url: url,
             movie_title: title,
+            provider: provider,
         };
 
         fetch('/api/download', {

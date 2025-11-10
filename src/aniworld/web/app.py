@@ -602,6 +602,25 @@ class WebApp:
                     {"success": False, "error": f"Search failed: {str(err)}"}
                 ), 500
 
+        @self.app.route("/api/movie/providers", methods=["POST"])
+        @self._require_api_auth
+        def api_movie_providers():
+            """Get available providers for a movie."""
+            try:
+                data = request.get_json()
+                movie_url = data.get("movie_url")
+                if not movie_url:
+                    return jsonify({"success": False, "error": "Movie URL is required"}), 400
+
+                from ..movie.action import get_movie_providers
+                providers = get_movie_providers(movie_url)
+
+                return jsonify({"success": True, "providers": providers})
+
+            except Exception as err:
+                logging.error(f"Failed to get movie providers: {err}")
+                return jsonify({"success": False, "error": "Failed to fetch providers"}), 500
+
         @self.app.route("/api/download", methods=["POST"])
         @self._require_api_auth
         def api_download():
@@ -701,6 +720,10 @@ class WebApp:
                         ), 400
 
                     movie_title = data.get("movie_title", "Unknown Movie")
+                    provider = data.get("provider") # This will be a dict like {'name': 'VOE', 'url': '...'}
+
+                    if not provider:
+                        return jsonify({"success": False, "error": "Provider is required for movie downloads"}), 400
 
                     # Get current user for queue tracking
                     current_user = None
@@ -711,6 +734,7 @@ class WebApp:
                     queue_id = self.download_manager.add_download(
                         anime_title=movie_title,
                         movie_url=movie_url,
+                        provider=provider,
                         total_episodes=1,
                         created_by=current_user["id"] if current_user else None,
                         is_movie=True,

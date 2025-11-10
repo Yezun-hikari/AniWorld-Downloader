@@ -55,7 +55,7 @@ class DownloadQueueManager:
         movie_url: str = None,
         is_movie: bool = False,
         language: str = None,
-        provider: str = None,
+        provider: dict = None, # Changed to dict to support movie providers
         total_episodes: int = 0,
         created_by: int = None,
     ) -> int:
@@ -225,7 +225,7 @@ class DownloadQueueManager:
                     _error_reported_by_callback = True
 
             # The download_movie function now returns True on success and False on failure.
-            download_successful = download_movie(movie, web_progress_callback)
+            download_successful = download_movie(movie, job["provider"], web_progress_callback)
 
             # Only mark as completed if the download function succeeded AND the callback
             # did not report an error. This prevents overwriting a "failed" status.

@@ -2414,3 +2414,31 @@ body[data-theme="dark"] .episode-progress-text {
         padding: 0.4rem 0.3rem;
     }
 }
+
+/* Movie Provider Modal Styles */
+.provider-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+.provider-btn {
+    background: var(--button-secondary-bg);
+    color: var(--button-secondary-text);
+    border: 1px solid var(--border-color);
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s ease;
+}
+
+.provider-btn:hover {
+    background: var(--tree-hover);
+    border-color: #667eea;
+    color: #667eea;
+    transform: translateY(-2px);
+}
