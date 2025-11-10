@@ -35,7 +35,7 @@ dependencies = [
     'aiohttp',
     'lxml',
     'py-cpuinfo; platform_system == "Windows"',
-    'windows-curses; platform_system == "Windows"',
+    'UniCurses; platform_system == "Windows"',
     'winfcntl; platform_system == "Windows"'
 ]
 classifiers = [
