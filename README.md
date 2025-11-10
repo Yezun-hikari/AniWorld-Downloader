@@ -72,7 +72,7 @@ Additionally, make sure **[Git](https://git-scm.com/downloads)** is installed if
 To install the latest stable version, use the following command:
 
 ```shell
-pip install --upgrade aniworld
+pip install --upgrade AniWorld-Downloader
 ```
 
 #### Install Latest Development Version (Requires Git)
