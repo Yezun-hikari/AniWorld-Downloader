@@ -82,7 +82,7 @@ jobs:
           - os: macos-15
             ext: ""
             filename: macos_x64
-            icon: --macos-app-icon=src/aniworld/nuitka/icon.webp --macos-signed-app-name=com.phoenixthrush.aniworld
+            icon: --macos-app-icon=src/aniworld/nuitka/icon.webp --macos-signed-app-name=com.yezun-hikari.aniworld
             
     runs-on: ${{ matrix.os }}
     
@@ -146,9 +146,9 @@ jobs:
             --include-data-file=src/aniworld/aniskip/scripts/aniskip.lua=aniworld/aniskip/scripts/aniskip.lua \
             --include-data-file=src/aniworld/aniskip/scripts/autostart.lua=aniworld/aniskip/scripts/autostart.lua \
             --include-data-file=src/aniworld/aniskip/scripts/autoexit.lua=aniworld/aniskip/scripts/autoexit.lua \
-            --output-filename="aniworld-${VERSION}-${{ matrix.filename }}${{ matrix.ext }}" \
-            --company-name="Phoenixthrush UwU" \
-            --product-name="AniWorld Downloader" \
+            --output-filename="AniWorld-Downloader-${VERSION}-${{ matrix.filename }}${{ matrix.ext }}" \
+            --company-name="Yezun_hikari" \
+            --product-name="AniWorld-Downloader" \
             --file-version="$VERSION" \
             --product-version="$VERSION" \
             --file-description="AniWorld Downloader is a command-line tool for downloading and streaming content from aniworld.to and s.to. " \
@@ -162,11 +162,11 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: aniworld-${{ matrix.filename }}
-          path: aniworld-${{ needs.extract-version.outputs.version }}-${{ matrix.filename }}${{ matrix.ext }}
+          name: AniWorld-Downloader-${{ matrix.filename }}
+          path: AniWorld-Downloader-${{ needs.extract-version.outputs.version }}-${{ matrix.filename }}${{ matrix.ext }}
           
       - name: Upload binary to GitHub Release
         if: github.event_name == 'release'
         uses: softprops/action-gh-release@v2
         with:
-          files: aniworld-${{ needs.extract-version.outputs.version }}-${{ matrix.filename }}${{ matrix.ext }}
+          files: AniWorld-Downloader-${{ needs.extract-version.outputs.version }}-${{ matrix.filename }}${{ matrix.ext }}
