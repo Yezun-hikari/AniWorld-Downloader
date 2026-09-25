@@ -1,4 +1,5 @@
 from .batch import run_each
+from .episode import BaseEpisode
 from .common import (
     ProviderData,
     check_downloaded,
@@ -11,6 +12,7 @@ from .common import (
 )
 
 __all__ = [
+    "BaseEpisode",
     "ProviderData",
     "check_downloaded",
     "clean_title",
