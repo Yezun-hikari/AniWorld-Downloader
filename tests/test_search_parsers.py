@@ -243,3 +243,13 @@ def test_a_failed_feed_fetch_returns_nothing(monkeypatch):
 
     monkeypatch.setattr(search.GLOBAL_SESSION, "get", explode)
     assert search.fetch_new_episodes() is None
+
+# ---------------------------------------------------------------------------
+# Random anime
+# ---------------------------------------------------------------------------
+def test_random_anime_handles_exceptions(monkeypatch):
+    def explode(*args, **kwargs):
+        raise RuntimeError("Network error")
+
+    monkeypatch.setattr(search.GLOBAL_SESSION, "post", explode)
+    assert search.random_anime() is None
