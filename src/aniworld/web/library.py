@@ -161,12 +161,15 @@ def read_title(folder, custom_path_id=None, lang_folder=None):
     seasons = {}
     total_size = 0
     total_episodes = 0
+    movie_files = []
 
     for file in target.rglob("*"):
         if not file.is_file() or ".temp_" in file.name:
             continue
         match = EPISODE_RE.search(file.name)
         if not match:
+            if file.suffix.lower() in VIDEO_EXTENSIONS:
+                movie_files.append(file)
             continue
 
         season = str(int(match.group(1)))
@@ -195,7 +198,7 @@ def read_title(folder, custom_path_id=None, lang_folder=None):
     for entries in seasons.values():
         entries.sort(key=lambda e: e["episode"])
 
-    movie_files = _movie_files(target)
+    movie_files.sort(key=lambda f: f.name.lower())
     if movie_files:
         entries = []
         for index, file in enumerate(movie_files):
