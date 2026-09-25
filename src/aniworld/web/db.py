@@ -855,13 +855,15 @@ def get_autosync_state():
 
 
 def set_autosync_state(**values):
+    if not values:
+        return
+
     with session() as conn:
-        for key, value in values.items():
-            conn.execute(
-                "INSERT INTO autosync_state (key, value) VALUES (?, ?) "
-                "ON CONFLICT(key) DO UPDATE SET value = excluded.value",
-                (key, None if value is None else str(value)),
-            )
+        conn.executemany(
+            "INSERT INTO autosync_state (key, value) VALUES (?, ?) "
+            "ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+            [(key, None if value is None else str(value)) for key, value in values.items()]
+        )
 
 
 # ---------------------------------------------------------------------------
