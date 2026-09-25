@@ -142,6 +142,9 @@ def classify_title(target):
             has_series = True
         elif file.suffix.lower() in VIDEO_EXTENSIONS:
             has_movies = True
+
+        if has_series and has_movies:
+            break
     return has_series, has_movies
 
 
