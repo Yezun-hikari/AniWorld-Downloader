@@ -858,16 +858,6 @@ def search_series(query: str = "", *, genre=None, sort=None, limit=20) -> list:
 
 
 if __name__ == "__main__":
-    # query = "darling in the franxx"
-    # results = search_series(query)
-
-    # if not results:
-    #    raise ValueError(f"No series found for query: {query}")
-
-    # first_item = results[0]
-    # series_url = f"https://mangafire.to{first_item['url']}"
-    # series = MangaFireToSeries(series_url=series_url)
-
     series = MangaFireToSeries(
         series_url="https://mangafire.to/title/zlwvm-darling-in-the-franxx"
     )
