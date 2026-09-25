@@ -1494,7 +1494,7 @@ def watch(self):
 
     print(f"[WATCHING] {self._file_name}")
 
-    player_path = str(get_player_path())
+    player_path = str(get_player_path(prompt_user=True))
     provider_order = _get_provider_attempt_order(self)
     provider_errors = {}
 
@@ -1613,7 +1613,7 @@ def syncplay(self):
     logger.debug(room)
 
     cmd = [
-        str(get_syncplay_path()),
+        str(get_syncplay_path(prompt_user=True)),
         "--no-gui",
         "--no-store",
         "--host",
@@ -1623,7 +1623,7 @@ def syncplay(self):
         "--name",
         syncplay_username,
         "--player-path",
-        str(get_player_path()),
+        str(get_player_path(prompt_user=True)),
         stream_url,
         # "/Users/phoenixthrush/Downloads/Caramelldansen.webm",
     ]

@@ -409,24 +409,24 @@ class DependencyManager:
 # -----------------------------
 # Player paths
 # -----------------------------
-def get_player_path() -> Path:
+def get_player_path(prompt_user: bool = False) -> Path:
     manager = DependencyManager()
     use_iina = os.getenv("ANIWORLD_USE_IINA") == "1"
     # TODO: check if aniskip is selected in future for IINA to fallback to mpv for functionality if issue #200 is fixed
 
     if PLATFORM == "Darwin" and use_iina:
-        return manager.fetch_binary("iina")
+        return manager.fetch_binary("iina", prompt_user=prompt_user)
 
-    return manager.fetch_binary("mpv")
+    return manager.fetch_binary("mpv", prompt_user=prompt_user)
 
 
-def get_syncplay_path() -> Path:
+def get_syncplay_path(prompt_user: bool = False) -> Path:
     if PLATFORM == "Darwin":
         syncplay_path = Path("/Applications/Syncplay.app/Contents/MacOS/Syncplay")
         if syncplay_path.exists():
             return syncplay_path
     manager = DependencyManager()
-    return manager.fetch_binary("syncplay")
+    return manager.fetch_binary("syncplay", prompt_user=prompt_user)
 
 
 # -----------------------------
