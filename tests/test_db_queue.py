@@ -194,17 +194,6 @@ def test_running_lookup(queue_item):
     assert db.get_running()["id"] == queue_id
 
 
-def test_series_already_in_the_queue_is_detected(queue_item):
-    url = "https://aniworld.to/anime/stream/one-piece"
-    assert not db.is_series_queued_or_running(url)
-    queue_id = queue_item(series_url=url)
-    assert db.is_series_queued_or_running(url)
-    db.set_queue_status(queue_id, "running")
-    assert db.is_series_queued_or_running(url)
-    db.set_queue_status(queue_id, "completed")
-    assert not db.is_series_queued_or_running(url)
-
-
 # ---------------------------------------------------------------------------
 # Cancelling
 # ---------------------------------------------------------------------------

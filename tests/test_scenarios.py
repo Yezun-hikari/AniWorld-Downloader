@@ -45,19 +45,10 @@ def test_queueing_the_same_series_twice_is_allowed_but_visible(client, queue_ite
     """The UI allows it, autosync uses the flag to stay out of the way."""
     url = "https://aniworld.to/anime/stream/naruto"
     client.post("/api/download", json={"episodes": ["ep1"], "series_url": url})
-    assert db.is_series_queued_or_running(url) is True
+    assert len(db.get_queue()) == 1
 
     client.post("/api/download", json={"episodes": ["ep1"], "series_url": url})
     assert len(db.get_queue()) == 2
-
-
-def test_a_finished_download_no_longer_blocks_the_series(client):
-    url = "https://aniworld.to/anime/stream/naruto"
-    queue_id = client.post(
-        "/api/download", json={"episodes": ["ep1"], "series_url": url}
-    ).get_json()["queue_id"]
-    db.set_queue_status(queue_id, "completed")
-    assert db.is_series_queued_or_running(url) is False
 
 
 def test_downloading_over_an_existing_episode_is_detected_first(episode_file):

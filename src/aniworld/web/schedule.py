@@ -273,15 +273,6 @@ class CronEntry:
     def __repr__(self):
         return f"CronEntry({self.expression!r})"
 
-    def matches(self, moment):
-        """Does this wall-clock minute fire?"""
-        return (
-            moment.minute in self.minutes
-            and moment.hour in self.hours
-            and moment.month in self.months
-            and self._day_matches(moment)
-        )
-
     def _day_matches(self, moment):
         # cron counts Sunday as 0, python counts Monday as 0
         weekday = (moment.weekday() + 1) % 7
@@ -360,9 +351,6 @@ class Schedule:
     @property
     def expression(self):
         return "; ".join(entry.expression for entry in self.entries)
-
-    def matches(self, moment):
-        return any(entry.matches(moment) for entry in self.entries)
 
     def next_run(self, after):
         upcoming = [entry.next_run(after) for entry in self.entries]

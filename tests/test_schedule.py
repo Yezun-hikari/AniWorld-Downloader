@@ -298,13 +298,9 @@ def test_a_day_of_the_month_and_a_weekday_both_fire():
     """Cron's one oddity: with both set it is an or, not an and."""
     parsed = schedule.parse("0 0 13 * 5")
     assert parsed.next_run(datetime(2026, 8, 21, 0, 1)) == datetime(2026, 8, 28, 0, 0)
-    assert parsed.matches(datetime(2026, 9, 13, 0, 0)), "the 13th, a Sunday"
-
-
-def test_matches_only_says_yes_on_the_minute():
-    parsed = schedule.parse("30 22 * * *")
-    assert parsed.matches(datetime(2026, 8, 21, 22, 30))
-    assert not parsed.matches(datetime(2026, 8, 21, 22, 31))
+    assert parsed.next_run(datetime(2026, 9, 12, 0, 1)) == datetime(
+        2026, 9, 13, 0, 0
+    ), "the 13th, a Sunday"
 
 
 # ---------------------------------------------------------------------------

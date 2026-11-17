@@ -153,14 +153,6 @@ def test_an_unrelated_setting_still_saves_with_every_site_off(monkeypatch):
     assert settings_store.ui_language() == "de"
 
 
-def test_the_old_helpers_still_answer():
-    """pages.py and the templates were built on these three."""
-    update_settings({"enable_htv": True, "enable_kinox": True})
-    assert settings_store.htv_enabled() is True
-    assert settings_store.kinox_enabled() is True
-    assert settings_store.burningseries_enabled() is False
-
-
 def test_an_unknown_site_is_never_enabled():
     assert settings_store.site_enabled("netflix") is False
 
@@ -265,14 +257,14 @@ def test_a_hand_edited_env_never_breaks_the_worker(monkeypatch, key, value):
 @pytest.mark.parametrize("truthy", [True, 1, "yes", "0", [1]])
 def test_anything_truthy_turns_a_toggle_on(truthy):
     update_settings({"enable_htv": truthy})
-    assert settings_store.htv_enabled() is True
+    assert settings_store.site_enabled("htv") is True
 
 
 @pytest.mark.parametrize("falsy", [False, 0, "", None, []])
 def test_anything_falsy_turns_a_toggle_off(falsy):
     update_settings({"enable_htv": True})
     update_settings({"enable_htv": falsy})
-    assert settings_store.htv_enabled() is False
+    assert settings_store.site_enabled("htv") is False
 
 
 def test_untouched_settings_are_left_alone():
@@ -416,7 +408,7 @@ def test_a_rejected_field_does_not_apply_the_valid_ones():
     """update_settings validates everything before writing anything."""
     with pytest.raises(SettingsError):
         update_settings({"enable_htv": True, "ui_language": "klingon"})
-    assert settings_store.htv_enabled() is False
+    assert settings_store.site_enabled("htv") is False
 
 
 # ---------------------------------------------------------------------------

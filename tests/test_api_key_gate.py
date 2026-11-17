@@ -177,7 +177,7 @@ def test_an_admin_key_can_change_settings(client, api_key):
 
     from aniworld.web import settings_store
 
-    assert settings_store.htv_enabled() is True
+    assert settings_store.site_enabled("htv") is True
 
 
 def test_an_admin_key_can_add_a_custom_path(client, api_key, tmp_path):

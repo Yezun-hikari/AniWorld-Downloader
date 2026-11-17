@@ -494,8 +494,6 @@ _QUEUE_SORTS = {
     "title": "ORDER BY title COLLATE NOCASE ASC, id ASC",
 }
 
-_QUEUE_STATUSES = ("queued", "running", "completed", "failed", "cancelled")
-
 # Filters that are not a single status value.
 _STATUS_GROUPS = {
     "active": ("queued", "running"),
@@ -563,7 +561,7 @@ def queue_counts():
             "SELECT status, COUNT(*) AS n FROM download_queue GROUP BY status"
         ).fetchall()
 
-    counts = {status: 0 for status in _QUEUE_STATUSES}
+    counts = {status: 0 for status in QUEUE_STATUSES}
     for row in rows:
         counts[row["status"]] = row["n"]
     counts["active"] = counts["queued"] + counts["running"]
@@ -572,19 +570,8 @@ def queue_counts():
     return counts
 
 
-def is_series_queued_or_running(series_url):
-    """Stops AutoSync queueing a series that is still working through the queue."""
-    with session() as conn:
-        row = conn.execute(
-            "SELECT COUNT(*) AS n FROM download_queue "
-            "WHERE series_url = ? AND status IN ('queued','running')",
-            (series_url,),
-        ).fetchone()
-        return row["n"] > 0
-
-
 def is_copy_queued_or_running(series_url, language, custom_path_id=None):
-    """Same, but for one copy of a series rather than the series as a whole.
+    """Stops AutoSync queueing a copy that is still working through the queue.
 
     Someone can hold the same show twice, in two languages or two libraries, and
     each copy is downloaded separately. Blocking on the series alone would let

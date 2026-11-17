@@ -161,20 +161,6 @@ def enabled_sites():
     return {site: site_enabled(site) for site in SITE_KEYS}
 
 
-def htv_enabled():
-    return site_enabled("htv")
-
-
-def burningseries_enabled():
-    """Off by default: the site is geo-blocked and behind Google reCAPTCHA."""
-    return site_enabled("burningseries")
-
-
-def kinox_enabled():
-    """Off by default: every download needs a captcha solved by hand."""
-    return site_enabled("kinox")
-
-
 def english_sub_disabled():
     return _flag("ANIWORLD_DISABLE_ENGLISH_SUB")
 

@@ -289,11 +289,6 @@ def test_the_same_title_in_another_root_is_untouched(episode_file, tmp_path, dow
     assert (downloads / "Naruto").exists()
 
 
-def test_custom_path_labels():
-    path_id = db.add_custom_path("Movies", "/tmp/movies")
-    assert library.custom_path_labels() == {path_id: "Movies"}
-
-
 # ---------------------------------------------------------------------------
 # Movie detection (files with no SxxExx pattern)
 # ---------------------------------------------------------------------------

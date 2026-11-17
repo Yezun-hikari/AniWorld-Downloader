@@ -8,7 +8,7 @@ a single title walks that one folder. Nothing ever scans the whole tree.
 import shutil
 
 from ..logger import get_logger
-from . import db, paths
+from . import paths
 from .media import EPISODE_RE, is_partial_download
 
 logger = get_logger(__name__)
@@ -320,7 +320,3 @@ def list_titles_with_meta(custom_path_id=None, lang_folder=None):
             categories = ["series"]
         result.append({"folder": folder, "categories": categories})
     return result
-
-
-def custom_path_labels():
-    return {entry["id"]: entry["name"] for entry in db.get_custom_paths()}
