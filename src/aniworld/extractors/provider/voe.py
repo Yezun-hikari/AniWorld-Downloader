@@ -11,12 +11,8 @@ from curl_cffi import requests
 
 logger = logging.getLogger(__name__)
 
-try:
-    from ...config import DEFAULT_USER_AGENT, GLOBAL_SESSION, PROVIDER_HEADERS_D
-    from ...playwright.captcha import is_captcha_page, solve_captcha
-except ImportError:
-    from aniworld.config import DEFAULT_USER_AGENT, GLOBAL_SESSION, PROVIDER_HEADERS_D
-    from aniworld.playwright.captcha import is_captcha_page, solve_captcha
+from ...config import DEFAULT_USER_AGENT, GLOBAL_SESSION, PROVIDER_HEADERS_D
+from ...playwright.captcha import is_captcha_page, solve_captcha
 
 # -----------------------------
 # Precompiled regex patterns

@@ -8,10 +8,7 @@ from urllib.parse import urljoin
 import niquests
 from urllib3.exceptions import InsecureRequestWarning
 
-try:
-    from ...config import DEFAULT_USER_AGENT
-except ImportError:
-    from aniworld.config import DEFAULT_USER_AGENT
+from ...config import DEFAULT_USER_AGENT
 
 warnings.simplefilter("ignore", InsecureRequestWarning)
 logger = logging.getLogger(__name__)

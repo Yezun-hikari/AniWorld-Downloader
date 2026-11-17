@@ -7,12 +7,8 @@ import niquests
 from cryptography.exceptions import InvalidTag
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
-try:
-    from ...config import DEFAULT_USER_AGENT, GLOBAL_SESSION, PROVIDER_HEADERS_D
-    from ..common import decode_base64url, unpack_js
-except ImportError:
-    from aniworld.config import DEFAULT_USER_AGENT, GLOBAL_SESSION, PROVIDER_HEADERS_D
-    from aniworld.extractors.common import decode_base64url, unpack_js
+from ...config import DEFAULT_USER_AGENT, GLOBAL_SESSION, PROVIDER_HEADERS_D
+from ..common import decode_base64url, unpack_js
 
 logger = logging.getLogger(__name__)
 

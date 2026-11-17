@@ -15,10 +15,7 @@ from niquests import Session
 from urllib3.exceptions import InsecureRequestWarning
 
 # Host list lives in config.py, add a mirror there
-try:
-    from ...config import GLOBAL_SESSION, STO_DOMAINS, STO_HOST_RE, STO_IP
-except ImportError:
-    from aniworld.config import GLOBAL_SESSION, STO_DOMAINS, STO_HOST_RE, STO_IP
+from ...config import GLOBAL_SESSION, STO_DOMAINS, STO_HOST_RE, STO_IP
 
 warnings.simplefilter("ignore", InsecureRequestWarning)
 

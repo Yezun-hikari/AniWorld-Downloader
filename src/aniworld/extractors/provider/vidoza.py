@@ -2,11 +2,7 @@ import re
 
 import niquests
 
-try:
-    from ...config import DEFAULT_USER_AGENT, GLOBAL_SESSION
-except ImportError:
-    from aniworld.config import DEFAULT_USER_AGENT, GLOBAL_SESSION
-
+from ...config import DEFAULT_USER_AGENT, GLOBAL_SESSION
 
 # Compile regex pattern once for better performance
 SOURCE_LINK_PATTERN = re.compile(r'src:\s*"([^"]+)"')

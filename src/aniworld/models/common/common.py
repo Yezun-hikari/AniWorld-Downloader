@@ -15,39 +15,21 @@ from pathlib import Path
 import ffmpeg
 import niquests
 
-from ...autodeps import DependencyManager
+from ...autodeps import DependencyManager, get_player_path, get_syncplay_path
+from ...config import (
+    INVERSE_LANG_LABELS,
+    LANG_CODE_MAP,
+    LANG_KEY_MAP,
+    NAMING_TEMPLATE,
+    PROVIDER_HEADERS_D,
+    PROVIDER_HEADERS_W,
+    Audio,
+    Subtitles,
+    get_video_codec,
+    is_sto_host,
+    logger,
+)
 from .numbering import EPISODE_URL_PREFIX
-
-try:
-    from ...autodeps import get_player_path, get_syncplay_path
-    from ...config import (
-        INVERSE_LANG_LABELS,
-        LANG_CODE_MAP,
-        LANG_KEY_MAP,
-        NAMING_TEMPLATE,
-        PROVIDER_HEADERS_D,
-        PROVIDER_HEADERS_W,
-        Audio,
-        Subtitles,
-        get_video_codec,
-        is_sto_host,
-        logger,
-    )
-except ImportError:
-    from aniworld.autodeps import get_player_path, get_syncplay_path
-    from aniworld.config import (
-        INVERSE_LANG_LABELS,
-        LANG_CODE_MAP,
-        LANG_KEY_MAP,
-        NAMING_TEMPLATE,
-        PROVIDER_HEADERS_D,
-        PROVIDER_HEADERS_W,
-        Audio,
-        Subtitles,
-        get_video_codec,
-        is_sto_host,
-        logger,
-    )
 
 # Precompile regex for forbidden filename characters
 FORBIDDEN_CHARS = re.compile(r'[<>:"/\\|?*]')

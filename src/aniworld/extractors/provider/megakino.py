@@ -2,10 +2,7 @@ import re
 
 import niquests
 
-try:
-    from ...config import DEFAULT_USER_AGENT
-except ImportError:
-    from aniworld.config import DEFAULT_USER_AGENT
+from ...config import DEFAULT_USER_AGENT
 
 
 def get_direct_link_from_megakino(embeded_megakino_link, headers=None):

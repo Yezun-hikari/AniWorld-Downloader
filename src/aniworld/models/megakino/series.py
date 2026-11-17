@@ -7,60 +7,30 @@ from urllib.parse import urljoin, urlparse
 
 import niquests
 
-try:
-    from ...config import (
-        GLOBAL_SESSION,
-        MEGAKINO_SERIES_PATTERN,
-        NAMING_TEMPLATE,
-        Audio,
-        Subtitles,
-        build_provider_attempt_order,
-        logger,
-    )
-    from ..common import ProviderData, clean_title
-    from ..common.common import check_downloaded, movie_folder_enabled
-    from ..common.common import (
-        download as episode_download,
-    )
-    from ..common.common import (
-        syncplay as episode_syncplay,
-    )
-    from ..common.common import (
-        watch as episode_watch,
-    )
-    from ..common.extraction import resolve_stream_url
-    from ..common.naming import template_path
-    from ..common.paths import resolve_download_path
-    from ..common.provider_map import host_to_provider
-except ImportError:
-    from aniworld.config import (
-        GLOBAL_SESSION,
-        MEGAKINO_SERIES_PATTERN,
-        NAMING_TEMPLATE,
-        Audio,
-        Subtitles,
-        build_provider_attempt_order,
-        logger,
-    )
-    from aniworld.models.common import (
-        ProviderData,
-        check_downloaded,
-        clean_title,
-        movie_folder_enabled,
-    )
-    from aniworld.models.common import (
-        download as episode_download,
-    )
-    from aniworld.models.common import (
-        syncplay as episode_syncplay,
-    )
-    from aniworld.models.common import (
-        watch as episode_watch,
-    )
-    from aniworld.models.common.extraction import resolve_stream_url
-    from aniworld.models.common.naming import template_path
-    from aniworld.models.common.paths import resolve_download_path
-    from aniworld.models.common.provider_map import host_to_provider
+from ...config import (
+    GLOBAL_SESSION,
+    MEGAKINO_SERIES_PATTERN,
+    NAMING_TEMPLATE,
+    Audio,
+    Subtitles,
+    build_provider_attempt_order,
+    logger,
+)
+from ..common import ProviderData, clean_title
+from ..common.common import check_downloaded, movie_folder_enabled
+from ..common.common import (
+    download as episode_download,
+)
+from ..common.common import (
+    syncplay as episode_syncplay,
+)
+from ..common.common import (
+    watch as episode_watch,
+)
+from ..common.extraction import resolve_stream_url
+from ..common.naming import template_path
+from ..common.paths import resolve_download_path
+from ..common.provider_map import host_to_provider
 
 MEGAKINO_DOMAIN_SOURCE = "https://raw.githubusercontent.com/Yezun-hikari/new-domain-check/refs/heads/main/monitors/megakino/domain.txt"
 
