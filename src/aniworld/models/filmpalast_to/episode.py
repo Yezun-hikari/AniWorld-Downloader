@@ -533,19 +533,3 @@ class FilmPalastEpisode:
     download = episode_download
     watch = episode_watch
     syncplay = episode_syncplay
-
-
-if __name__ == "__main__":
-    episode = FilmPalastEpisode("https://filmpalast.to/stream/scream-7")
-    print(episode.url)
-    print(episode.title_de)
-    print(episode.user_watched)
-    print(episode.release_year)
-    print(episode.runtime_min)
-    print(episode.genres)
-    print(episode.description)
-    print(episode.image_url)
-    print(episode.director)
-    print(episode.actors)
-    print(episode.imdb_rating)
-    print(episode.provider_data)

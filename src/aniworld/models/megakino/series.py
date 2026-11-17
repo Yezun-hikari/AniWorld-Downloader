@@ -112,9 +112,6 @@ class MegaKinoEpisode:
 
         # https://jellyfin.org/docs/general/server/media/shows/#organization
         self.__base_folder = None
-        self.__folder_path = None
-        self.__file_name = None
-        self.__file_extension = None
         self.__episode_path = None
 
         self.__is_downloaded = None
@@ -410,33 +407,6 @@ class MegaKinoEpisode:
         if not value:
             return None
         return urljoin(self.url, value.strip())
-
-    @staticmethod
-    def __format_naming_part(
-        template_part,
-        *,
-        title,
-        year,
-        language,
-        imdbid="",
-        season="",
-        episode="",
-    ):
-        formatted = template_part.format(
-            title=title,
-            year=year,
-            imdbid=imdbid,
-            season=season,
-            episode=episode,
-            language=language,
-        )
-
-        if not imdbid:
-            formatted = re.sub(r"\s*\[imdbid-\]\s*", " ", formatted)
-
-        formatted = re.sub(r"\bS\s*E\b", " ", formatted)
-        formatted = re.sub(r"\s+", " ", formatted).strip()
-        return formatted
 
     # -----------------------------
     # private extractors
@@ -924,7 +894,6 @@ class MegaKinoEpisode:
         self.__selected_path_param = value
         self.__selected_path = None
         self.__base_folder = None
-        self.__folder_path = None
         self.__episode_path = None
 
     @property
@@ -944,9 +913,7 @@ class MegaKinoEpisode:
         self.__provider_url = None
         self.__is_downloaded = None
         self.__base_folder = None
-        self.__folder_path = None
         self.__episode_path = None
-        self.__file_name = None
 
     @property
     def selected_provider(self):
@@ -1127,44 +1094,3 @@ class MegaKinoEpisode:
     download = episode_download
     watch = episode_watch
     syncplay = episode_syncplay
-
-
-if __name__ == "__main__":
-    test_url = "https://megakino8.com/films/205-deadpool.html"
-    movie = MegaKinoEpisode(test_url)
-
-    print("Title:", movie.title)
-    print("Cleaned Title:", movie.title_cleaned)
-    print("Original Title:", movie.original_title)
-    print("Description:", movie.description)
-    print("Genres:", movie.genres)
-    print("Country:", movie.country)
-    print("Release Year:", movie.release_year)
-    print("Duration (minutes):", movie.duration_minutes)
-    print("Poster URL:", movie.poster_url)
-    print("Backdrop URL:", movie.backdrop_url)
-    print("Directors:", movie.directors)
-    print("Actors:", movie.actors)
-    print("Producer:", movie.producer)
-    print("Age Rating:", movie.age_rating)
-    print("Quality Label:", movie.quality_label)
-    print("Kinopoisk Rating:", movie.kinopoisk_rating)
-    print("Site Rating Score:", movie.site_rating_score)
-    print("Site Rating Votes:", movie.site_rating_votes)
-    print("Likes:", movie.likes)
-    print("Dislikes:", movie.dislikes)
-    print("Trailer URL:", movie.trailer_url)
-    print("Post ID:", movie.post_id)
-    print("Canonical URL:", movie.canonical_url)
-    print("OG Image URL:", movie.og_image)
-    print("Created At:", movie.created_at)
-    print("Published At:", movie.published_at)
-    print("Player Sources:", movie.player_sources)
-    print("Default Player:", movie.default_player)
-    print("Stream Label:", movie.stream_label)
-    print("Available Hosts:", movie.available_hosts)
-    print("Recommended Entries:")
-    for entry in movie.recommended_entries or []:
-        print(entry)
-
-    movie.download()

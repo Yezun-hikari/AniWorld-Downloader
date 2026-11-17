@@ -14,15 +14,13 @@ from urllib.parse import urlsplit, urlunsplit
 from niquests import Session
 from urllib3.exceptions import InsecureRequestWarning
 
+# Host list lives in config.py, add a mirror there
 try:
     from ...config import GLOBAL_SESSION, STO_DOMAINS, STO_HOST_RE, STO_IP
 except ImportError:
     from aniworld.config import GLOBAL_SESSION, STO_DOMAINS, STO_HOST_RE, STO_IP
 
 warnings.simplefilter("ignore", InsecureRequestWarning)
-
-# Host list lives in config.py, add a mirror there
-_HOST_RE = STO_HOST_RE
 
 _active_idx = 0
 _state_lock = threading.Lock()
@@ -114,7 +112,7 @@ def _validate_response(response, requested_url):
 
     # /r can redirect to the selected video host. Its body belongs to another
     # provider and callers only need the final URL, so do not validate it here.
-    if not _HOST_RE.match(final_url):
+    if not STO_HOST_RE.match(final_url):
         return response
 
     text = response_text(response, requested_url)
@@ -137,15 +135,8 @@ def sto_host():
         return STO_DOMAINS[_active_idx]
 
 
-def sto_rewrite(url):
-    """Rewrite any serienstream URL onto the active host."""
-    if not url:
-        return url
-    return _HOST_RE.sub(r"\1" + sto_host(), url, count=1)
-
-
 def _path_of(url):
-    return _HOST_RE.sub("", url, count=1) or "/"
+    return STO_HOST_RE.sub("", url, count=1) or "/"
 
 
 def sto_get(url, session=None, timeout=10, **kwargs):

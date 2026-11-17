@@ -426,13 +426,6 @@ def _download_playlist(playlist_url, headers, temp_prefix, suffix, tracker_facto
         if init_uri:
             handle.write(_fetch_bytes(init_uri, headers))
 
-        if concurrency == 1:
-            for segment in segments:
-                chunk = _fetch_segment(segment)
-                handle.write(chunk)
-                tracker.advance(len(chunk))
-            return output_path
-
         # Keep a bounded window of in-flight segments so memory stays flat
         # regardless of how many segments the playlist has.
         window = concurrency * 2

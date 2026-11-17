@@ -6,7 +6,6 @@ import zlib
 from decimal import Decimal
 from os import getenv
 from pathlib import Path
-from pprint import pprint
 from urllib.parse import urlencode, urlparse
 
 from ...common.search import (
@@ -601,10 +600,6 @@ class MangaFireToChapter:
 
         return archive_path
 
-    def debug_pages(self) -> None:
-        """Print raw chapter data."""
-        pprint(self.chapter_data)
-
 
 # -----------------------------
 # series
@@ -956,46 +951,3 @@ def search_series(query: str = "", *, genre=None, sort=None, limit=20) -> list:
             break
         page += 1
     return limit_results(results, limit)
-
-
-# -----------------------------
-# example
-# -----------------------------
-
-
-if __name__ == "__main__":
-    # query = "velvet kiss"
-    # results = search_series(query)
-
-    # if not results:
-    #    raise ValueError(f"No series found for query: {query}")
-
-    # first_item = results[0]
-    # series_url = f"https://mangafire.to{first_item['url']}"
-    # series = MangaFireToSeries(series_url=series_url)
-
-    series = MangaFireToSeries(series_url="https://mangafire.to/title/z9w-velvet-kisss")
-
-    print(series)
-    print()
-
-    print("preferred chapters:")
-    for item in series.preferred_chapters[:5]:
-        print("-", item)
-
-    print()
-    first_chapter = series.preferred_chapters[0]
-
-    print("page count:")
-    print(len(first_chapter.pages))
-
-    print()
-    print("pages:")
-    for page in first_chapter.pages:
-        print("-", page, page.image_url)
-
-    # print()
-    # print("raw chapter data:")
-    # first_chapter.debug_pages()
-
-    series.download()

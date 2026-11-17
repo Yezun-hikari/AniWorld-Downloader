@@ -932,7 +932,6 @@ def _download_hls_stream(
                 {"metadata:s:a:0": f"language={audio_lang}"},
                 video_codec,
                 ep_label,
-                audio_lang,
             )
 
         _finalize_episode(temp_full, episode_path, ep_label, owner=owner)
@@ -1001,7 +1000,7 @@ class _HLSManualUnsupported(Exception):
 _HLS_MEDIA_EXTS = (".ts", ".m4s", ".mp4", ".m4a", ".m4v", ".aac", ".mp3", ".mov")
 
 
-def _fetch_hls_segment(session, seg_url, headers, hosts, timeout=90):
+def _fetch_hls_segment(session, seg_url, headers, hosts):
     """Download one HLS segment, failing over across mirror hosts.
 
     Some hosters serve segments from a rotating pool of mirror hosts that all
@@ -1019,7 +1018,7 @@ def _fetch_hls_segment(session, seg_url, headers, hosts, timeout=90):
         for host in ordered:
             url = urlunparse(parsed._replace(netloc=host))
             try:
-                resp = session.get(url, headers=headers, timeout=timeout)
+                resp = session.get(url, headers=headers, timeout=90)
                 resp.raise_for_status()
                 return resp.content
             except Exception as exc:
@@ -1167,7 +1166,6 @@ def _download_full_stream(
     stream_metadata,
     video_codec,
     ep_label,
-    audio_code,
 ):
     """Fetch audio+video into `temp_full`.
 
@@ -1361,7 +1359,6 @@ def download(self):
                             stream_metadata,
                             video_codec,
                             ep_label,
-                            audio_code,
                         )
 
                     if self._episode_path.exists():
@@ -1706,13 +1703,3 @@ def syncplay(self):
     print(format_command_for_shell(cmd))
     logger.debug("\n" + format_command_for_shell(cmd))
     subprocess.run(cmd, check=False)
-
-
-if __name__ == "__main__":
-    from aniworld.models import AniworldEpisode
-
-    ep = AniworldEpisode(
-        "https://aniworld.to/anime/stream/highschool-dxd/staffel-1/episode-1"
-    )
-
-    ep.syncplay()
