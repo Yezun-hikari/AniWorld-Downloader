@@ -1,5 +1,4 @@
 import re
-import sys
 
 try:
     from ...config import GLOBAL_SESSION
@@ -72,33 +71,3 @@ def get_preview_image_link_from_vidmoly(embed_url):
     return _extract_regex(
         PREVIEW_IMAGE_PATTERN, script_content, "Preview image URL", embed_url
     )
-
-
-if __name__ == "__main__":
-    # Tested on 2026/02/18 -> WORKING
-    # Example: https://vidmoly.net/embed-zquo82b8dm1k.html
-
-    link = input("Enter Vidmoly Link: ").strip()
-    if not link:
-        print("Error: No link provided")
-        sys.exit(1)
-
-    try:
-        print("=" * 25)
-
-        direct_link = get_direct_link_from_vidmoly(link)
-        print("Direct link:", direct_link)
-        print("=" * 25)
-
-        preview_img = get_preview_image_link_from_vidmoly(link)
-        print("Preview image:", preview_img)
-        print("=" * 25)
-
-        print(
-            f'mpv --http-header-fields="Referer: https://vidmoly.biz" "{direct_link}"'
-        )
-        print("=" * 25)
-
-    except Exception as e:
-        print("Error:", e)
-        sys.exit(1)

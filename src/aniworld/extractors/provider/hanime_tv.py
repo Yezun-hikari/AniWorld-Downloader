@@ -90,14 +90,6 @@ def _episode_sort_key(slug):
     return (int(match.group(1)) if match else 0, slug or "")
 
 
-def _slug_to_title(slug):
-    """Turn a video slug into a franchise title."""
-    if not slug:
-        return ""
-    title = re.sub(r"-\d+$", "", slug).replace("-", " ").strip()
-    return title.title()
-
-
 def _slug_to_video_title(slug):
     if not slug:
         return ""
@@ -450,11 +442,6 @@ def get_direct_link_from_hanime_tv(api_data, refresh=False):
     if not candidates:
         raise ValueError("No normal stream URL found in Hanime manifest")
     return max(candidates, key=lambda item: item[0])[1]
-
-
-def get_download_url_from_hanime_tv(api_data):
-    """Hanime-only mode deliberately does not use third-party file mirrors."""
-    return
 
 
 def _parse_sitemap_slugs(xml_text):

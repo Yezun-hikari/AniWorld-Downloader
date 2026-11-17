@@ -1,7 +1,6 @@
 import json
 import logging
 import re
-import sys
 from urllib.parse import urlparse
 
 import niquests
@@ -255,31 +254,3 @@ def get_preview_image_link_from_filemoon(embeded_filemoon_link, headers=None):
     raise NotImplementedError(
         "get_preview_image_link_from_filemoon is not implemented yet."
     )
-
-
-if __name__ == "__main__":
-    # Tested on xxxx/xx/xx -> WORKING
-    # Example: https://xxx
-
-    # logging.basicConfig(level=logging.DEBUG)
-
-    link = input("Enter Filemoon Link: ").strip()
-    if not link:
-        print("Error: No link provided")
-        sys.exit(1)
-
-    try:
-        print("=" * 25)
-
-        direct_link = get_direct_link_from_filemoon(link)
-        print("Direct link:", direct_link)
-        print("=" * 25)
-
-        print("Preview image:", get_preview_image_link_from_filemoon(link))
-        print("=" * 25)
-
-        print(f'mpv "{direct_link}" --user-agent="{DEFAULT_USER_AGENT}"')
-
-        print("=" * 25)
-    except ValueError as e:
-        print("Error:", e)

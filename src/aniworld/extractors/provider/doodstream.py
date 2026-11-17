@@ -1,7 +1,6 @@
 import logging
 import random
 import re
-import sys
 import time
 import warnings
 from urllib.parse import urljoin
@@ -105,39 +104,3 @@ def get_direct_link_from_doodstream(embed_url):
 def get_preview_image_link_from_doodstream(embed_url):
     """Get the preview image URL from a Doodstream embed (not implemented)."""
     raise NotImplementedError("Preview image extraction is not implemented yet.")
-
-
-if __name__ == "__main__":
-    # Tested on 2026/01 -> WORKING
-    # Example URLs: https://doodsearch.site
-
-    # logging.basicConfig(level=logging.DEBUG)
-
-    link = input("Enter Doodstream Link: ").strip()
-    if not link:
-        print("Error: No link provided")
-        sys.exit(1)
-
-    try:
-        print("=" * 25)
-
-        direct_link = get_direct_link_from_doodstream(link)
-        print("Direct link:", direct_link)
-        print("=" * 25)
-
-        # Preview image extraction not yet implemented
-        try:
-            preview_img = get_preview_image_link_from_doodstream(link)
-            print("Preview image:", preview_img)
-        except NotImplementedError:
-            print("Preview image: Not implemented")
-        print("=" * 25)
-
-        print(
-            f"mpv --http-header-fields='Referer: {DOODSTREAM_BASE_URL}/' '{direct_link}'"
-        )
-        print("=" * 25)
-
-    except Exception as e:
-        print("Error:", e)
-        sys.exit(1)

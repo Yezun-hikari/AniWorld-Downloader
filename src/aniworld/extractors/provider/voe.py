@@ -3,7 +3,6 @@ import binascii
 import json
 import logging
 import re
-import sys
 import time
 from urllib.parse import urlparse
 
@@ -263,31 +262,3 @@ def get_preview_image_link_from_voe(embeded_voe_link, headers=None):
 
     except niquests.RequestException as err:
         raise ValueError(f"Failed to fetch VOE preview image: {err}") from err
-
-
-if __name__ == "__main__":
-    # Tested on 2026/01/27 -> WORKING
-    # Example: https://voe.sx/e/oa16zsjaqohr
-
-    # logging.basicConfig(level=logging.DEBUG)
-
-    link = input("Enter VOE Link: ").strip()
-    if not link:
-        print("Error: No link provided")
-        sys.exit(1)
-
-    try:
-        print("=" * 25)
-
-        direct_link = get_direct_link_from_voe(link)
-        print("Direct link:", direct_link)
-        print("=" * 25)
-
-        print("Preview image:", get_preview_image_link_from_voe(link))
-        print("=" * 25)
-
-        print(f'mpv "{direct_link}" --user-agent="{DEFAULT_USER_AGENT}"')
-
-        print("=" * 25)
-    except ValueError as e:
-        print("Error:", e)
