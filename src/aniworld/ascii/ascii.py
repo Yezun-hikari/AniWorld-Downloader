@@ -54,17 +54,5 @@ def display_ascii_art():
     print(__random_block(blocks["art"], fallback=blocks["all"]), flush=True)
 
 
-def display_banner_art():
-    """Return a random banner ASCII art string."""
-    blocks = __parse_ascii_blocks()
-    print(__random_block(blocks["banner"]), flush=True)
-
-
-def display_traceback_art():
-    """Return a random traceback ASCII art string."""
-    blocks = __parse_ascii_blocks()
-    print(__random_block(blocks["traceback"]), flush=True)
-
-
 if __name__ == "__main__":
     print(display_ascii_art())

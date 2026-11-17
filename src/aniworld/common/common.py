@@ -116,29 +116,5 @@ def unzip(file_path, target_dir):
             subprocess.run(
                 ["unzip", "-o", str(file_path), "-d", str(target_dir)], check=True
             )
-    elif file_path.suffix.lower() == ".7z":
-        # use 7z
-        if sys.platform.startswith("win"):
-            try:
-                from ..autodeps import DependencyManager
-            except ImportError:
-                from aniworld.autodeps import DependencyManager
-
-            seven_zip_path = DependencyManager().fetch_binary("7z", prompt_user=False)
-            print(f"Extracting 7z: {file_path} -> {target_dir}")
-            subprocess.run(
-                [
-                    str(seven_zip_path),
-                    "x",
-                    str(file_path),
-                    f"-o{target_dir}",
-                    "-y",
-                ],
-                check=True,
-            )
-        else:
-            # Use system 7z on macOS/Linux
-            print(f"Extracting 7z: {file_path} -> {target_dir}")
-            subprocess.run(["7z", "x", str(file_path), f"-o{target_dir!s}"], check=True)
     else:
         raise ValueError(f"Unsupported archive format: {file_path}")

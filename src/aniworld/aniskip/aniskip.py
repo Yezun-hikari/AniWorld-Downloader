@@ -88,24 +88,3 @@ def build_mpv_flags(skip_data) -> list[str]:
 
 if __name__ == "__main__":
     setup_aniskip()
-
-    """
-    query = "Highschool DxD"
-
-    mal_ids = get_all_seasons_by_query(query)
-
-    print(f"Found {len(mal_ids)} seasons for '{query}':\n")
-
-    for idx, mal_id in enumerate(mal_ids, start=1):
-        print(f"{idx}. MAL ID: {mal_id}")
-
-        episode_number = 1
-        skip_times = get_skip_times(mal_id, episode_number)
-
-        try:
-            mpv_flags = build_mpv_flags(skip_times)
-            print("  MPV command flags:")
-            print(f"    {mpv_flags}\n")
-        except ValueError as e:
-            print(f"  Error building MPV flags: {e}\n")
-    """

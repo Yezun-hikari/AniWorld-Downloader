@@ -10,7 +10,6 @@ from urllib.request import Request, urlopen
 
 import certifi
 from niquests import Session
-from packaging.version import parse as parse_version
 
 from .env import CA_BUNDLE_ENV_VARS, initialize_app_env, resolve_env_directory
 from .logger import get_logger
@@ -39,18 +38,6 @@ def get_latest_version():
     except (URLError, TimeoutError, OSError, ValueError, KeyError) as exc:
         logger.debug(f"Could not fetch latest version from PyPI: {exc}")
         return None
-
-
-def is_newest_version() -> bool:
-    """Checks if the installed version is the newest available on PyPI."""
-    if not VERSION:
-        return False
-
-    latest_version = get_latest_version()
-    if not latest_version:
-        return False
-
-    return parse_version(VERSION) >= parse_version(latest_version)
 
 
 # Resolve the app directory and load its .env file whenever config is imported.
@@ -288,31 +275,8 @@ PROVIDER_HEADERS_D = {
     "Vidara": {"Referer": "https://vidara.to/"},
 }
 
-PROVIDER_HEADERS_W = {
-    "Vidmoly": {"Referer": "https://vidmoly.biz"},
-    # Doodstream signs the direct link against the requesting client, so the
-    # download must reuse the same User-Agent the extractor sent.
-    "Doodstream": {
-        "User-Agent": DEFAULT_USER_AGENT,
-        "Referer": "https://dood.li/",
-    },
-    "VOE": {
-        "User-Agent": DEFAULT_USER_AGENT,
-        "Accept": "*/*",
-        "Accept-Language": "en-US,en;q=0.5",
-        "Accept-Encoding": "gzip, deflate",
-        "Connection": "keep-alive",
-        "Referer": "https://voe.sx/",
-        "Origin": "https://voe.sx",
-    },
-    "Filemoon": {"User-Agent": DEFAULT_USER_AGENT, "Referer": "https://filemoon.to"},
-    "Gupload": {"Referer": "https://gupload.xyz/", "Accept-Encoding": "identity"},
-    "MoflixClick": {
-        "Referer": "https://moflix-stream.click/",
-        "Accept-Encoding": "identity",
-    },
-    "Vidara": {"Referer": "https://vidara.to/"},
-}
+# Watch (mpv/Syncplay) currently uses the same headers as download.
+PROVIDER_HEADERS_W = PROVIDER_HEADERS_D
 
 
 # -----------------------------
