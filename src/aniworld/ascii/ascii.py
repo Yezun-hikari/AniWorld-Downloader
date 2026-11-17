@@ -14,10 +14,10 @@ def __load_ascii_content():
 def __parse_ascii_blocks():
     """Parse ASCII content into categorized blocks."""
     content = __load_ascii_content()
-    pattern = r"=== (banner|art|traceback): (\w+) ===\s*\n([\s\S]*?)(?=^=== (?:banner|art|traceback): |\Z)"
+    pattern = r"=== (banner|art): (\w+) ===\s*\n([\s\S]*?)(?=^=== (?:banner|art): |\Z)"
     matches = re.findall(pattern, content, flags=re.MULTILINE)
 
-    blocks = {"banner": [], "art": [], "traceback": [], "all": []}
+    blocks = {"banner": [], "art": [], "all": []}
     for block_type, _, block in matches:
         cleaned = block.strip("\n")
         if cleaned:
